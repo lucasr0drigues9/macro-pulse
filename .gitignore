@@ -1,0 +1,3 @@
+echo ".xml_cache_*.xml"
+echo "nbim_analysis_cache.json"
+.nbim_global_holdings.json
