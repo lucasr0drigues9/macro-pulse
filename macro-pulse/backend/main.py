@@ -21,6 +21,7 @@ if not os.path.isdir(MACRO):
 
 sys.path.insert(0, ROOT)
 sys.path.insert(0, MACRO)
+sys.path.insert(0, _THIS_DIR)  # backend dir for emails module
 
 # Change working directory to macro/ so cache paths resolve
 if os.path.isdir(MACRO):
