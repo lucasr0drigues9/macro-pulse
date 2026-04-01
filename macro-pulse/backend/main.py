@@ -6,14 +6,25 @@ Wraps the existing Python CLI tool into REST endpoints.
 import sys
 import os
 
-# Add both root and macro/ to Python path so imports resolve
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Resolve paths — works both locally and on Railway
+# Locally: backend is at finance-projects/macro-pulse/backend/
+# Railway: deployed from repo root, backend at /app/macro-pulse/backend/
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT = os.path.dirname(os.path.dirname(_THIS_DIR))  # finance-projects/
 MACRO = os.path.join(ROOT, "macro")
+
+# If ROOT doesn't contain macro/, we're likely deployed from a different structure
+# Try the Railway layout where repo root is /app
+if not os.path.isdir(MACRO):
+    ROOT = "/app"
+    MACRO = os.path.join(ROOT, "macro")
+
 sys.path.insert(0, ROOT)
 sys.path.insert(0, MACRO)
 
 # Change working directory to macro/ so cache paths resolve
-os.chdir(MACRO)
+if os.path.isdir(MACRO):
+    os.chdir(MACRO)
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
