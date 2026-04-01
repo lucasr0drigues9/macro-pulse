@@ -26,7 +26,7 @@ sys.path.insert(0, MACRO)
 if os.path.isdir(MACRO):
     os.chdir(MACRO)
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Macro Pulse API", version="0.1.0")
@@ -608,6 +608,10 @@ def get_backtest():
 
 SUBSCRIBERS_FILE = os.path.join(MACRO, ".macro_cache", "subscribers.json")
 
+# Wire subscribers file to email module
+import emails as _emails_mod
+_emails_mod.SUBSCRIBERS_FILE = SUBSCRIBERS_FILE
+
 
 @app.post("/api/subscribe")
 def subscribe(body: dict):
@@ -657,6 +661,209 @@ def subscribe(body: dict):
         json.dump(subscribers, f, indent=2)
 
     return {"ok": True, "message": "Subscribed successfully"}
+
+
+# ── Cron Jobs ────────────────────────────────────────────
+# Called by Railway cron or external scheduler via secret header
+
+CRON_SECRET = os.getenv("CRON_SECRET", "")
+
+
+def _check_cron_auth(request) -> bool:
+    """Verify cron request is authorized."""
+    if not CRON_SECRET:
+        return True  # No secret set = allow (dev mode)
+    return request.headers.get("x-cron-secret") == CRON_SECRET
+
+
+@app.post("/api/cron/daily")
+async def cron_daily(request: Request):
+    """Daily at 6am UTC — refresh geopolitical synthesis, check for override changes."""
+    if not _check_cron_auth(request):
+        return {"error": "Unauthorized"}, 401
+
+    from geopolitical import get_geopolitical_risks, get_synthesis
+    from fred import get_all
+    from quadrant import get_quadrant
+    from macro_kelly import get_current_regime
+    import emails
+
+    # Get previous geo regime from cache
+    old_synthesis = _load_synthesis()
+    old_geo = old_synthesis.get("etf_convictions", {}) if old_synthesis else {}
+
+    # Force refresh geo data (delete cache to bypass TTL)
+    geo_cache = os.path.join(MACRO, ".macro_cache", "geopolitical.json")
+    synth_cache = os.path.join(MACRO, ".macro_cache", "geo_synthesis.json")
+    for f in [geo_cache, synth_cache]:
+        if os.path.exists(f):
+            os.remove(f)
+
+    # Refresh
+    geo = get_geopolitical_risks()
+    regime, fred_regime, lag_warning = get_current_regime()
+
+    # Check if geo override changed
+    new_geo_regime = geo.get("overall_regime_bias", "")
+    old_geo_regime = old_synthesis.get("headline", "") if old_synthesis else ""
+
+    # Refresh synthesis
+    fred_data = get_all()
+    quadrant = get_quadrant(fred_data)
+    get_synthesis(geo, quadrant["quadrant"]["name"])
+
+    # If geo regime changed, send alert
+    sent = 0
+    if old_synthesis and new_geo_regime and new_geo_regime != geo.get("_prev_regime", new_geo_regime):
+        sent = emails.send_geo_override(
+            event=geo.get("overall_summary", "Geopolitical signal updated")[:80],
+            geo_regime=new_geo_regime,
+            fred_regime=fred_regime,
+            explanation=geo.get("overall_summary", ""),
+        )
+
+    return {
+        "ok": True,
+        "regime": regime,
+        "fredRegime": fred_regime,
+        "geoRegime": new_geo_regime,
+        "lagWarning": lag_warning,
+        "emailsSent": sent,
+    }
+
+
+@app.post("/api/cron/fred-release")
+async def cron_fred_release(request: Request):
+    """On FRED release dates — pull data, check regime, send alerts."""
+    if not _check_cron_auth(request):
+        return {"error": "Unauthorized"}, 401
+
+    from fred import get_all
+    from quadrant import get_quadrant
+    from macro_kelly import get_current_regime, REGIME_ETFS
+    from transition import assess_transitions
+    import emails
+
+    # Get current regime before refresh
+    old_regime, _, _ = get_current_regime()
+
+    # Force refresh FRED data
+    fred_cache_dir = os.path.join(MACRO, ".macro_cache")
+    for fname in os.listdir(fred_cache_dir):
+        if fname.endswith(".json") and not fname.startswith("backtest") and fname not in [
+            "geopolitical.json", "geo_synthesis.json", "regime_triggers.json",
+            "hormuz.json", "subscribers.json", "portfolio.json",
+        ]:
+            fpath = os.path.join(fred_cache_dir, fname)
+            try:
+                os.remove(fpath)
+            except Exception:
+                pass
+
+    # Recalculate
+    fred_data = get_all()
+    quadrant = get_quadrant(fred_data)
+    new_regime, fred_regime, lag_warning = get_current_regime()
+
+    # Check transitions
+    transitions = assess_transitions(quadrant["growth"], quadrant["inflation"])
+    early_signal = transitions.get("likely_name") if transitions.get("likely_name") != new_regime else None
+
+    sent = 0
+    release_name = "FRED Data Release"
+
+    if new_regime != old_regime:
+        # Regime shift
+        picks = [f'{e["ticker"]} — {e["name"]}' for e in REGIME_ETFS.get(new_regime, [])]
+        avoids = [t for t in ["QQQ", "TLT", "IWM"] if t not in [e["ticker"] for e in REGIME_ETFS.get(new_regime, [])]]
+        sent = emails.send_regime_shift(
+            old_regime=old_regime,
+            new_regime=new_regime,
+            trigger=f"FRED data confirmed regime change from {old_regime} to {new_regime}.",
+            new_picks=picks,
+            new_avoids=avoids,
+        )
+    elif early_signal:
+        # Early signal
+        flickering = [w["metric"] for w in transitions.get("warnings", [])]
+        sent = emails.send_early_signal(
+            release_name=release_name,
+            current_regime=new_regime,
+            target_regime=early_signal,
+            indicator=", ".join(flickering[:2]),
+            explanation=f"Indicators flickering toward {early_signal}. Not yet confirmed.",
+        )
+    else:
+        # Unchanged
+        synthesis = _load_synthesis()
+        summary = synthesis.get("situation", "Regime held steady.") if synthesis else "Regime held steady."
+        sent = emails.send_regime_unchanged(
+            release_name=release_name,
+            regime=new_regime,
+            summary=summary,
+            next_release="Check macro pulse dashboard for upcoming releases.",
+        )
+
+    return {
+        "ok": True,
+        "previousRegime": old_regime,
+        "currentRegime": new_regime,
+        "earlySignal": early_signal,
+        "emailsSent": sent,
+    }
+
+
+@app.post("/api/cron/weekly")
+async def cron_weekly(request: Request):
+    """Every Tuesday 8am UTC — send weekly newsletter."""
+    if not _check_cron_auth(request):
+        return {"error": "Unauthorized"}, 401
+
+    from macro_kelly import get_current_regime, REGIME_ETFS
+    import emails
+
+    regime, fred_regime, lag_warning = get_current_regime()
+    months = _count_consecutive_months(regime)
+
+    picks = [{"ticker": e["ticker"], "name": e["name"], "weight": round(e["conviction"] * 20)}
+             for e in REGIME_ETFS.get(regime, [])]
+
+    # Load triggers and calendar from existing endpoints
+    triggers_resp = get_triggers_endpoint()
+    triggers = triggers_resp.get("triggers", []) if isinstance(triggers_resp, dict) else []
+
+    calendar_resp = get_calendar()
+    calendar_events = calendar_resp.get("events", []) if isinstance(calendar_resp, dict) else []
+
+    synthesis = _load_synthesis()
+    bull = synthesis.get("bull_case", {}).get("trigger", "Geopolitical de-escalation") if synthesis else "Geopolitical de-escalation"
+    bear = synthesis.get("bear_case", {}).get("trigger", "Conflict escalation") if synthesis else "Conflict escalation"
+
+    geo_regime = ""
+    if synthesis:
+        # Get geo regime from geopolitical cache
+        try:
+            import json
+            geo_path = os.path.join(MACRO, ".macro_cache", "geopolitical.json")
+            if os.path.exists(geo_path):
+                with open(geo_path) as f:
+                    geo_regime = json.load(f).get("overall_regime_bias", fred_regime)
+        except Exception:
+            geo_regime = fred_regime
+
+    sent = emails.send_weekly_pulse(
+        regime=regime,
+        months=months,
+        fred_regime=fred_regime,
+        geo_regime=geo_regime or fred_regime,
+        picks=picks,
+        triggers=triggers,
+        calendar=calendar_events,
+        bull_trigger=bull,
+        bear_trigger=bear,
+    )
+
+    return {"ok": True, "regime": regime, "emailsSent": sent}
 
 
 # ── Helpers ──────────────────────────────────────────────

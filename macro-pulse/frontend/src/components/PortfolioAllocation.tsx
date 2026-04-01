@@ -60,11 +60,12 @@ function Calculator() {
   const [currency, setCurrency] = useState<"EUR" | "USD">("EUR");
   const [result, setResult] = useState<CalcResult | null>(null);
   const [loading, setLoading] = useState(false);
+  const [consent, setConsent] = useState(false);
 
   const calculate = async () => {
     const total = parseFloat(portfolioSize) || 0;
     const cash = parseFloat(cashAvailable) || 0;
-    if (total <= 0 || cash <= 0) return;
+    if (total <= 0 || cash <= 0 || !consent) return;
 
     setLoading(true);
     try {
@@ -133,9 +134,19 @@ function Calculator() {
         </div>
       </div>
 
+      <label className="flex items-start gap-2 text-xs text-[#888] mb-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          className="rounded mt-0.5"
+        />
+        <span>I understand this tool is for educational purposes only and does not constitute financial advice</span>
+      </label>
+
       <button
         onClick={calculate}
-        disabled={loading}
+        disabled={loading || !consent}
         className="w-full sm:w-auto px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
       >
         {loading ? "Calculating..." : "Calculate allocation"}
