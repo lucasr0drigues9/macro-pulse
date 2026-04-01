@@ -1,3 +1,32 @@
-echo ".xml_cache_*.xml"
-echo "nbim_analysis_cache.json"
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Cache data (regenerated on demand)
+.macro_cache/
+macro/.macro_cache/*.json
+macro/.macro_cache/*.jsonl
+!macro/.macro_cache/.gitkeep
+
+# Node
+node_modules/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
 .nbim_global_holdings.json
+nbim_analysis_cache.json
+.xml_cache_*.xml
+macro/chart_*.png
+subscribers.json

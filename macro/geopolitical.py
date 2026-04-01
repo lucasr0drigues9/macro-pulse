@@ -192,8 +192,21 @@ You will be given:
 5. Upcoming economic calendar events
 
 Synthesise all of this into a concise, actionable investment narrative.
-Be direct and specific. Name actual stocks, ETFs and prices where relevant.
 Acknowledge uncertainty honestly — don't pretend to know what will happen.
+
+IMPORTANT: Only recommend ETFs from our tracked universe. Do NOT recommend individual stocks.
+Our ETF universe: XLE, GLD, DBC, XLP, XLU, GURU, XLI, SPY, BRK-B, QQQ, TLT, IWM.
+For bull/bear cases, beneficiaries/victims must be from this list only.
+
+Regime ETF baskets:
+- Stagflation: XLE, GLD, DBC, XLP, XLU
+- Reflation: GURU, XLE, XLI, GLD, DBC
+- Goldilocks: SPY, BRK-B, QQQ, GURU, IWM
+- Deflation: GURU, TLT, GLD, XLP
+
+For the CURRENT regime ETFs, score each from 0.5 (low conviction) to 1.0 (highest conviction)
+based on the CURRENT geopolitical and macro conditions. Use the full range: 0.5 = weak/hold,
+0.7 = moderate, 0.9+ = high conviction. Scores should reflect THIS specific situation.
 
 Respond ONLY with valid JSON, no markdown:
 {
@@ -220,6 +233,15 @@ Respond ONLY with valid JSON, no markdown:
     "other": 15
   },
   "watch_this_week": ["specific data release or event to monitor"],
+  "etf_convictions": {
+    "XLE": 0.95,
+    "GLD": 0.90,
+    "DBC": 0.85,
+    "XLP": 0.75,
+    "TIP": 0.65,
+    "XLU": 0.60
+  },
+  "regime_start_date": "YYYY-MM-DD — the start date of the LAST period in the FRED regime history that matches the current regime. Use the exact start date from the history. Do NOT merge separate periods — if there was a different regime in between, use the start of the most recent matching period, not an earlier one.",
   "calendar_scenarios": {
     "cpi": {
       "what_to_watch": "one sentence on what matters most in this CPI print given current situation",
@@ -292,22 +314,86 @@ Upcoming calendar events:
 - Next 13F filings: {nxt_fil[0].strftime('%B %d') + ' (' + nxt_fil[1] + ')' if nxt_fil else 'TBD'}
 Current Fed rate: 3.50-3.75% (held at March 18 meeting)"""
 
-    user_prompt = f"""Current macro regime: {quadrant}
+    # Build regime history from FRED backtest timeline + compute start date
+    regime_history_text = ""
+    _computed_regime_start = None
+    try:
+        from backtest_regime import build_regime_timeline, identify_periods
+        import contextlib as _ctx, io as _io
+        with _ctx.redirect_stdout(_io.StringIO()):
+            _tl = build_regime_timeline()
+        _periods = identify_periods(_tl)
+
+        # Find the start of the last period matching the current geo regime
+        _geo_regime = geo_data.get("overall_regime_bias", "")
+        for _p in reversed(_periods):
+            if _p["regime"] == _geo_regime:
+                _computed_regime_start = _p["start"]
+                break
+
+        # Show last 8 periods for context
+        _recent = _periods[-8:]
+        regime_history_text = "FRED regime history (recent periods, based on GDP/CPI/retail data):\n"
+        for _p in _recent:
+            _months = len([t for t in _tl if t["date"] >= _p["start"] and t["date"] <= _p["end"]])
+            regime_history_text += f"  {_p['start']} → {_p['end']}  {_p['regime']} ({_months} months)\n"
+
+        if _computed_regime_start:
+            regime_history_text += f"\nThe current {_geo_regime} regime started on {_computed_regime_start} according to FRED data.\n"
+            regime_history_text += f"You MUST use {_computed_regime_start} as the regime_start_date.\n"
+    except Exception:
+        regime_history_text = ""
+
+    # Fetch live performance data
+    perf_text = "Recent asset performance (LIVE):\n"
+    try:
+        import yfinance as _yf
+
+        # Use computed regime start date, fallback to cache or default
+        _regime_start = _computed_regime_start or "2025-08-01"
+
+        _perf_tickers = {
+            "XLE": "Energy",    "GLD": "Gold",      "DBC": "Commodities",
+            "XLP": "Staples",   "XLU": "Utilities",  "QQQ": "Growth/Tech",
+            "SPY": "S&P 500",   "TLT": "Long bonds", "GURU": "Hedge fund 13F",
+            "BRK-B": "Berkshire",
+        }
+        for _pt, _pn in _perf_tickers.items():
+            try:
+                _ph = _yf.Ticker(_pt).history(start=_regime_start)
+                if len(_ph) > 2:
+                    _pr = round((_ph["Close"].iloc[-1] - _ph["Close"].iloc[0]) / _ph["Close"].iloc[0] * 100, 1)
+                    _price = round(_ph["Close"].iloc[-1], 2)
+                    perf_text += f"- {_pt} ({_pn}): {_pr:+.1f}% since {_regime_start}, now ${_price}\n"
+            except:
+                continue
+
+        # Add key individual stocks — 52-week high comparison
+        for _st, _sn in [("MSFT", "Microsoft"), ("NVDA", "Nvidia"), ("GOOGL", "Google")]:
+            try:
+                _sh = _yf.Ticker(_st).history(period="1y")
+                if len(_sh) > 20:
+                    _high = _sh["Close"].max()
+                    _curr = _sh["Close"].iloc[-1]
+                    _drop = round((_curr - _high) / _high * 100, 1)
+                    perf_text += f"- {_st} ({_sn}): {_drop:+.1f}% from 52-week high, now ${_curr:.0f}\n"
+            except:
+                continue
+    except Exception as _pe:
+        perf_text = f"Recent asset performance: unavailable ({_pe})\n"
+
+    user_prompt = f"""Current macro regime (FRED): {quadrant}
 Overall geopolitical bias: {geo_data.get('overall_regime_bias', 'Unknown')}
+Today's date: {now.strftime('%Y-%m-%d')}
+
+{regime_history_text}
 
 Active geopolitical events:
 {events_text}
 
 {transition_text}
 
-Recent asset performance context:
-- XLE (Energy): +45.5% since August 2025
-- DBC (Commodities): +32.1% since August 2025
-- GLD (Gold): +30.7% since August 2025
-- QQQ (Growth): +5.8% since August 2025
-- MSFT: -33% from 52-week high
-- NVDA: -17% from highs
-- GOOGL: -17% from highs
+{perf_text}
 
 {cal_text}
 

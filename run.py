@@ -84,38 +84,48 @@ def print_menu():
     today   = datetime.now().strftime("%B %d, %Y")
 
     print(f"\n{'═'*62}")
-    print(f"  📊 INVESTMENT RESEARCH SUITE          {today}")
-    print(f"  Follow the steps below for a complete analysis")
+    print(f"  📊 MONTHLY ETF ALLOCATOR            {today}")
+    print(f"  Current regime: {regime}")
     print(f"{'═'*62}")
 
-    print(f"\n  STEP 1 — UNDERSTAND THE WORLD")
-    print(f"  1. 🌐 Geopolitical snapshot    what's happening right now")
-    print(f"  2. 🌍 Global macro guidance    where the value is by region")
-    print(f"  3. 🇺🇸 US economy              FRED data + transition watch")
-    print(f"  4. 🇨🇳 China economy           deflation analysis + scenarios")
-    print(f"  5. 🇪🇺 Europe economy          ECB cycle + opportunities")
+    print(f"\n  M. 💰 Monthly action        what to buy this month")
+    print(f"  F. 💼 Portfolio              holdings + record transactions")
+    print(f"  P. 🔮 Regime playbook       all 4 regime allocations")
+    print(f"  7. 🌐 Refresh AI synthesis  update conviction scores")
 
-    print(f"\n  STEP 2 — VALIDATE WITH DATA")
-    print(f"  6. 📈 Asset performance        is the macro framework working?")
-    print(f"  7. 🌐 Geopolitical deep dive   risks + AI portfolio synthesis")
+    print(f"\n  MORE")
+    print(f"  1. 🌐 Geopolitical snapshot")
+    print(f"  6. 📈 Asset performance")
+    print(f"  8. 📐 Full ETF allocation   timing, insights, deploy")
+    print(f"  D. 📅 Weekly checklist      calendar + triggers")
+    print(f"  R. 🔬 Backtest              recompute Kelly parameters")
+    print(f"  H. 📈 Market history")
 
-    print(f"\n  STEP 3 — SIZE YOUR POSITIONS")
-    print(f"  8. 📐 ETF allocation           Kelly sizing + regime monitor")
-    print(f"     └─ Current regime: {regime}")
-
-    print(f"\n  STEP 4 — RESEARCH (filing season only)")
-    print(f"  9. 🏆 Superinvestor rankings   what smart money held last quarter")
-    print(f"  A. 🔗 Alignment analysis       [{filing}]")
-
-    print(f"\n  ADVANCED")
-    print(f"  B. 🇳🇴 Norway Oil Fund         NBIM deep dive")
-    print(f"  D. 📅 Weekly checklist         what to check and when this week")
-    print(f"  H. 📈 Market history           daily snapshot table")
+    print(f"\n  RESEARCH")
+    print(f"  2. 🌍 Global macro guidance")
+    print(f"  3. 🇺🇸 US economy")
+    print(f"  4. 🇨🇳 China economy")
+    print(f"  5. 🇪🇺 Europe economy")
+    print(f"  9. 🏆 Superinvestor rankings")
+    print(f"  A. 🔗 Alignment analysis    [{filing}]")
+    print(f"  B. 🇳🇴 Norway Oil Fund")
 
     print(f"\n  0. Exit")
     print(f"\n{'─'*62}")
 
 def main():
+    # Import thresholds once at startup so they're available in all menu options
+    sys.path.insert(0, MACRO_DIR)
+    os.chdir(MACRO_DIR)
+    try:
+        from thresholds import (OIL_CRISIS_LEVEL, OIL_WARNING_LEVEL,
+            CPI_STAGFLATION, CPI_GOLDILOCKS, HORMUZ_RECOVERY)
+    except ImportError:
+        OIL_CRISIS_LEVEL, OIL_WARNING_LEVEL = 100, 85
+        CPI_STAGFLATION, CPI_GOLDILOCKS = 0.3, 0.2
+        HORMUZ_RECOVERY = 50
+    os.chdir(INVESTOR_DIR)
+
     # Auto-save daily snapshot silently
     try:
         sys.path.insert(0, MACRO_DIR)
@@ -164,8 +174,6 @@ def main():
             try:
                 import contextlib, io
                 sys.path.insert(0, MACRO_DIR)
-                from thresholds import (OIL_CRISIS_LEVEL, OIL_WARNING_LEVEL,
-                    CPI_STAGFLATION, CPI_GOLDILOCKS, HORMUZ_RECOVERY)
                 from fred import get_all
                 from quadrant import get_quadrant
                 from transition import assess_transitions
@@ -470,6 +478,250 @@ def main():
                 print_history_table(snapshots)
             except Exception as e:
                 print(f"\n  ⚠️  {e}")
+            input("\n  Press Enter to return to menu...")
+
+        elif choice == "M":
+            clear()
+            sys.path.insert(0, MACRO_DIR)
+            sys.path.insert(0, INVESTOR_DIR)
+            os.chdir(MACRO_DIR)
+            try:
+                import contextlib, io
+
+                # ── 1. REGIME ──
+                from macro_kelly import (REGIME_ETFS, get_current_regime,
+                    get_etf_timing, get_etf_price, _REGIME_BEST_STRATEGY,
+                    _REGIME_KELLY)
+                from transition import assess_transitions
+                from fred import get_all as fred_get_all
+                from quadrant import get_quadrant
+
+                EMOJIS = {"Stagflation":"🔴","Reflation":"🟡",
+                          "Goldilocks":"🟢","Deflation":"🔵"}
+
+                with contextlib.redirect_stdout(io.StringIO()):
+                    regime, fred_regime, lag_warning = get_current_regime()
+                    fd = fred_get_all()
+                qr = get_quadrant(fd)
+                trans = assess_transitions(qr["growth"], qr["inflation"])
+
+                emoji = EMOJIS.get(regime, "❓")
+                etfs = REGIME_ETFS.get(regime, REGIME_ETFS["Stagflation"])
+                strat = _REGIME_BEST_STRATEGY.get(regime, "")
+                rk = _REGIME_KELLY.get(regime, {})
+
+                print(f"\n{'='*70}")
+                print(f"  💰 MONTHLY ACTION — {datetime.now().strftime('%B %Y')}")
+                print(f"{'='*70}")
+
+                # Regime status
+                print(f"\n  REGIME: {emoji} {regime}")
+                if lag_warning:
+                    fred_emoji = EMOJIS.get(fred_regime, "❓")
+                    print(f"  ⚠️  FRED: {fred_emoji} {fred_regime} (lagged) — using geo signal")
+                if strat:
+                    print(f"  📊 {strat}")
+                if rk:
+                    print(f"  Win rate: {rk.get('win_rate',0):.0%}  |  "
+                          f"W/L: {rk.get('win_loss_ratio',0):.2f}x")
+
+                # Transition warning
+                likely = trans.get("likely_name")
+                if likely and likely != regime:
+                    n_warnings = len(trans.get("warnings", []))
+                    t_emoji = EMOJIS.get(likely, "❓")
+                    print(f"\n  ⚠️  TRANSITION SIGNAL → {t_emoji} {likely} "
+                          f"({n_warnings} warning{'s' if n_warnings != 1 else ''})")
+                    for w in trans.get("warnings", [])[:3]:
+                        print(f"     {w['severity']} {w['message']}")
+                else:
+                    print(f"\n  ✅ No transition signals — regime is stable")
+
+                # ── 2. PORTFOLIO ──
+                from portfolio import get_holdings, get_portfolio_value, get_target_allocation
+
+                holdings = get_holdings()
+                if holdings:
+                    positions, total_value = get_portfolio_value(holdings)
+                    targets = get_target_allocation(regime, etfs)
+
+                    print(f"\n  {'─'*68}")
+                    print(f"  PORTFOLIO: ${total_value:,.0f}")
+
+                    total_cost = sum(p.get("total_cost", 0) for p in positions.values())
+                    total_gain_pct = round((total_value / total_cost - 1) * 100, 1) if total_cost > 0 else 0
+                    print(f"  Total gain: {total_gain_pct:+.1f}%")
+
+                    print(f"\n  {'Ticker':<7} {'Value':>9} {'Gain':>7} "
+                          f"{'Alloc':>6} {'Target':>7} {'Drift':>7}")
+                    print(f"  {'─'*7} {'─'*9} {'─'*7} "
+                          f"{'─'*6} {'─'*7} {'─'*7}")
+
+                    all_tickers = set(positions.keys()) | set(targets.keys())
+                    for ticker in sorted(all_tickers, key=lambda t: -(positions.get(t, {}).get("value", 0))):
+                        pos = positions.get(ticker)
+                        target_pct = targets.get(ticker, 0)
+                        if pos and pos["shares"] > 0:
+                            current_pct = round(pos["value"] / total_value * 100, 1) if total_value > 0 else 0
+                            drift = round(current_pct - target_pct, 1)
+                            flag = " ⬆" if drift > 3 else (" ⬇" if drift < -3 else "")
+                            print(f"  {ticker:<7} ${pos['value']:>8,.0f} {pos['gain_pct']:>+6.1f}% "
+                                  f"{current_pct:>5.1f}% {target_pct:>6.1f}% {drift:>+6.1f}%{flag}")
+                        elif target_pct > 0:
+                            print(f"  {ticker:<7} {'$0':>9} {'—':>7} "
+                                  f"{'0.0%':>6} {target_pct:>6.1f}% {-target_pct:>+6.1f}% ⬇")
+                else:
+                    print(f"\n  {'─'*68}")
+                    print(f"  PORTFOLIO: Empty — use option F to add holdings")
+
+                # ── 3. TIMING ──
+                print(f"\n  {'─'*68}")
+                print(f"  BUY TIMING:")
+
+                timing_data = []
+                for etf in etfs:
+                    t = get_etf_timing(etf["ticker"])
+                    if t:
+                        timing_data.append((etf, t))
+
+                if timing_data:
+                    buy_now = [(e, t) for e, t in timing_data if t["score"] >= 65]
+                    fair    = [(e, t) for e, t in timing_data if 40 <= t["score"] < 65]
+                    wait    = [(e, t) for e, t in timing_data if t["score"] < 40]
+
+                    if buy_now:
+                        tickers = ", ".join(f"{e['ticker']} ({t['score']})" for e, t in buy_now)
+                        print(f"  🟢 Buy now:    {tickers}")
+                    if fair:
+                        tickers = ", ".join(f"{e['ticker']} ({t['score']})" for e, t in fair)
+                        print(f"  🟡 Fair value: {tickers}")
+                    if wait:
+                        tickers = ", ".join(f"{e['ticker']} ({t['score']})" for e, t in wait)
+                        print(f"  🔴 Wait:       {tickers}")
+
+                # ── 4. DEPLOY RECOMMENDATION ──
+                print(f"\n  {'─'*68}")
+                try:
+                    amt_str = input("  Deploy amount this month ($, Enter to skip): ").strip()
+                    if amt_str:
+                        amt = float(amt_str)
+                        if amt > 0:
+                            if holdings:
+                                from portfolio import deploy_with_portfolio
+                                deploy_with_portfolio(amt, etfs, regime)
+                            else:
+                                from macro_kelly import print_deploy_capital
+                                print_deploy_capital(etfs, regime)
+                except (ValueError, EOFError, KeyboardInterrupt):
+                    pass
+
+                print(f"\n{'='*70}")
+            except Exception as e:
+                print(f"\n  ⚠️  {e}")
+                import traceback; traceback.print_exc()
+            input("\n  Press Enter to return to menu...")
+
+        elif choice == "R":
+            clear()
+            run(["backtest_regime.py"], MACRO_DIR)
+
+        elif choice == "C":
+            clear()
+            run(["backtest_charts.py"], MACRO_DIR)
+
+        elif choice == "F":
+            clear()
+            run_direct(
+                "/home/lucas_r0drigues9/finance-projects/portfolio.py",
+                INVESTOR_DIR
+            )
+
+        elif choice == "P":
+            clear()
+            sys.path.insert(0, MACRO_DIR)
+            sys.path.insert(0, INVESTOR_DIR)
+            os.chdir(MACRO_DIR)
+            try:
+                import json as _j
+                from macro_kelly import (REGIME_ETFS, HALF_KELLY, _REGIME_KELLY,
+                    _REGIME_BEST_STRATEGY, _BACKTEST_SOURCE,
+                    kelly_fraction)
+
+                EMOJIS = {"Stagflation":"🔴","Reflation":"🟡",
+                          "Goldilocks":"🟢","Deflation":"🔵"}
+
+                # Get current regime for highlighting
+                try:
+                    import contextlib, io
+                    from macro_kelly import get_current_regime
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        current, _, _ = get_current_regime()
+                except:
+                    current = None
+
+                print(f"\n{'='*70}")
+                print(f"  🔮 REGIME PLAYBOOK — what to buy in each scenario")
+                print(f"  Source: {_BACKTEST_SOURCE}")
+                print(f"{'='*70}")
+
+                for regime in ["Stagflation", "Reflation", "Goldilocks", "Deflation"]:
+                    emoji = EMOJIS[regime]
+                    etfs  = REGIME_ETFS[regime]
+                    rk    = _REGIME_KELLY.get(regime, {})
+                    strat = _REGIME_BEST_STRATEGY.get(regime, "")
+                    k     = kelly_fraction(regime)
+
+                    is_current = regime == current
+                    marker = "  ← YOU ARE HERE" if is_current else ""
+
+                    print(f"\n  {'━'*68}")
+                    print(f"  {emoji} {regime.upper()}{marker}")
+                    print(f"  {'━'*68}")
+                    print(f"  {strat}")
+
+                    if rk:
+                        print(f"  Win rate: {rk.get('win_rate',0):.0%}  |  "
+                              f"W/L: {rk.get('win_loss_ratio',0):.2f}x  |  "
+                              f"Half-Kelly: {k*100:.1f}%  |  "
+                              f"Obs: {rk.get('observations',0)}")
+                    else:
+                        print(f"  Half-Kelly: {k*100:.1f}%")
+
+                    # Compute portfolio % — convictions distribute the invested portion
+                    CASH_DEFAULT = 15
+                    invested_pct = 100 - CASH_DEFAULT
+                    conv_total = sum(e["conviction"] for e in etfs)
+
+                    print(f"\n  {'ETF':<7} {'Name':<24} {'Alloc':>6} {'Conv':>5}  Note")
+                    print(f"  {'─'*7} {'─'*24} {'─'*6} {'─'*5}  {'─'*30}")
+                    for etf in etfs:
+                        alloc = (etf["conviction"] / conv_total) * invested_pct
+                        print(f"  {etf['ticker']:<7} {etf['name']:<24} "
+                              f"{alloc:>5.1f}% {etf['conviction']*100:>4.0f}%  "
+                              f"{etf['note']}")
+                    print(f"  {'CASH':<7} {'Uninvested':<24} {CASH_DEFAULT:>5.1f}%")
+
+                    # Show what triggers transition TO this regime
+                    if regime == "Stagflation":
+                        print(f"\n  ⚡ Triggers: oil spike, supply shock, inflation + GDP slowdown")
+                        print(f"     Watch: CPI accelerating + retail sales falling")
+                    elif regime == "Reflation":
+                        print(f"\n  ⚡ Triggers: stimulus, commodity demand, growth + inflation rising")
+                        print(f"     Watch: GDP accelerating + CPI accelerating")
+                    elif regime == "Goldilocks":
+                        print(f"\n  ⚡ Triggers: inflation cools while growth holds, soft landing")
+                        print(f"     Watch: CPI decelerating + GDP still positive")
+                    elif regime == "Deflation":
+                        print(f"\n  ⚡ Triggers: recession, demand collapse, financial crisis")
+                        print(f"     Watch: GDP falling + CPI falling + unemployment rising")
+
+                print(f"\n  {'━'*68}")
+                print(f"\n  Current regime: {EMOJIS.get(current,'❓')} {current or 'Unknown'}")
+                print(f"  Run option 8 for live position sizing with current prices.")
+                print(f"\n{'='*70}")
+            except Exception as e:
+                print(f"\n  ⚠️  {e}")
+                import traceback; traceback.print_exc()
             input("\n  Press Enter to return to menu...")
 
         else:
