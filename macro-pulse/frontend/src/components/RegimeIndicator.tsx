@@ -84,10 +84,11 @@ export default function RegimeIndicator() {
 
       {/* Lag warning banner */}
       {lagWarning && (
-        <div className="mt-4 p-3 rounded-lg bg-[rgba(234,179,8,0.1)] border border-[rgba(234,179,8,0.3)] text-center">
-          <span className="text-sm text-[#eab308]">
-            ⚠ Data lag active — geopolitical signal overriding FRED. FRED data lags reality by 1–2 months.
-          </span>
+        <div className="mt-4 p-4 rounded-lg bg-[rgba(234,179,8,0.1)] border border-[rgba(234,179,8,0.3)]">
+          <div className="text-sm text-[#eab308] font-bold mb-1">⚠ Data lag active — geopolitical signal overriding FRED</div>
+          <div className="text-xs text-[#888]">
+            FRED economic data lags reality by 3-4 months. GDP is quarterly (latest: Q4 2025), unemployment is a lagging indicator, and CPI captures prices with a 1-2 month delay. The geopolitical layer reads current events daily and detects regime shifts before the economic data confirms them.
+          </div>
         </div>
       )}
 

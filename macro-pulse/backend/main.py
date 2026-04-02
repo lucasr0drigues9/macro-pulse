@@ -164,8 +164,7 @@ def get_regime(mode: str = "active"):
         "consecutiveMonths": consecutive_months,
         "fredSignal": {
             "regime": fred_regime,
-            "note": f"Based on {quadrant['growth']['detail'].get('gdp_change_pct', 'N/A')}% GDP, "
-                    f"{quadrant['inflation']['detail'].get('cpi_change_pct', 'N/A')}% CPI",
+            "note": _build_fred_note(fred_data, quadrant),
             "lastUpdated": _latest_fred_date(fred_data),
         },
         "geoSignal": {
@@ -972,6 +971,39 @@ def _count_consecutive_months(regime: str) -> int:
         return max(months, 1)
     except Exception:
         return 1
+
+
+def _build_fred_note(fred_data: dict, quadrant: dict) -> str:
+    """Build an informative FRED signal note explaining what the data shows and its lag."""
+    growth = quadrant.get("growth", {})
+    inflation = quadrant.get("inflation", {})
+    g_detail = growth.get("detail", {})
+    i_detail = inflation.get("detail", {})
+
+    # Identify the laggiest data point
+    gdp_date = ""
+    try:
+        gdp_series = fred_data.get("gdp", [])
+        if gdp_series:
+            gdp_date = str(gdp_series[0][0])  # e.g. "2025-10-01"
+    except Exception:
+        pass
+
+    parts = []
+    parts.append(f"Growth {growth.get('direction', '?')} ({g_detail.get('gdp_change_pct', '?')}% GDP, {g_detail.get('retail_change_pct', '?')}% retail)")
+    parts.append(f"Inflation {inflation.get('direction', '?')} ({i_detail.get('cpi_change_pct', '?')}% CPI, {i_detail.get('ppi_change_pct', '?')}% PPI)")
+
+    if gdp_date:
+        from datetime import datetime
+        try:
+            gdp_dt = datetime.strptime(gdp_date[:10], "%Y-%m-%d")
+            months_old = (datetime.now().year - gdp_dt.year) * 12 + (datetime.now().month - gdp_dt.month)
+            if months_old >= 3:
+                parts.append(f"GDP data is from {gdp_date[:7]} ({months_old}mo lag)")
+        except Exception:
+            pass
+
+    return " · ".join(parts)
 
 
 def _latest_fred_date(fred_data: dict) -> str:
