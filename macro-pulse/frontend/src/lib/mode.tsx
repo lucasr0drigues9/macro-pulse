@@ -10,7 +10,7 @@ export const MODE_CONFIG = {
     description: "Wait for confirmation",
     confirmationMonths: 2,
     earlyRotationPct: 0,
-    cashMultiplier: 1.3,
+    cashPct: 25,
     color: "#3b82f6",
   },
   active: {
@@ -18,7 +18,7 @@ export const MODE_CONFIG = {
     description: "Act on strong signals",
     confirmationMonths: 1,
     earlyRotationPct: 10,
-    cashMultiplier: 1.0,
+    cashPct: 15,
     color: "#eab308",
   },
   aggressive: {
@@ -26,7 +26,7 @@ export const MODE_CONFIG = {
     description: "Move early, accept more risk",
     confirmationMonths: 0,
     earlyRotationPct: 25,
-    cashMultiplier: 0.7,
+    cashPct: 5,
     color: "#ef4444",
   },
 } as const;

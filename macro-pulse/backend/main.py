@@ -84,9 +84,9 @@ async def seed_cache(request: Request):
 
 # Mode configuration — affects regime confirmation and sizing
 MODE_CONFIG = {
-    "conservative": {"confirmation_months": 2, "early_rotation_pct": 0, "cash_multiplier": 1.3},
-    "active":       {"confirmation_months": 1, "early_rotation_pct": 10, "cash_multiplier": 1.0},
-    "aggressive":   {"confirmation_months": 0, "early_rotation_pct": 25, "cash_multiplier": 0.7},
+    "conservative": {"confirmation_months": 2, "early_rotation_pct": 0, "cash_pct": 25, "concentration": 1.0},
+    "active":       {"confirmation_months": 1, "early_rotation_pct": 10, "cash_pct": 15, "concentration": 1.0},
+    "aggressive":   {"confirmation_months": 0, "early_rotation_pct": 25, "cash_pct": 5,  "concentration": 2.0},
 }
 
 ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -277,9 +277,9 @@ def get_allocation(mode: str = "active"):
     # Kelly fraction — mode adjusts aggressiveness
     kelly = kelly_fraction(regime)
 
-    # Mode-adjusted cash target
-    base_cash = cash_pct or 15
-    cash_target = min(50, max(5, base_cash * mode_cfg["cash_multiplier"]))
+    # Fixed cash per mode — not derived from AI synthesis
+    cash_target = mode_cfg["cash_pct"]
+    concentration = mode_cfg["concentration"]
 
     # Check for early transition signals
     early_transition = None
@@ -293,36 +293,20 @@ def get_allocation(mode: str = "active"):
         pass
 
     # ── Build overweight list — mode affects concentration ──
-
-    # Conservative: flatter weights (less difference between top and bottom pick)
-    # Active: conviction-proportional (standard)
-    # Aggressive: top-heavy (highest conviction gets much more weight)
+    # concentration=1.0 → conviction-proportional (conservative/active)
+    # concentration=2.0 → conviction squared → top pick gets much more (aggressive)
     overweight = []
-    total_conviction = sum(
-        (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"])
-        for e in picks
-    )
 
+    convictions = []
     for etf in picks:
+        c = dyn_convictions.get(etf["ticker"], etf["conviction"]) if dyn_convictions else etf["conviction"]
+        convictions.append(c ** concentration)
+    total_weighted = sum(convictions)
+
+    for i, etf in enumerate(picks):
         ticker = etf["ticker"]
         conviction = dyn_convictions.get(ticker, etf["conviction"]) if dyn_convictions else etf["conviction"]
-
-        if mode == "conservative":
-            # Flatter distribution — min 12% per ETF
-            base_weight = conviction / total_conviction * (100 - cash_target)
-            avg_weight = (100 - cash_target) / len(picks)
-            weight = round((base_weight + avg_weight) / 2)
-        elif mode == "aggressive":
-            # Top-heavy — square the conviction to concentrate
-            conv_squared = conviction ** 1.5
-            total_sq = sum(
-                (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"]) ** 1.5
-                for e in picks
-            )
-            weight = round(conv_squared / total_sq * (100 - cash_target))
-        else:
-            # Active — standard conviction-proportional
-            weight = round(conviction / total_conviction * (100 - cash_target))
+        weight = round(convictions[i] / total_weighted * (100 - cash_target))
 
         timing = get_etf_timing(ticker)
         if timing:
@@ -432,8 +416,7 @@ def calculate_allocation(body: dict):
 
     # Dynamic convictions
     dyn_convictions, cash_pct = get_dynamic_convictions()
-    cash_target = (cash_pct or 15) * mode_cfg["cash_multiplier"]
-    cash_target = min(50, max(5, cash_target))  # clamp 5-50%
+    cash_target = mode_cfg["cash_pct"]
 
     # Kelly fraction scales how aggressively we deploy
     kelly = kelly_fraction(regime)

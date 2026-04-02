@@ -106,7 +106,7 @@ function Calculator() {
       <h4 className="text-sm font-bold text-[#e0e0e0] mb-1">Position Calculator</h4>
       <p className="text-xs text-[#555] mb-4">
         Mode: <span style={{ color: modeConfig.color }}>{modeConfig.label}</span>
-        {" · "}Cash reserve: {modeConfig.cashMultiplier > 1 ? "higher" : modeConfig.cashMultiplier < 1 ? "lower" : "standard"}
+        {" · "}Cash reserve: {modeConfig.cashPct}%
       </p>
 
       <div className="flex gap-2 mb-4">
