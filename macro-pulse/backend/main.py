@@ -73,7 +73,7 @@ def get_regime(mode: str = "active"):
     quadrant = get_quadrant(fred_data)
 
     # Geopolitical data
-    geo = get_geopolitical_risks()
+    geo = get_geopolitical_risks() or {}
     geo_regime = geo.get("overall_regime_bias", regime)
 
     # Early transition check
