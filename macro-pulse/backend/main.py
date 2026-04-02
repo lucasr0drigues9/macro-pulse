@@ -43,7 +43,7 @@ ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://macro-pulse.*\.vercel\.app|https://macro-pulse\.io|http://localhost:3000",
     allow_methods=["*"],
     allow_headers=["*"],
 )
