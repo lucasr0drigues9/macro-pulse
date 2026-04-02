@@ -405,57 +405,134 @@ def get_allocation(mode: str = "active"):
 
 @app.post("/api/calculate")
 def calculate_allocation(body: dict):
-    """Section 3 Part B — Kelly position sizing calculator. Mode affects sizing."""
-    from macro_kelly import get_current_regime, REGIME_ETFS, get_dynamic_convictions, kelly_fraction
+    """Position calculator with three strategies: current_regime, balanced, transition_ready."""
+    from macro_kelly import get_current_regime, REGIME_ETFS, get_dynamic_convictions, kelly_fraction, get_etf_timing
+    from fred import get_all
+    from quadrant import get_quadrant
+    from transition import assess_transitions
 
     portfolio_size = float(body.get("portfolioSize", 0))
     cash_available = float(body.get("cashAvailable", 0))
     currency = body.get("currency", "EUR")
-    mode = body.get("mode", "active")
-    mode_cfg = MODE_CONFIG.get(mode, MODE_CONFIG["active"])
+    strategy = body.get("strategy", "balanced")
 
     if portfolio_size <= 0 or cash_available <= 0:
         return {"error": "Portfolio size and cash must be positive", "allocations": []}
 
     regime, _, _ = get_current_regime()
     picks = REGIME_ETFS.get(regime, [])
-
-    # Dynamic convictions
-    dyn_convictions, cash_pct = get_dynamic_convictions()
-    cash_target = mode_cfg["cash_pct"]
-
-    # Kelly fraction scales how aggressively we deploy
+    dyn_convictions, _ = get_dynamic_convictions()
     kelly = kelly_fraction(regime)
 
-    # Deployable amount: min of cash available and Kelly-adjusted portfolio
+    # Strategy-specific cash targets
+    cash_pcts = {"current_regime": 15, "balanced": 15, "transition_ready": 10}
+    cash_target = cash_pcts.get(strategy, 15)
+    cash_reserve = portfolio_size * cash_target / 100
+
+    # Deployable amount
     kelly_deployable = portfolio_size * kelly if kelly > 0 else cash_available * 0.5
     deployable = min(cash_available, max(kelly_deployable, cash_available * 0.3))
-
-    # Reserve cash target — mode adjusts this
-    cash_reserve = portfolio_size * cash_target / 100
     deployable = min(deployable, max(0, portfolio_size - cash_reserve))
 
-    # Allocate proportionally by conviction
+    # Strategy split: how much goes to current regime vs transition
+    if strategy == "current_regime":
+        regime_pct = 1.0
+    elif strategy == "balanced":
+        regime_pct = 0.75
+    else:  # transition_ready
+        regime_pct = 0.45
+
+    regime_budget = deployable * regime_pct
+    transition_budget = deployable * (1 - regime_pct)
+
+    # ── Current regime allocations ──
     total_conviction = sum(
         (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"])
         for e in picks
     )
-
     allocations = []
     for etf in picks:
         conviction = dyn_convictions.get(etf["ticker"], etf["conviction"]) if dyn_convictions else etf["conviction"]
-        weight = conviction / total_conviction if total_conviction > 0 else 1 / len(picks)
-        amount = round(deployable * weight, 2)
+        weight_of_regime = conviction / total_conviction if total_conviction > 0 else 1 / len(picks)
+        amount = round(regime_budget * weight_of_regime)
+        weight = round(amount / deployable * 100, 1) if deployable > 0 else 0
         allocations.append({
             "ticker": etf["ticker"],
             "name": etf["name"],
-            "weight": round(weight * 100, 1),
-            "amount": round(amount),
+            "weight": weight,
+            "amount": amount,
             "conviction": round(conviction, 2),
+            "category": "regime",
         })
+
+    # ── Transition allocations (balanced + transition_ready) ──
+    if transition_budget > 0:
+        # Find likely next regimes
+        transition_etfs = []
+        try:
+            fred_data = get_all()
+            quadrant = get_quadrant(fred_data)
+            transitions = assess_transitions(quadrant["growth"], quadrant["inflation"])
+            likely = transitions.get("likely_name")
+            if likely and likely != regime:
+                target_picks = REGIME_ETFS.get(likely, [])
+                # Get timing for each, prioritize cheap ones
+                for etf in target_picks:
+                    if etf["ticker"] not in {a["ticker"] for a in allocations}:
+                        timing = get_etf_timing(etf["ticker"])
+                        score = timing["score"] if timing else 50
+                        transition_etfs.append({
+                            "ticker": etf["ticker"],
+                            "name": etf["name"],
+                            "conviction": etf["conviction"],
+                            "timing_score": score,
+                            "target_regime": likely,
+                        })
+        except Exception:
+            pass
+
+        # Also add from geo synthesis scenarios
+        synthesis = _load_synthesis()
+        if synthesis:
+            bull = synthesis.get("bull_case", {}).get("beneficiaries", [])
+            for ticker in bull[:3]:
+                if ticker not in {a["ticker"] for a in allocations} and ticker not in {e["ticker"] for e in transition_etfs}:
+                    # Find name from REGIME_ETFS
+                    name = ticker
+                    for r_etfs in REGIME_ETFS.values():
+                        for e in r_etfs:
+                            if e["ticker"] == ticker:
+                                name = e["name"]
+                                break
+                    timing = get_etf_timing(ticker)
+                    score = timing["score"] if timing else 50
+                    transition_etfs.append({
+                        "ticker": ticker, "name": name,
+                        "conviction": 0.5, "timing_score": score,
+                        "target_regime": "Goldilocks",
+                    })
+
+        # Sort by timing score (cheapest first) and allocate
+        transition_etfs.sort(key=lambda e: -e["timing_score"])
+        if transition_etfs:
+            # Weight by timing score (cheaper = more)
+            total_score = sum(e["timing_score"] for e in transition_etfs)
+            for etf in transition_etfs[:5]:
+                w = etf["timing_score"] / total_score if total_score > 0 else 1 / len(transition_etfs)
+                amount = round(transition_budget * w)
+                weight = round(amount / deployable * 100, 1) if deployable > 0 else 0
+                allocations.append({
+                    "ticker": etf["ticker"],
+                    "name": etf["name"],
+                    "weight": weight,
+                    "amount": amount,
+                    "conviction": round(etf["conviction"], 2),
+                    "category": "transition",
+                })
 
     return {
         "regime": regime,
+        "strategy": strategy,
         "currency": currency,
         "portfolioSize": portfolio_size,
         "cashAvailable": cash_available,

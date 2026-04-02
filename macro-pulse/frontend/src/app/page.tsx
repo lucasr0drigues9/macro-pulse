@@ -1,5 +1,4 @@
 import Welcome from "@/components/Welcome";
-import ModeSelector from "@/components/ModeSelector";
 import RegimeIndicator from "@/components/RegimeIndicator";
 import AssetPerformance from "@/components/AssetPerformance";
 import PortfolioAllocation from "@/components/PortfolioAllocation";
@@ -24,8 +23,6 @@ export default function Home() {
 
       <div className="border-t border-[#181818]" />
       <TransitionOutlook />
-
-      <ModeSelector />
 
       <div className="border-t border-[#181818]" />
       <PortfolioAllocation />

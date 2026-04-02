@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { allocationData as fallback, REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
-import { useMode, MODE_CONFIG } from "@/lib/mode";
 
 type Overweight = {
   ticker: string; name: string; weight: number; conviction: number;
@@ -18,14 +17,21 @@ type EarlyRotation = {
 type AllocData = {
   regime: RegimeName; kellyFraction: number; cashTarget: number;
   overweight: Overweight[]; underweight: Underweight[];
-  earlyRotation?: EarlyRotation;
-  mode?: string;
+  earlyRotation?: EarlyRotation; mode?: string;
 };
 type CalcResult = {
   regime: string; currency: string; deployable: number; cashReserve: number;
-  kellyFraction: number;
-  allocations: { ticker: string; name: string; weight: number; amount: number; conviction: number }[];
+  kellyFraction: number; strategy: string;
+  allocations: { ticker: string; name: string; weight: number; amount: number; conviction: number; category?: string }[];
 };
+
+type Strategy = "current_regime" | "balanced" | "transition_ready";
+
+const STRATEGIES: { id: Strategy; label: string; description: string; color: string }[] = [
+  { id: "current_regime", label: "Current Regime", description: "All-in on Stagflation picks", color: "#ef4444" },
+  { id: "balanced", label: "Balanced", description: "Current regime + cheap transition ETFs", color: "#eab308" },
+  { id: "transition_ready", label: "Transition Ready", description: "Heavier on cheap next-regime ETFs", color: "#22c55e" },
+];
 
 function AssessmentBadge({ assessment }: { assessment: string }) {
   const colors: Record<string, string> = {
@@ -62,11 +68,10 @@ function AllocationBar({ ticker, weight, color }: { ticker: string; weight: numb
 }
 
 function Calculator() {
-  const { mode } = useMode();
-  const modeConfig = MODE_CONFIG[mode];
   const [portfolioSize, setPortfolioSize] = useState<string>("");
   const [cashAvailable, setCashAvailable] = useState<string>("");
   const [currency, setCurrency] = useState<"EUR" | "USD">("EUR");
+  const [strategy, setStrategy] = useState<Strategy>("balanced");
   const [result, setResult] = useState<CalcResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -81,33 +86,48 @@ function Calculator() {
       const res = await fetch(apiUrl("/api/calculate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency, mode }),
+        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency, strategy }),
       });
       const data = await res.json();
       setResult(data);
     } catch {
-      // Fallback to client-side calculation
-      const deployable = Math.min(cash, total);
-      setResult({
-        regime: "Stagflation", currency, deployable, cashReserve: 0, kellyFraction: 0,
-        allocations: fallback.overweight.map((etf) => ({
-          ticker: etf.ticker, name: etf.name, conviction: etf.conviction,
-          amount: Math.round((deployable * etf.weight) / 100), weight: etf.weight,
-        })),
-      });
+      setResult(null);
     }
     setLoading(false);
   };
 
   const sym = currency === "EUR" ? "€" : "$";
+  const activeStrategy = STRATEGIES.find((s) => s.id === strategy)!;
 
   return (
     <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222]">
-      <h4 className="text-sm font-bold text-[#e0e0e0] mb-1">Position Calculator</h4>
-      <p className="text-xs text-[#555] mb-4">
-        Mode: <span style={{ color: modeConfig.color }}>{modeConfig.label}</span>
-        {" · "}Cash reserve: {modeConfig.cashPct}%
-      </p>
+      <h4 className="text-sm font-bold text-[#e0e0e0] mb-4">Position Calculator</h4>
+
+      {/* Strategy selector */}
+      <div className="mb-4">
+        <span className="text-xs text-[#555] block mb-2">Investment strategy</span>
+        <div className="flex rounded-lg border border-[#222] overflow-hidden">
+          {STRATEGIES.map((s) => {
+            const isActive = strategy === s.id;
+            return (
+              <button
+                key={s.id}
+                onClick={() => { setStrategy(s.id); setResult(null); }}
+                className="flex-1 px-3 py-2 transition-colors text-center"
+                style={{
+                  backgroundColor: isActive ? s.color + "20" : "transparent",
+                  borderRight: s.id !== "transition_ready" ? "1px solid #222" : undefined,
+                }}
+              >
+                <div className="text-xs font-bold" style={{ color: isActive ? s.color : "#555" }}>
+                  {s.label}
+                </div>
+                <div className="text-xs text-[#555] hidden sm:block">{s.description}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       <div className="flex gap-2 mb-4">
         <button
@@ -167,9 +187,8 @@ function Calculator() {
 
       {result && (
         <div className="mt-4">
-          {/* Kelly info bar */}
           <div className="flex flex-wrap gap-4 text-xs text-[#555] mb-3">
-            <span>Kelly fraction: <span className="text-[#e0e0e0]">{(result.kellyFraction * 100).toFixed(1)}%</span></span>
+            <span>Strategy: <span style={{ color: activeStrategy.color }}>{activeStrategy.label}</span></span>
             <span>Deployable: <span className="text-[#22c55e]">{sym}{result.deployable.toLocaleString()}</span></span>
             <span>Cash reserve: <span className="text-[#888]">{sym}{result.cashReserve.toLocaleString()}</span></span>
           </div>
@@ -189,6 +208,9 @@ function Calculator() {
                     <td className="py-2">
                       <span className="font-bold">{r.ticker}</span>
                       <span className="text-[#555] ml-2 text-xs">{r.name}</span>
+                      {r.category === "transition" && (
+                        <span className="text-xs text-[#eab308] ml-2">transition</span>
+                      )}
                     </td>
                     <td className="text-right py-2 text-[#888]">{r.weight}%</td>
                     <td className="text-right py-2 font-bold text-[#22c55e]">
@@ -211,17 +233,15 @@ function Calculator() {
 }
 
 export default function PortfolioAllocation() {
-  const { mode } = useMode();
   const [data, setData] = useState<AllocData | null>(null);
 
   useEffect(() => {
-    fetch(apiUrl(`/api/allocation?mode=${mode}`))
+    fetch(apiUrl("/api/allocation"))
       .then((r) => r.json())
       .then((d) => setData(d))
       .catch(() => {});
-  }, [mode]);
+  }, []);
 
-  // Use API data or fall back to mock
   const regime = (data?.regime || fallback.regime) as RegimeName;
   const overweight = data?.overweight || fallback.overweight;
   const underweight = data?.underweight || fallback.underweight;
@@ -242,13 +262,10 @@ export default function PortfolioAllocation() {
         {overweight.map((etf) => (
           <AllocationBar key={etf.ticker} ticker={etf.ticker} weight={etf.weight} color={regimeColor} />
         ))}
-        {data?.earlyRotation?.positions.map((pos) => (
-          <AllocationBar key={pos.ticker} ticker={pos.ticker} weight={pos.weight} color="#eab308" />
-        ))}
       </div>
 
-      {/* Overweight / Underweight / Early Rotation columns */}
-      <div className={`grid grid-cols-1 ${data?.earlyRotation ? "md:grid-cols-3" : "md:grid-cols-2"} gap-6`}>
+      {/* Overweight / Underweight columns */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <h3 className="text-sm font-bold text-[#22c55e] uppercase tracking-wider mb-3">
             Overweight — Buy/Hold
@@ -272,29 +289,6 @@ export default function PortfolioAllocation() {
             ))}
           </div>
         </div>
-
-        {data?.earlyRotation && (
-          <div>
-            <h3 className="text-sm font-bold text-[#eab308] uppercase tracking-wider mb-3">
-              Early Rotation — {data.earlyRotation.targetRegime} ({data.earlyRotation.totalPct}%)
-            </h3>
-            <div className="space-y-3">
-              {data.earlyRotation.positions.map((pos) => (
-                <div key={pos.ticker} className="p-3 rounded bg-[rgba(234,179,8,0.05)] border border-[rgba(234,179,8,0.2)]">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-sm">{pos.ticker} <span className="text-[#555] font-normal text-xs">{pos.name}</span></span>
-                    <span className="text-xs text-[#eab308]">{pos.weight}%</span>
-                  </div>
-                  <AssessmentBadge assessment={pos.priceAssessment} />
-                  <p className="text-xs text-[#888] mt-1">{pos.rationale}</p>
-                </div>
-              ))}
-            </div>
-            <p className="text-xs text-[#555] mt-2 italic">
-              Regime not yet confirmed. Starter positions only. Full rotation if confirmed.
-            </p>
-          </div>
-        )}
 
         <div>
           <h3 className="text-sm font-bold text-[#ef4444] uppercase tracking-wider mb-3">
