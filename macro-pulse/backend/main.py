@@ -46,14 +46,19 @@ async def seed_cache(request: Request):
     if cron_secret and request.headers.get("x-cron-secret") != cron_secret:
         return {"error": "Unauthorized"}
     body = await request.json()
-    cache_dir = os.path.join(MACRO, ".macro_cache")
-    os.makedirs(cache_dir, exist_ok=True)
+    # Write to both possible cache locations (relative + hardcoded in geopolitical.py)
+    cache_dirs = [
+        os.path.join(MACRO, ".macro_cache"),
+        "/home/lucas_r0drigues9/finance-projects/macro/.macro_cache",
+    ]
     written = []
-    for filename, content in body.items():
-        fpath = os.path.join(cache_dir, filename)
-        with open(fpath, "w") as f:
-            json.dump(content, f)
-        written.append(filename)
+    for cache_dir in cache_dirs:
+        os.makedirs(cache_dir, exist_ok=True)
+        for filename, content in body.items():
+            fpath = os.path.join(cache_dir, filename)
+            with open(fpath, "w") as f:
+                json.dump(content, f)
+    written = list(body.keys())
     return {"ok": True, "written": written}
 
 # Mode configuration — affects regime confirmation and sizing
