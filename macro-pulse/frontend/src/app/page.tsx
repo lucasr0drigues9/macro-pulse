@@ -46,8 +46,8 @@ export default function Home() {
           This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. All analysis is generated systematically from public economic data. Past performance does not guarantee future results.
         </p>
         <div className="flex gap-4 justify-center mt-3">
-          <a href="/disclaimer" className="text-xs text-[#555] hover:text-[#888]">Disclaimer</a>
-          <a href="/terms" className="text-xs text-[#555] hover:text-[#888]">Terms of Service</a>
+          <a href="/disclaimer" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Disclaimer</a>
+          <a href="/terms" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Terms of Service</a>
         </div>
       </footer>
     </main>
