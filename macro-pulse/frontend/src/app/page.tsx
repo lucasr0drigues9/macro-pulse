@@ -22,13 +22,13 @@ export default function Home() {
       <div className="border-t border-[#181818]" />
       <AssetPerformance />
 
+      <div className="border-t border-[#181818]" />
+      <TransitionOutlook />
+
       <ModeSelector />
 
       <div className="border-t border-[#181818]" />
       <PortfolioAllocation />
-
-      <div className="border-t border-[#181818]" />
-      <TransitionOutlook />
 
       <div className="border-t border-[#181818]" />
       <WeeklyCalendar />
