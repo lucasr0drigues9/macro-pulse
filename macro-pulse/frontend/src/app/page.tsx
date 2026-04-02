@@ -28,13 +28,13 @@ export default function Home() {
       <PortfolioAllocation />
 
       <div className="border-t border-[#181818]" />
+      <TransitionOutlook />
+
+      <div className="border-t border-[#181818]" />
       <WeeklyCalendar />
 
       <div className="border-t border-[#181818]" />
       <RegimeTriggers />
-
-      <div className="border-t border-[#181818]" />
-      <TransitionOutlook />
 
       <div className="border-t border-[#181818]" />
       <RegimePlaybook />
