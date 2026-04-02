@@ -18,10 +18,10 @@ export default function Home() {
       <div className="border-t border-[#181818]" />
       <RegimeIndicator />
 
-      <ModeSelector />
-
       <div className="border-t border-[#181818]" />
       <AssetPerformance />
+
+      <ModeSelector />
 
       <div className="border-t border-[#181818]" />
       <PortfolioAllocation />

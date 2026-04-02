@@ -27,6 +27,27 @@ sys.path.insert(0, _THIS_DIR)  # backend dir for emails module
 if os.path.isdir(MACRO):
     os.chdir(MACRO)
 
+# Seed cache on startup if empty (Railway wipes filesystem on deploy)
+def _seed_cache_on_startup():
+    import json
+    try:
+        from cache_seed import SEED_DATA
+    except ImportError:
+        return
+    cache_dirs = [
+        os.path.join(MACRO, ".macro_cache"),
+        "/home/lucas_r0drigues9/finance-projects/macro/.macro_cache",
+    ]
+    for cache_dir in cache_dirs:
+        os.makedirs(cache_dir, exist_ok=True)
+        for filename, content in SEED_DATA.items():
+            fpath = os.path.join(cache_dir, filename)
+            if not os.path.exists(fpath):
+                with open(fpath, "w") as f:
+                    json.dump(content, f)
+
+_seed_cache_on_startup()
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
