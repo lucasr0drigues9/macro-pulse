@@ -5,6 +5,7 @@ import AssetPerformance from "@/components/AssetPerformance";
 import PortfolioAllocation from "@/components/PortfolioAllocation";
 import WeeklyCalendar from "@/components/WeeklyCalendar";
 import RegimeTriggers from "@/components/RegimeTriggers";
+import TransitionOutlook from "@/components/TransitionOutlook";
 import RegimePlaybook from "@/components/RegimePlaybook";
 import RegimeHistory from "@/components/RegimeHistory";
 import Newsletter from "@/components/Newsletter";
@@ -31,6 +32,9 @@ export default function Home() {
 
       <div className="border-t border-[#181818]" />
       <RegimeTriggers />
+
+      <div className="border-t border-[#181818]" />
+      <TransitionOutlook />
 
       <div className="border-t border-[#181818]" />
       <RegimePlaybook />
