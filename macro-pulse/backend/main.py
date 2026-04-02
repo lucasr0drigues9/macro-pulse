@@ -84,9 +84,9 @@ async def seed_cache(request: Request):
 
 # Mode configuration — affects regime confirmation and sizing
 MODE_CONFIG = {
-    "conservative": {"confirmation_months": 2, "early_rotation_pct": 0, "cash_pct": 25, "concentration": 1.0},
-    "active":       {"confirmation_months": 1, "early_rotation_pct": 10, "cash_pct": 15, "concentration": 1.0},
-    "aggressive":   {"confirmation_months": 0, "early_rotation_pct": 25, "cash_pct": 5,  "concentration": 2.0},
+    "conservative": {"confirmation_months": 2, "early_rotation_pct": 0, "cash_pct": 25},
+    "active":       {"confirmation_months": 1, "early_rotation_pct": 10, "cash_pct": 15},
+    "aggressive":   {"confirmation_months": 0, "early_rotation_pct": 25, "cash_pct": 5},
 }
 
 ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -292,23 +292,49 @@ def get_allocation(mode: str = "active"):
     except Exception:
         pass
 
-    # ── Build overweight list — mode affects concentration ──
-    # concentration=1.0 → conviction-proportional (conservative/active)
-    # concentration=2.0 → conviction squared → top pick gets much more (aggressive)
+    # ── Fetch timing data for all picks first ──
+    timing_data = {}
+    for etf in picks:
+        timing_data[etf["ticker"]] = get_etf_timing(etf["ticker"])
+
+    # ── Build overweight list — mode affects weighting strategy ──
+    # Conservative: flat weights (conviction averaged toward equal)
+    # Active: conviction-proportional (standard)
+    # Aggressive: value-weighted — overweight what's cheap, trim what's extended
+    #   The thesis: all regime picks have the same macro tailwind, so buy the
+    #   ones that haven't moved yet. Better entry, same destination.
     overweight = []
 
-    convictions = []
+    raw_weights = []
     for etf in picks:
-        c = dyn_convictions.get(etf["ticker"], etf["conviction"]) if dyn_convictions else etf["conviction"]
-        convictions.append(c ** concentration)
-    total_weighted = sum(convictions)
+        ticker = etf["ticker"]
+        conviction = dyn_convictions.get(ticker, etf["conviction"]) if dyn_convictions else etf["conviction"]
+        timing = timing_data.get(ticker)
+
+        if mode == "aggressive" and timing:
+            # Value-weight: higher timing score (cheaper) = more weight
+            # Score 80 (cheap) → multiplier ~2.0, Score 30 (extended) → multiplier ~0.5
+            value_multiplier = 0.5 + (timing["score"] / 100) * 1.5
+            raw_weights.append(conviction * value_multiplier)
+        elif mode == "conservative":
+            # Flatten toward equal weight
+            avg_conviction = sum(
+                (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"])
+                for e in picks
+            ) / len(picks)
+            raw_weights.append((conviction + avg_conviction) / 2)
+        else:
+            # Active: pure conviction
+            raw_weights.append(conviction)
+
+    total_weighted = sum(raw_weights) if raw_weights else 1
 
     for i, etf in enumerate(picks):
         ticker = etf["ticker"]
         conviction = dyn_convictions.get(ticker, etf["conviction"]) if dyn_convictions else etf["conviction"]
-        weight = round(convictions[i] / total_weighted * (100 - cash_target))
+        weight = round(raw_weights[i] / total_weighted * (100 - cash_target))
 
-        timing = get_etf_timing(ticker)
+        timing = timing_data.get(ticker)
         if timing:
             score = timing["score"]
             assessment = "Still attractive" if score >= 65 else "Fairly valued" if score >= 40 else "Extended"
@@ -317,13 +343,21 @@ def get_allocation(mode: str = "active"):
             assessment = "Fairly valued"
             price_info = None
 
+        # Aggressive mode rationale explains the value logic
+        rationale = etf["note"]
+        if mode == "aggressive" and timing:
+            if timing["score"] >= 65:
+                rationale = f"Attractive entry — RSI {timing['rsi']:.0f}, below moving average. Same macro tailwind, better price."
+            elif timing["score"] < 40:
+                rationale = f"Extended — RSI {timing['rsi']:.0f}, above moving average. Macro tailwind intact but entry price stretched. Wait for pullback to add."
+
         overweight.append({
             "ticker": ticker,
             "name": etf["name"],
             "weight": weight,
             "conviction": round(conviction, 2),
             "priceAssessment": assessment,
-            "rationale": etf["note"],
+            "rationale": rationale,
             "timing": price_info,
         })
 
