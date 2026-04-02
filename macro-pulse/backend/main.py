@@ -32,6 +32,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Macro Pulse API", version="0.1.0")
 
+# Mode configuration — affects regime confirmation and sizing
+MODE_CONFIG = {
+    "conservative": {"confirmation_months": 2, "early_rotation_pct": 0, "cash_multiplier": 1.3},
+    "active":       {"confirmation_months": 1, "early_rotation_pct": 10, "cash_multiplier": 1.0},
+    "aggressive":   {"confirmation_months": 0, "early_rotation_pct": 25, "cash_multiplier": 0.7},
+}
+
 ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
 app.add_middleware(
@@ -43,13 +50,15 @@ app.add_middleware(
 
 
 @app.get("/api/regime")
-def get_regime():
-    """Section 1 — Current regime indicator with both signals."""
+def get_regime(mode: str = "active"):
+    """Section 1 — Current regime indicator with both signals. Mode affects confirmation."""
     from macro_kelly import get_current_regime, REGIME_ETFS
     from fred import get_all
     from quadrant import get_quadrant
     from geopolitical import get_geopolitical_risks, get_synthesis
     from transition import assess_transitions
+
+    mode_cfg = MODE_CONFIG.get(mode, MODE_CONFIG["active"])
 
     # Core regime data
     regime, fred_regime, lag_warning = get_current_regime()
@@ -60,9 +69,11 @@ def get_regime():
 
     # Geopolitical data
     geo = get_geopolitical_risks()
+    geo_regime = geo.get("overall_regime_bias", regime)
 
     # Early transition check
     early_transition = None
+    transitions = None
     try:
         transitions = assess_transitions(quadrant["growth"], quadrant["inflation"])
         if transitions.get("likely_name") and transitions["likely_name"] != regime:
@@ -80,6 +91,16 @@ def get_regime():
     except Exception:
         pass
 
+    # Mode-adjusted regime: aggressive acts on early signals immediately
+    confirmed_regime = regime
+    if mode_cfg["confirmation_months"] == 0 and early_transition:
+        # Aggressive: treat early signal as confirmed
+        confirmed_regime = early_transition["targetRegime"]
+    elif mode_cfg["confirmation_months"] == 1 and early_transition:
+        # Active: if geo agrees with early signal, treat as confirmed
+        if geo_regime == early_transition["targetRegime"]:
+            confirmed_regime = early_transition["targetRegime"]
+
     # Synthesis for headline/regime start date
     synthesis = None
     try:
@@ -92,12 +113,25 @@ def get_regime():
         pass
 
     regime_start = synthesis.get("regime_start_date", "2025-12-01") if synthesis else "2025-12-01"
+    consecutive_months = _count_consecutive_months(confirmed_regime)
 
-    # Count consecutive months from snapshots
-    consecutive_months = _count_consecutive_months(regime)
+    # Early rotation recommendation based on mode
+    early_rotation = None
+    if early_transition and mode_cfg["early_rotation_pct"] > 0 and confirmed_regime == regime:
+        target = early_transition["targetRegime"]
+        target_etfs = REGIME_ETFS.get(target, [])
+        rotation_pct = mode_cfg["early_rotation_pct"]
+        early_rotation = {
+            "targetRegime": target,
+            "totalPct": rotation_pct,
+            "positions": [
+                {"ticker": e["ticker"], "name": e["name"], "weight": round(rotation_pct * e["conviction"] / sum(x["conviction"] for x in target_etfs[:3]))}
+                for e in target_etfs[:3]
+            ],
+        }
 
     return {
-        "confirmed": regime,
+        "confirmed": confirmed_regime,
         "consecutiveMonths": consecutive_months,
         "fredSignal": {
             "regime": fred_regime,
@@ -106,13 +140,15 @@ def get_regime():
             "lastUpdated": _latest_fred_date(fred_data),
         },
         "geoSignal": {
-            "regime": geo.get("overall_regime_bias", regime),
+            "regime": geo_regime,
             "note": geo.get("overall_summary", "")[:120],
             "lastUpdated": _geo_cache_date(),
         },
         "lagWarning": lag_warning,
         "earlyTransition": early_transition,
+        "earlyRotation": early_rotation,
         "regimeStartDate": regime_start,
+        "mode": mode,
     }
 
 
@@ -265,12 +301,14 @@ def get_allocation():
 
 @app.post("/api/calculate")
 def calculate_allocation(body: dict):
-    """Section 3 Part B — Kelly position sizing calculator."""
+    """Section 3 Part B — Kelly position sizing calculator. Mode affects sizing."""
     from macro_kelly import get_current_regime, REGIME_ETFS, get_dynamic_convictions, kelly_fraction
 
     portfolio_size = float(body.get("portfolioSize", 0))
     cash_available = float(body.get("cashAvailable", 0))
     currency = body.get("currency", "EUR")
+    mode = body.get("mode", "active")
+    mode_cfg = MODE_CONFIG.get(mode, MODE_CONFIG["active"])
 
     if portfolio_size <= 0 or cash_available <= 0:
         return {"error": "Portfolio size and cash must be positive", "allocations": []}
@@ -280,7 +318,8 @@ def calculate_allocation(body: dict):
 
     # Dynamic convictions
     dyn_convictions, cash_pct = get_dynamic_convictions()
-    cash_target = cash_pct or 15
+    cash_target = (cash_pct or 15) * mode_cfg["cash_multiplier"]
+    cash_target = min(50, max(5, cash_target))  # clamp 5-50%
 
     # Kelly fraction scales how aggressively we deploy
     kelly = kelly_fraction(regime)
@@ -289,7 +328,7 @@ def calculate_allocation(body: dict):
     kelly_deployable = portfolio_size * kelly if kelly > 0 else cash_available * 0.5
     deployable = min(cash_available, max(kelly_deployable, cash_available * 0.3))
 
-    # Reserve cash target
+    # Reserve cash target — mode adjusts this
     cash_reserve = portfolio_size * cash_target / 100
     deployable = min(deployable, max(0, portfolio_size - cash_reserve))
 

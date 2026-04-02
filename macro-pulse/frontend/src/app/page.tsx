@@ -1,3 +1,5 @@
+import Welcome from "@/components/Welcome";
+import ModeSelector from "@/components/ModeSelector";
 import RegimeIndicator from "@/components/RegimeIndicator";
 import AssetPerformance from "@/components/AssetPerformance";
 import PortfolioAllocation from "@/components/PortfolioAllocation";
@@ -11,6 +13,10 @@ import ComingSoon from "@/components/ComingSoon";
 export default function Home() {
   return (
     <main className="min-h-screen">
+      <Welcome />
+      <ModeSelector />
+
+      <div className="border-t border-[#181818]" />
       <RegimeIndicator />
 
       <div className="border-t border-[#181818]" />

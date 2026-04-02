@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { allocationData as fallback, REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
+import { useMode, MODE_CONFIG } from "@/lib/mode";
 
 type Overweight = {
   ticker: string; name: string; weight: number; conviction: number;
@@ -55,6 +56,8 @@ function AllocationBar({ ticker, weight, color }: { ticker: string; weight: numb
 }
 
 function Calculator() {
+  const { mode } = useMode();
+  const modeConfig = MODE_CONFIG[mode];
   const [portfolioSize, setPortfolioSize] = useState<string>("");
   const [cashAvailable, setCashAvailable] = useState<string>("");
   const [currency, setCurrency] = useState<"EUR" | "USD">("EUR");
@@ -72,7 +75,7 @@ function Calculator() {
       const res = await fetch(apiUrl("/api/calculate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency }),
+        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency, mode }),
       });
       const data = await res.json();
       setResult(data);
@@ -94,7 +97,11 @@ function Calculator() {
 
   return (
     <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222]">
-      <h4 className="text-sm font-bold text-[#e0e0e0] mb-4">Position Calculator</h4>
+      <h4 className="text-sm font-bold text-[#e0e0e0] mb-1">Position Calculator</h4>
+      <p className="text-xs text-[#555] mb-4">
+        Mode: <span style={{ color: modeConfig.color }}>{modeConfig.label}</span>
+        {" · "}Cash reserve: {modeConfig.cashMultiplier > 1 ? "higher" : modeConfig.cashMultiplier < 1 ? "lower" : "standard"}
+      </p>
 
       <div className="flex gap-2 mb-4">
         <button
@@ -198,14 +205,15 @@ function Calculator() {
 }
 
 export default function PortfolioAllocation() {
+  const { mode } = useMode();
   const [data, setData] = useState<AllocData | null>(null);
 
   useEffect(() => {
-    fetch(apiUrl("/api/allocation"))
+    fetch(apiUrl(`/api/allocation?mode=${mode}`))
       .then((r) => r.json())
       .then((d) => setData(d))
       .catch(() => {});
-  }, []);
+  }, [mode]);
 
   // Use API data or fall back to mock
   const regime = (data?.regime || fallback.regime) as RegimeName;

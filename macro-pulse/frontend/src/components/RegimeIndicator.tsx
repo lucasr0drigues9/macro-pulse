@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import { regimeData as fallback, REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
+import { useMode } from "@/lib/mode";
 
-type RegimeData = typeof fallback;
+type RegimeData = typeof fallback & { earlyRotation?: { targetRegime: string; totalPct: number; positions: { ticker: string; name: string; weight: number }[] } | null };
 
 function ordinal(n: number) {
   const s = ["th", "st", "nd", "rd"];
@@ -13,11 +14,12 @@ function ordinal(n: number) {
 }
 
 export default function RegimeIndicator() {
+  const { mode } = useMode();
   const [data, setData] = useState<RegimeData>(fallback);
   const [live, setLive] = useState(false);
 
   useEffect(() => {
-    fetch(apiUrl("/api/regime"))
+    fetch(apiUrl(`/api/regime?mode=${mode}`))
       .then((r) => r.json())
       .then((d) => {
         setData({
@@ -27,27 +29,25 @@ export default function RegimeIndicator() {
           geoSignal: { regime: d.geoSignal.regime as RegimeName, note: d.geoSignal.note, lastUpdated: d.geoSignal.lastUpdated },
           lagWarning: d.lagWarning,
           earlyTransition: d.earlyTransition,
+          earlyRotation: d.earlyRotation || null,
         });
         setLive(true);
       })
       .catch(() => {});
-  }, []);
+  }, [mode]);
 
-  const { confirmed, consecutiveMonths, fredSignal, geoSignal, lagWarning, earlyTransition } = data;
+  const { confirmed, consecutiveMonths, fredSignal, geoSignal, lagWarning, earlyTransition, earlyRotation } = data;
   const regime = REGIME_COLORS[confirmed];
   const fredColor = REGIME_COLORS[fredSignal.regime];
   const geoColor = REGIME_COLORS[geoSignal.regime];
 
   return (
-    <section className="px-4 py-16 max-w-5xl mx-auto">
-      {/* Site header */}
-      <div className="text-center mb-12">
-        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">Macro Pulse</h1>
-        <p className="text-xs text-[#555]">
-          Live regime tracking — Ray Dalio&apos;s four-season framework
-          {live && <span className="ml-2 text-[#22c55e]">● live</span>}
-        </p>
-      </div>
+    <section className="px-4 py-12 max-w-5xl mx-auto">
+      {live && (
+        <div className="text-center mb-4">
+          <span className="text-xs text-[#22c55e]">● live data</span>
+        </div>
+      )}
 
       {/* Main regime display */}
       <div
@@ -101,6 +101,23 @@ export default function RegimeIndicator() {
             Flickering: {earlyTransition.flickeringIndicators.join(", ")} · Still confirming {confirmed}: {earlyTransition.confirmingIndicators.join(", ")}
           </div>
           <div className="text-xs text-[#555] mt-1">Not yet confirmed. Requires 2 consecutive months.</div>
+        </div>
+      )}
+
+      {/* Early rotation recommendation (Active/Aggressive modes) */}
+      {earlyRotation && (
+        <div className="mt-4 p-4 rounded-lg bg-[rgba(234,179,8,0.1)] border border-[rgba(234,179,8,0.3)]">
+          <div className="text-sm font-bold text-[#eab308] mb-2">
+            Early rotation: {earlyRotation.totalPct}% toward {earlyRotation.targetRegime}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            {earlyRotation.positions.map((p: { ticker: string; name: string; weight: number }) => (
+              <div key={p.ticker} className="text-xs text-[#888]">
+                <span className="text-[#e0e0e0] font-bold">{p.ticker}</span> {p.name} — {p.weight}%
+              </div>
+            ))}
+          </div>
+          <div className="text-xs text-[#555] mt-2">Starter positions before regime confirmation. Higher risk, earlier entry.</div>
         </div>
       )}
     </section>

@@ -79,12 +79,34 @@ Site name: **Macro Pulse**
 
 ---
 
-### SECTION 1 — Regime Indicator
+### SECTION 0 — Welcome + Context (above the fold)
 
-The first thing a visitor sees. Large, unmissable.
+New visitors need context before the regime indicator means anything. This section sits above the regime indicator and provides orientation.
 
 Display:
-- Current confirmed regime name in large text with colour coding
+- Site name: **Macro Pulse**
+- One-line tagline: "Track economic regimes in real time. Know what to own and when."
+- Brief 2-3 sentence explainer: "The economy cycles through four seasons — Stagflation, Goldilocks, Reflation, and Deflation. Each one rewards different assets. This tool detects which season we're in using live economic data and AI-powered geopolitical analysis, then tells you what historically works."
+- Four small regime cards in a row showing the four seasons with their colours, each with a 3-4 word description (e.g., "Falling growth, rising inflation")
+- "How it works" in 3 steps: 1) We read FRED economic data + daily geopolitical signals → 2) Classify into one of four regimes → 3) Show you which ETFs historically outperform
+- A subtle downward arrow or "See current regime ↓" prompt
+
+This section should be clean, fast to scan, and make a first-time visitor understand the value in under 10 seconds.
+
+### Mode Selector
+
+Directly below Section 0. Three buttons in a row: **Conservative** | **Medium** | **Aggressive**
+- Brief one-line description under each: "Wait for confirmation" | "Act on strong signals" | "Move early, accept more risk"
+- Defaults to Active
+- Persisted in localStorage, defaults to Active
+- Affects all sections below
+
+### SECTION 1 — Regime Indicator
+
+The main regime display. Adapts based on selected mode.
+
+Display:
+- Current regime name in large text with colour coding (what counts as "confirmed" depends on mode)
 - "Xth consecutive month" below the regime name
 - Two signal indicators side by side:
   - **FRED signal:** current reading with data source note
@@ -92,6 +114,7 @@ Display:
 - If they diverge, show a prominent banner: "Data lag active — geopolitical signal overriding FRED. FRED data lags reality by 1-2 months."
 - If an early transition signal is detected, show a secondary banner directly below the confirmed regime showing which indicators are flickering, which are still confirming the current regime, and a note that it is not yet confirmed.
 - Last updated timestamp (geopolitical: updated daily / FRED: updated on release dates)
+- **Mode-specific behavior:** Aggressive mode may show a different confirmed regime than Conservative if only 1 month of data supports the new regime
 
 ---
 
@@ -342,13 +365,40 @@ Body: current regime + months, this week's releases + what to watch, live trigge
 
 ---
 
-## Regime Smoothing — Important Design Decision
+## Regime Smoothing — Three Modes
 
-The confirmed regime requires 2 consecutive months to flip. This prevents noise-driven false signals.
+The user selects an approach mode that controls how aggressively the framework acts on regime signals. Mode is persisted in localStorage so it's remembered across visits.
 
-The early signal layer is separate and acts immediately. When indicators flicker toward a new regime before confirmation, this surfaces in Section 1, Section 3, and email alerts.
+### Conservative
+- Requires **2 consecutive months** to confirm a regime change
+- **No early rotation** — waits for full confirmation before recommending any allocation changes
+- Lowest risk, latest to act
+- Email alerts: only on confirmed regime shifts
 
-Never hide an early signal waiting for confirmation. Surface it immediately.
+### Active (default)
+- Requires **1 month** to confirm a regime change
+- **5-10% starter positions** in incoming regime's asset classes when early signals fire
+- Balanced approach — acts on strong early signals but doesn't go all-in before confirmation
+- Email alerts: on early signals + confirmed shifts
+
+### Aggressive
+- **No smoothing** — acts immediately when indicators flicker toward a new regime
+- **15-25% early rotation** into incoming regime's positions before confirmation
+- Highest risk, earliest to act — captures opportunities before confirmation but exposed to false signals
+- Email alerts: on every indicator flicker, early signals, and confirmed shifts
+
+### How mode affects each section
+- **Section 1 (Regime Indicator)** — Conservative may show "Confirmed: Reflation" while Aggressive shows "Confirmed: Stagflation" (if 1 month of data points to Stagflation but not yet 2)
+- **Section 3 (Allocation)** — Early rotation column appears for Medium/Aggressive when signals fire; Aggressive shows larger early positions
+- **Section 3 (Calculator)** — Kelly fraction and cash reserve adjust per mode (Aggressive deploys more, Conservative holds more cash)
+- **Email alerts** — frequency and trigger sensitivity varies per mode
+- **Section 5 (Triggers)** — same triggers shown for all modes, but the "action" text adjusts per mode
+
+### Mode selector
+A toggle at the top of the page (below the site header, above the regime indicator). Three buttons: Conservative | Active | Aggressive. Persisted in localStorage.
+
+### Important: never hide information
+All modes show the same underlying data (FRED signals, geo signals, early transition indicators). The mode only changes the **recommended action** and **when to act**. A Conservative user can still see that indicators are flickering — they just won't see an early rotation recommendation.
 
 ---
 
@@ -383,9 +433,17 @@ Build in this exact sequence:
 6. [x] Build and populate backtesting section — data already pre-computed in cache, build Section 7 UI ✅ 2026-04-01
 7. [x] Add Regime Playbook — Section 6 as expandable cards ✅ 2026-04-01 (built in Step 1, static content)
 8. [x] Add email capture and Resend — unified signup, welcome emails ✅ 2026-04-01 (local JSON storage, Resend/Supabase for production)
-9. [ ] Build email alert logic — both cron schedulers and all four email types (requires Resend + deployment)
+9. [x] Build email alert logic — both cron schedulers and all four email types ✅ 2026-04-02
 10. [x] Add Coming Soon waitlist — Section 9 with per-feature tracking ✅ 2026-04-01
 11. [x] Polish and deploy — Vercel + Railway production ✅ 2026-04-01 (deploy-ready, needs Railway/Vercel accounts)
+
+### Post-MVP Enhancements
+
+12. [ ] Add welcome section (Section 0) — context for first-time visitors ← **NEXT**
+13. [ ] Add regime smoothing modes — Conservative/Medium/Aggressive selector + localStorage persistence
+14. [ ] Wire modes to backend — adjust regime confirmation, Kelly sizing, early rotation per mode
+15. [ ] Wire modes to email alerts — frequency and trigger sensitivity per mode
+16. [ ] Deploy and test modes end-to-end
 
 ---
 
@@ -462,3 +520,86 @@ Overall picks-beat-SPY rate: 44.2%. But Stagflation-specific: 53.6% win rate wit
 - 2026-04-01 — **Steps 3+4 complete.** Two new endpoints: `GET /api/allocation` returns regime-weighted ETF picks with live price assessments (RSI/SMA timing scores from yfinance → Still attractive/Fairly valued/Extended), dynamic AI conviction overrides from synthesis cache, and avoid list. `POST /api/calculate` accepts portfolioSize + cashAvailable + currency, returns Kelly-sized allocations with cash reserve (20% AI-recommended). Example: €100k portfolio, €25k cash → Kelly deploys €12,776 across 5 ETFs with €20k cash reserve. Frontend PortfolioAllocation component now fetches live data with mock fallback, calculator POSTs to backend.
 - 2026-04-01 — **Step 2 complete.** FastAPI backend at `macro-pulse/backend/main.py` with two endpoints: `GET /api/regime` (Section 1 data — confirmed regime, FRED/geo signals, lag warning, early transition, consecutive months) and `GET /api/performance` (Section 2 data — ETF returns since regime start, pick/avoid/benchmark categories). Frontend components fetch live data with fallback to mock. Next.js rewrites proxy `/api/*` to FastAPI on port 8000. Geo cache refreshed via Anthropic API on first call (24h TTL). Note: geopolitical fetch shows "Expecting value" error when cache is stale and API key not set — falls back to stale cache gracefully.
 - 2026-04-01 — **Step 1 complete.** Built all 9 sections with hardcoded mock data matching real Python tool output shapes. Tech: Next.js 14 + Tailwind + GeistMono font. Dark terminal aesthetic (#0a0a0a). All sections render, production build passes. Components: RegimeIndicator, AssetPerformance, PortfolioAllocation (with working client-side calculator), WeeklyCalendar, RegimeTriggers + email capture, RegimePlaybook (expandable cards), RegimeHistory (timeline + scorecard), Newsletter (with preview), ComingSoon (waitlist). Mock data in src/lib/mockData.ts — designed to match exact shapes from Python cache files for easy swap to API calls in Step 2. Note: recharts installed but not yet used (bar chart in Section 3 uses pure CSS bars). Backtesting interactive chart (Section 7 Part A) deferred to Step 6 when real data is wired.
+
+---
+
+## Legal Disclaimer & Compliance
+
+### Context
+This site operates as a financial education and information platform, not a financial advisory service. This distinction is legally important under Norwegian law (Finanstilsynet) and EU MiFID II regulations which Norway follows through the EEA agreement.
+
+### What This Site Is
+- A systematic framework tool based on Ray Dalio's publicly documented macro research
+- An educational resource explaining how economic regimes affect asset class performance
+- A backtested historical analysis tool
+- A public research publication
+
+### What This Site Is Not
+- A personalised financial advisory service
+- A licensed investment manager
+- A guaranteed return product
+- A fiduciary service of any kind
+
+### Required Disclaimers — Add to Every Section
+
+Add this footer disclaimer to every page and every section that shows allocation data:
+
+"This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. All analysis is generated systematically from public economic data using Ray Dalio's macro framework. Past performance does not guarantee future results. Always consult a qualified financial advisor before making investment decisions."
+
+### Specific Framing Rules — Enforce Throughout
+
+These rules apply to every piece of copy on the site:
+
+NEVER write:
+- "You should buy X"
+- "We recommend buying X"
+- "Buy X now"
+- Any language implying personalised advice
+
+ALWAYS write:
+- "The framework indicates X historically performs in this regime"
+- "The model suggests X based on current conditions"
+- "Historically, X has outperformed in Stagflation regimes"
+- "The systematic output for this regime is X"
+
+The tool speaks. The site explains the tool. The user decides.
+
+### Performance Statistics Rules
+
+Every backtested number must be accompanied by:
+- The word "backtested" or "historical"
+- The specific date range it covers
+- A note that past performance does not guarantee future results
+
+Never present backtested returns without these qualifiers. Never imply future performance.
+
+### Pages to Build
+
+Add two new pages to the site (not in the original scope — add now):
+
+**1 — Disclaimer Page (/disclaimer)**
+
+Sections:
+- What this site is and is not
+- How the framework works and its limitations
+- Data sources and their known limitations (FRED lag, China data reliability)
+- Backtesting methodology and constraints
+- Regime smoothing explanation and why signals can be wrong
+- Contact information
+- Link to Finanstilsynet consumer guidance for Norwegian users
+- Link to EU MiFID II investor protection information
+
+**2 — Terms of Service Page (/terms)**
+
+Standard ToS covering:
+- Acceptance of educational-only nature of the content
+- No liability for investment decisions made based on site content
+- No guarantee of accuracy or completeness
+- Intellectual property of the framework presentation
+- User responsibility for their own investment decisions
+
+Both pages linked in the footer of every page. Required reading before using the allocation calculator — add a checkbox: "I understand this tool is for educational purposes only and does not constitute financial advice" before the calculator outputs are shown.
+
+### Decisions Log Update
+- 2026-04-01 — Legal disclaimer framework added to spec. Site must operate as educational platform only. Never personalised advice. Disclaimers required on every page and every allocation output.
+- 2026-04-02 — **Post-MVP features added to spec.** (1) Welcome section (Section 0) above regime indicator — provides context for first-time visitors with tagline, 4-season explainer cards, and 3-step "how it works". (2) Three regime smoothing modes — Conservative (2mo confirmation, no early rotation), Medium (1mo, 5-10% starters), Aggressive (no smoothing, 15-25% early rotation). Mode persisted in localStorage, defaults to Active. Affects regime confirmation, allocation weights, Kelly sizing, calculator output, and email alert frequency. Fallback plan: if three modes too complex, simplify to Conservative + Active.

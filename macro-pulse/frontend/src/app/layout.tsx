@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
+import { ModeProvider } from "@/lib/mode";
 
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
@@ -21,7 +22,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={geistMono.variable}>
-      <body className="font-mono antialiased">{children}</body>
+      <body className="font-mono antialiased">
+        <ModeProvider>{children}</ModeProvider>
+      </body>
     </html>
   );
 }
