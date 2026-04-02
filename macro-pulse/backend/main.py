@@ -37,6 +37,25 @@ app = FastAPI(title="Macro Pulse API", version="0.2.0")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
 
+
+@app.post("/api/seed-cache")
+async def seed_cache(request: Request):
+    """Upload local cache files to production. Auth via cron secret."""
+    import json
+    cron_secret = os.getenv("CRON_SECRET", "")
+    if cron_secret and request.headers.get("x-cron-secret") != cron_secret:
+        return {"error": "Unauthorized"}
+    body = await request.json()
+    cache_dir = os.path.join(MACRO, ".macro_cache")
+    os.makedirs(cache_dir, exist_ok=True)
+    written = []
+    for filename, content in body.items():
+        fpath = os.path.join(cache_dir, filename)
+        with open(fpath, "w") as f:
+            json.dump(content, f)
+        written.append(filename)
+    return {"ok": True, "written": written}
+
 # Mode configuration — affects regime confirmation and sizing
 MODE_CONFIG = {
     "conservative": {"confirmation_months": 2, "early_rotation_pct": 0, "cash_multiplier": 1.3},
