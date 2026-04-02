@@ -279,7 +279,6 @@ def get_allocation(mode: str = "active"):
 
     # Fixed cash per mode — not derived from AI synthesis
     cash_target = mode_cfg["cash_pct"]
-    concentration = mode_cfg["concentration"]
 
     # Check for early transition signals
     early_transition = None
