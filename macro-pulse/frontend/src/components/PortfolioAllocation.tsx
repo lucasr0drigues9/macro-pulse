@@ -11,9 +11,15 @@ type Overweight = {
   timing?: { price: number; rsi: number; score: number } | null;
 };
 type Underweight = { ticker: string; name: string; rationale: string };
+type EarlyRotation = {
+  targetRegime: string; totalPct: number;
+  positions: { ticker: string; name: string; weight: number; conviction: number; priceAssessment: string; rationale: string }[];
+} | null;
 type AllocData = {
   regime: RegimeName; kellyFraction: number; cashTarget: number;
   overweight: Overweight[]; underweight: Underweight[];
+  earlyRotation?: EarlyRotation;
+  mode?: string;
 };
 type CalcResult = {
   regime: string; currency: string; deployable: number; cashReserve: number;
@@ -236,10 +242,13 @@ export default function PortfolioAllocation() {
         {overweight.map((etf) => (
           <AllocationBar key={etf.ticker} ticker={etf.ticker} weight={etf.weight} color={regimeColor} />
         ))}
+        {data?.earlyRotation?.positions.map((pos) => (
+          <AllocationBar key={pos.ticker} ticker={pos.ticker} weight={pos.weight} color="#eab308" />
+        ))}
       </div>
 
-      {/* Overweight / Underweight columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Overweight / Underweight / Early Rotation columns */}
+      <div className={`grid grid-cols-1 ${data?.earlyRotation ? "md:grid-cols-3" : "md:grid-cols-2"} gap-6`}>
         <div>
           <h3 className="text-sm font-bold text-[#22c55e] uppercase tracking-wider mb-3">
             Overweight — Buy/Hold
@@ -263,6 +272,29 @@ export default function PortfolioAllocation() {
             ))}
           </div>
         </div>
+
+        {data?.earlyRotation && (
+          <div>
+            <h3 className="text-sm font-bold text-[#eab308] uppercase tracking-wider mb-3">
+              Early Rotation — {data.earlyRotation.targetRegime} ({data.earlyRotation.totalPct}%)
+            </h3>
+            <div className="space-y-3">
+              {data.earlyRotation.positions.map((pos) => (
+                <div key={pos.ticker} className="p-3 rounded bg-[rgba(234,179,8,0.05)] border border-[rgba(234,179,8,0.2)]">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-sm">{pos.ticker} <span className="text-[#555] font-normal text-xs">{pos.name}</span></span>
+                    <span className="text-xs text-[#eab308]">{pos.weight}%</span>
+                  </div>
+                  <AssessmentBadge assessment={pos.priceAssessment} />
+                  <p className="text-xs text-[#888] mt-1">{pos.rationale}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-[#555] mt-2 italic">
+              Regime not yet confirmed. Starter positions only. Full rotation if confirmed.
+            </p>
+          </div>
+        )}
 
         <div>
           <h3 className="text-sm font-bold text-[#ef4444] uppercase tracking-wider mb-3">

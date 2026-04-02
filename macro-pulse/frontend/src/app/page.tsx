@@ -14,10 +14,11 @@ export default function Home() {
   return (
     <main className="min-h-screen">
       <Welcome />
-      <ModeSelector />
 
       <div className="border-t border-[#181818]" />
       <RegimeIndicator />
+
+      <ModeSelector />
 
       <div className="border-t border-[#181818]" />
       <AssetPerformance />

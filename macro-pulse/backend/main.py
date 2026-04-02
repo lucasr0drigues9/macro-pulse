@@ -235,50 +235,79 @@ def get_performance():
 
 
 @app.get("/api/allocation")
-def get_allocation():
-    """Section 3 Part A — Regime weights with smart buy guidance (price assessments)."""
+def get_allocation(mode: str = "active"):
+    """Section 3 Part A — Regime weights with smart buy guidance. Mode changes allocation."""
     from macro_kelly import (
         get_current_regime, REGIME_ETFS, get_etf_timing,
         get_dynamic_convictions, kelly_fraction,
     )
+    from transition import assess_transitions
+    from fred import get_all
+    from quadrant import get_quadrant
 
-    regime, _, lag_warning = get_current_regime()
+    mode_cfg = MODE_CONFIG.get(mode, MODE_CONFIG["active"])
+    regime, fred_regime, lag_warning = get_current_regime()
     picks = REGIME_ETFS.get(regime, [])
     pick_tickers = {e["ticker"] for e in picks}
 
     # Dynamic conviction overrides from AI synthesis
     dyn_convictions, cash_pct = get_dynamic_convictions()
 
-    # Kelly fraction for this regime
+    # Kelly fraction — mode adjusts aggressiveness
     kelly = kelly_fraction(regime)
 
-    # Build overweight list with price assessments
+    # Mode-adjusted cash target
+    base_cash = cash_pct or 15
+    cash_target = min(50, max(5, base_cash * mode_cfg["cash_multiplier"]))
+
+    # Check for early transition signals
+    early_transition = None
+    try:
+        fred_data = get_all()
+        quadrant = get_quadrant(fred_data)
+        transitions = assess_transitions(quadrant["growth"], quadrant["inflation"])
+        if transitions.get("likely_name") and transitions["likely_name"] != regime:
+            early_transition = transitions["likely_name"]
+    except Exception:
+        pass
+
+    # ── Build overweight list — mode affects concentration ──
+
+    # Conservative: flatter weights (less difference between top and bottom pick)
+    # Active: conviction-proportional (standard)
+    # Aggressive: top-heavy (highest conviction gets much more weight)
     overweight = []
-    total_conviction = sum(e["conviction"] for e in picks)
+    total_conviction = sum(
+        (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"])
+        for e in picks
+    )
 
     for etf in picks:
         ticker = etf["ticker"]
         conviction = dyn_convictions.get(ticker, etf["conviction"]) if dyn_convictions else etf["conviction"]
 
-        # Weight = conviction-proportional share of non-cash allocation
-        cash = cash_pct if cash_pct else 15
-        weight = round(conviction / total_conviction * (100 - cash))
+        if mode == "conservative":
+            # Flatter distribution — min 12% per ETF
+            base_weight = conviction / total_conviction * (100 - cash_target)
+            avg_weight = (100 - cash_target) / len(picks)
+            weight = round((base_weight + avg_weight) / 2)
+        elif mode == "aggressive":
+            # Top-heavy — square the conviction to concentrate
+            conv_squared = conviction ** 1.5
+            total_sq = sum(
+                (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"]) ** 1.5
+                for e in picks
+            )
+            weight = round(conv_squared / total_sq * (100 - cash_target))
+        else:
+            # Active — standard conviction-proportional
+            weight = round(conviction / total_conviction * (100 - cash_target))
 
-        # Price assessment from timing signals
         timing = get_etf_timing(ticker)
         if timing:
             score = timing["score"]
-            if score >= 65:
-                assessment = "Still attractive"
-            elif score >= 40:
-                assessment = "Fairly valued"
-            else:
-                assessment = "Extended"
-            price_info = {
-                "price": timing["price"],
-                "rsi": timing["rsi"],
-                "score": timing["score"],
-            }
+            assessment = "Still attractive" if score >= 65 else "Fairly valued" if score >= 40 else "Extended"
+            price_info = {"price": timing["price"], "rsi": timing["rsi"], "score": timing["score"]}
         else:
             assessment = "Fairly valued"
             price_info = None
@@ -293,8 +322,41 @@ def get_allocation():
             "timing": price_info,
         })
 
-    # Build underweight list (all ETFs not in picks)
-    avoid_etfs = {
+    # ── Early rotation — Active and Aggressive add incoming regime positions ──
+    early_rotation = None
+    if early_transition and mode_cfg["early_rotation_pct"] > 0:
+        target_etfs = REGIME_ETFS.get(early_transition, [])[:3]
+        rotation_pct = mode_cfg["early_rotation_pct"]
+
+        # Scale down main positions to make room
+        scale = (100 - cash_target - rotation_pct) / (100 - cash_target) if (100 - cash_target) > 0 else 0.8
+        for ow in overweight:
+            ow["weight"] = round(ow["weight"] * scale)
+
+        rotation_positions = []
+        target_total = sum(e["conviction"] for e in target_etfs) if target_etfs else 1
+        for etf in target_etfs:
+            w = round(rotation_pct * etf["conviction"] / target_total)
+            timing = get_etf_timing(etf["ticker"])
+            rotation_positions.append({
+                "ticker": etf["ticker"],
+                "name": etf["name"],
+                "weight": w,
+                "conviction": round(etf["conviction"], 2),
+                "priceAssessment": "Early entry" if not timing else (
+                    "Still attractive" if timing["score"] >= 65 else "Fairly valued" if timing["score"] >= 40 else "Extended"
+                ),
+                "rationale": f"Early rotation into {early_transition} — starter position before confirmation",
+            })
+
+        early_rotation = {
+            "targetRegime": early_transition,
+            "totalPct": rotation_pct,
+            "positions": rotation_positions,
+        }
+
+    # ── Underweight list ──
+    all_avoid_etfs = {
         "QQQ": ("Nasdaq 100 ETF", "Growth stocks suffer from rising rates and declining consumer spending power."),
         "TLT": ("20+ Year Treasury", "Long duration bonds lose value as inflation expectations remain elevated."),
         "IWM": ("Russell 2000 ETF", "Small caps most exposed to economic slowdown and tightening credit."),
@@ -312,18 +374,21 @@ def get_allocation():
         "XLU": ("Utilities Select SPDR", "Yield play loses appeal when growth is abundant."),
     }
 
+    # Early rotation tickers shouldn't appear in avoid list
+    rotation_tickers = {p["ticker"] for p in (early_rotation["positions"] if early_rotation else [])}
     underweight = []
-    for ticker, (name, rationale) in avoid_etfs.items():
-        if ticker not in pick_tickers:
+    for ticker, (name, rationale) in all_avoid_etfs.items():
+        if ticker not in pick_tickers and ticker not in rotation_tickers:
             underweight.append({"ticker": ticker, "name": name, "rationale": rationale})
 
     return {
         "regime": regime,
+        "mode": mode,
         "kellyFraction": round(kelly, 4),
-        "cashTarget": cash_pct or 15,
+        "cashTarget": round(cash_target),
         "overweight": overweight,
         "underweight": underweight,
-        "earlyRotation": None,  # TODO: wire transition.py
+        "earlyRotation": early_rotation,
     }
 
 
