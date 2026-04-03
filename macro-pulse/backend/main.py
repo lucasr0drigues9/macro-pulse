@@ -669,6 +669,23 @@ def get_backtest():
         periods = []
 
     # Build timeline entries with returns
+    # Label by approximate GDP quarter being measured, not when data was available
+    from datetime import datetime as _dt
+
+    def _month_to_gdp_quarter(date_str: str) -> str:
+        """Map a month to which GDP quarter was most likely driving the reading."""
+        y = int(date_str[:4])
+        m = int(date_str[5:7])
+        # GDP release schedule: Q1→late Apr, Q2→late Jul, Q3→late Oct, Q4→late Jan
+        if m <= 3:
+            return f"Q3 {y-1}"
+        elif m <= 6:
+            return f"Q4 {y-1}"
+        elif m <= 9:
+            return f"Q1 {y}"
+        else:
+            return f"Q2 {y}"
+
     timeline_data = []
     for period in periods:
         regime = period["regime"]
@@ -677,11 +694,9 @@ def get_backtest():
         if start == end:
             continue
 
-        # Duration in months
         try:
-            from datetime import datetime
-            s = datetime.strptime(start, "%Y-%m-%d")
-            e = datetime.strptime(end, "%Y-%m-%d")
+            s = _dt.strptime(start, "%Y-%m-%d")
+            e = _dt.strptime(end, "%Y-%m-%d")
             months = max(1, (e.year - s.year) * 12 + (e.month - s.month))
         except Exception:
             months = 1
@@ -691,15 +706,20 @@ def get_backtest():
             prices, BT_REGIME_ETFS.get(regime, []), start, end
         )
 
-        # Positive return = win, negative = loss (not vs SPY — absolute)
         profitable = (picks_ret or 0) > 0 if picks_ret is not None else None
         beat_spy = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
+
+        # Quarter labels
+        start_q = _month_to_gdp_quarter(start)
+        end_q = _month_to_gdp_quarter(end)
+        quarter_label = start_q if start_q == end_q else f"{start_q} → {end_q}"
 
         timeline_data.append({
             "regime": regime,
             "start": start[:7],
             "end": end[:7],
             "months": months,
+            "quarterLabel": quarter_label,
             "picksReturn": picks_ret,
             "spyReturn": spy_ret,
             "profitable": profitable,

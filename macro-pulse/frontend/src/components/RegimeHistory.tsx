@@ -6,6 +6,7 @@ import { apiUrl } from "@/lib/api";
 
 type TimelineEntry = {
   regime: RegimeName; start: string; end: string; months: number;
+  quarterLabel: string;
   picksReturn: number | null; spyReturn: number | null;
   profitable: boolean | null; beatSpy: boolean | null;
 };
@@ -43,9 +44,14 @@ export default function RegimeHistory() {
       <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">
         {s.totalRegimes} Regimes. 19 Years. Every Call Shown.
       </h2>
-      <p className="text-xs text-[#555] mb-6">
+      <p className="text-xs text-[#555] mb-3">
         How the framework performed across every economic season from 2007 to 2026.
       </p>
+      <div className="p-3 rounded bg-[#111] border border-[#222] mb-6">
+        <p className="text-xs text-[#888] leading-relaxed">
+          <span className="text-[#e0e0e0] font-bold">How to read this data:</span> Regime labels are based on FRED economic data, which is a <span className="text-[#eab308]">confirmation signal</span> — it reflects conditions from the recent past, not the present. GDP is reported as a single number per quarter with no monthly breakdown, so the regime label for any given month is partly based on GDP data that&apos;s 1-3 months old. The quarter shown indicates which GDP data was driving the reading.
+        </p>
+      </div>
 
       {/* Regime breakdown cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
@@ -107,8 +113,9 @@ export default function RegimeHistory() {
                     {period.regime}
                   </span>
                 </div>
-                <div className="text-xs text-[#555] sm:w-44">
-                  {period.start} → {period.end} ({period.months}mo)
+                <div className="text-xs sm:w-48">
+                  <span className="text-[#888]">{period.quarterLabel || `${period.start} → ${period.end}`}</span>
+                  <span className="text-[#333] ml-1">({period.months}mo)</span>
                 </div>
                 <div className="flex-1 flex items-center gap-4 text-xs">
                   <span>
