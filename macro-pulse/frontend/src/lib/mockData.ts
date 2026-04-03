@@ -147,16 +147,17 @@ export const playbookData: Record<RegimeName, {
   },
   Deflation: {
     description: "Falling growth + Falling inflation",
-    whatHappens: "The economy contracts and prices fall. Central banks cut rates aggressively. Cash flows dry up, credit tightens, and risk appetite collapses. This is the regime where capital preservation matters most and long-duration safe assets shine.",
+    whatHappens: "The economy contracts and prices fall. Central banks cut rates aggressively. Cash flows dry up, credit tightens, and risk appetite collapses. This is the regime where capital preservation matters most. Cash gains purchasing power as prices fall, and long-duration safe assets shine.",
     outperform: [
+      { asset: "Cash", why: "Purchasing power increases as prices fall. Holding cash in deflation is an active strategy, not a default. The framework increases cash reserves in this regime." },
       { asset: "Long Bonds (TLT)", why: "When rates are cut aggressively, existing long-duration bonds surge in price. Duration is your best friend in deflation." },
-      { asset: "Superinvestor Picks (GURU)", why: "Quality companies with strong balance sheets survive recessions and gain market share from weaker competitors." },
       { asset: "Gold (GLD)", why: "Gold holds value during deflation as a safe haven when financial system stress rises." },
+      { asset: "Utilities (XLU)", why: "Defensive yield play. Stable demand for electricity regardless of the economic cycle." },
     ],
     underperform: [
       { asset: "Energy (XLE)", why: "Falling demand crushes energy prices. Oil is one of the most cyclically sensitive commodities." },
       { asset: "Commodities (DBC)", why: "Broad commodity demand collapses with economic activity. Deflation means falling prices for physical goods." },
-      { asset: "Small Caps (IWM)", why: "Small companies fail at higher rates during recessions. Credit access disappears when banks tighten lending." },
+      { asset: "Equities (GURU/QQQ)", why: "Equity exposure hurts across the board. Even quality companies see earnings contract and multiples compress." },
     ],
     historicalExamples: ["2008–2009 (Global Financial Crisis)", "2020 Q1 (COVID crash)", "2015–2016 (China slowdown scare)", "2011 Q3 (European debt crisis)"],
   },

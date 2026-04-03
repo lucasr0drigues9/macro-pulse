@@ -251,11 +251,11 @@ REGIME_ETFS = {
         {"ticker": "IWM",  "name": "Small caps",          "conviction": 0.25, "note": "Risk-on signal"},
     ],
     "Deflation": [
-        # GURU dominates (+6.4%) but regime picks protect in crashes
-        {"ticker": "GURU", "name": "Hedge fund 13F picks","conviction": 0.90, "note": "Best avg return in Deflation (+6.4%)"},
-        {"ticker": "TLT",  "name": "Long bonds",          "conviction": 0.80, "note": "Bond rally in deflation"},
-        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.50, "note": "Store of value"},
-        {"ticker": "XLP",  "name": "Consumer staples",    "conviction": 0.30, "note": "Defensive earnings"},
+        # Cash is king in deflation (purchasing power rises) — implemented via higher cash reserve
+        {"ticker": "TLT",  "name": "Long bonds",          "conviction": 0.90, "note": "Bond rally as rates get cut — best deflation asset"},
+        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.80, "note": "Store of value when financial stress rises"},
+        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.50, "note": "Defensive yield — stable demand regardless of cycle"},
+        {"ticker": "XLP",  "name": "Consumer staples",    "conviction": 0.40, "note": "Defensive earnings — people still buy essentials"},
     ],
 }
 
