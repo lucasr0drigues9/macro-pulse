@@ -1084,6 +1084,131 @@ Respond in JSON format:
         return {"error": str(e), "emailsSent": 0}
 
 
+@app.post("/api/cron/check-triggers")
+async def cron_check_triggers(request: Request):
+    """Check triggers for significant movements and send alerts."""
+    cron_secret = os.getenv("CRON_SECRET", "")
+    if cron_secret and request.headers.get("x-cron-secret") != cron_secret:
+        return {"error": "Unauthorized"}
+
+    import json as _json
+    from macro_kelly import get_current_regime, get_etf_price
+    from geopolitical import get_geopolitical_risks
+    import emails
+
+    regime, _, _ = get_current_regime()
+
+    # Load previous trigger values
+    trigger_history_file = os.path.join(MACRO, ".macro_cache", "trigger_history.json")
+    previous = {}
+    try:
+        if os.path.exists(trigger_history_file):
+            with open(trigger_history_file) as f:
+                previous = _json.load(f)
+    except Exception:
+        pass
+
+    # Get current values
+    current = {}
+    try:
+        oil = get_etf_price("CL=F")
+        if oil:
+            current["oil"] = {"value": round(oil, 1), "label": f"${round(oil, 1)}/bbl"}
+    except Exception:
+        pass
+
+    try:
+        geo = get_geopolitical_risks() or {}
+        hormuz = None
+        try:
+            from macro_kelly import get_hormuz_transits
+            hormuz = get_hormuz_transits()
+        except Exception:
+            pass
+        if hormuz and hormuz.get("count"):
+            current["hormuz"] = {"value": hormuz["count"], "label": f"{hormuz['count']} vessels/day"}
+    except Exception:
+        pass
+
+    # Define what counts as "significant movement"
+    THRESHOLDS = {
+        "oil": {
+            "name": "WTI Crude Oil",
+            "regime_threshold": "Below $85 = Stagflation weakening",
+            "significant_move": 5,  # $5 change is significant
+        },
+        "hormuz": {
+            "name": "Strait of Hormuz Transits",
+            "regime_threshold": "Above 50/day = supply recovering",
+            "significant_move": 10,  # 10 vessel change is significant
+        },
+    }
+
+    alerts_sent = 0
+    movements = []
+
+    for key, config in THRESHOLDS.items():
+        if key not in current:
+            continue
+        curr_val = current[key]["value"]
+        prev_val = previous.get(key, {}).get("value")
+
+        if prev_val is None:
+            continue
+
+        change = abs(curr_val - prev_val)
+        if change >= config["significant_move"]:
+            direction = "up" if curr_val > prev_val else "down"
+
+            # Generate AI analysis
+            anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+            analysis = f"{config['name']} moved {direction} from {previous[key].get('label', prev_val)} to {current[key]['label']}."
+
+            if anthropic_key:
+                try:
+                    import requests as req
+                    synthesis = _load_synthesis()
+                    situation = synthesis.get("situation", "") if synthesis else ""
+
+                    r = req.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={
+                            "Content-Type": "application/json",
+                            "x-api-key": anthropic_key,
+                            "anthropic-version": "2023-06-01",
+                        },
+                        json={
+                            "model": "claude-sonnet-4-20250514",
+                            "max_tokens": 200,
+                            "messages": [{"role": "user", "content": f"""In 2-3 sentences, explain what it means that {config['name']} moved from {previous[key].get('label', prev_val)} to {current[key]['label']}. Current regime is {regime}. Context: {situation[:200]}. Keep it plain English, no jargon."""}],
+                        },
+                        timeout=20,
+                    )
+                    data = r.json()
+                    text = "".join(b.get("text", "") for b in data.get("content", []))
+                    if text:
+                        analysis = text.strip()
+                except Exception:
+                    pass
+
+            sent = emails.send_trigger_movement(
+                trigger_name=config["name"],
+                previous_value=previous[key].get("label", str(prev_val)),
+                current_value=current[key]["label"],
+                threshold=config["regime_threshold"],
+                regime=regime,
+                analysis=analysis,
+            )
+            alerts_sent += sent
+            movements.append({"trigger": config["name"], "from": prev_val, "to": curr_val, "sent": sent})
+
+    # Save current values as new baseline
+    with open(trigger_history_file, "w") as f:
+        _json.dump(current, f)
+
+    return {"ok": True, "alertsSent": alerts_sent, "movements": movements, "currentValues": current}
+
+
 # ── Cron Jobs ────────────────────────────────────────────
 # Called by Railway cron or external scheduler via secret header
 

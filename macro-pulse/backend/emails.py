@@ -93,6 +93,46 @@ def _regime_badge(regime: str) -> str:
 # ── Email Types ──────────────────────────────────────────
 
 
+def send_trigger_movement(trigger_name: str, previous_value: str, current_value: str,
+                          threshold: str, regime: str, analysis: str) -> int:
+    """A trigger moved significantly — not a regime change, but worth watching."""
+    subject = f"Trigger update: {trigger_name}"
+    body = f"""
+    <div style="background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:8px;padding:16px;margin:0 0 16px;">
+        <p style="margin:0;font-size:11px;color:#eab308;text-transform:uppercase;letter-spacing:1px;">Trigger Movement</p>
+        <p style="margin:8px 0 0;font-size:18px;font-weight:bold;color:#e0e0e0;">{trigger_name}</p>
+        <div style="margin:12px 0 0;display:flex;gap:24px;">
+            <div>
+                <p style="margin:0;font-size:10px;color:#555;">Previous</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#888;">{previous_value}</p>
+            </div>
+            <div>
+                <p style="margin:0;font-size:10px;color:#555;">Now</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#e0e0e0;font-weight:bold;">{current_value}</p>
+            </div>
+            <div>
+                <p style="margin:0;font-size:10px;color:#555;">Threshold</p>
+                <p style="margin:2px 0 0;font-size:14px;color:#eab308;">{threshold}</p>
+            </div>
+        </div>
+    </div>
+    <p style="color:#888;font-size:13px;line-height:1.6;">{analysis}</p>
+    <div style="background:#111;border:1px solid #222;border-radius:8px;padding:12px;margin:16px 0;">
+        <p style="margin:0;font-size:12px;color:#eab308;">⚠ This is a notable movement, not a regime change signal. For it to indicate a real transition, it needs to be sustained over a period of time. One data point is not a trend.</p>
+    </div>
+    <p style="text-align:center;margin:16px 0;">
+        <a href="{SITE_URL}" style="background:#222;color:#e0e0e0;padding:10px 24px;border-radius:4px;text-decoration:none;font-size:13px;">View triggers →</a>
+    </p>
+    """
+    html = _email_wrapper(subject, body)
+    subs = _load_subscribers("regimeAlerts")
+    sent = 0
+    for s in subs:
+        if _send(s["email"], subject, html):
+            sent += 1
+    return sent
+
+
 def send_event_breakdown(event_name: str, regime: str, analysis: str,
                          impact_on_regime: str, action_needed: str,
                          next_release: str) -> int:
