@@ -27,7 +27,7 @@ export default function Welcome() {
         <p className="text-sm text-[#888] max-w-lg mx-auto leading-relaxed">
           In growth regimes, holding SPY is hard to beat. But in Stagflation and Deflation,
           the S&amp;P 500 underperforms or loses money — and defensive assets take over.
-          This tool detects which regime we&apos;re in so you know when to defend your portfolio.
+          This free tool detects which regime we&apos;re in so you know when to defend your portfolio.
         </p>
       </div>
 
