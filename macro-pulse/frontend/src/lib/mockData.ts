@@ -123,7 +123,7 @@ export const playbookData: Record<RegimeName, {
       { asset: "Nasdaq 100 (QQQ)", why: "Broad growth exposure. +8.5% avg, 100% win rate across 19 years. The default growth tilt on top of SPY." },
       { asset: "ARK Next Gen Internet (ARKW)", why: "High-growth tilt — +17% avg in Goldilocks. Volatile but powerful when growth runs and rates fall. Limited data." },
       { asset: "Cloud Computing (WCLD)", why: "SaaS and cloud companies thrive when enterprises invest in growth. +16.5% avg, 100% win rate (limited data)." },
-      { asset: "Robotics & AI (BOTZ)", why: "AI and automation theme. +7.2% avg, 100% win rate. Steadier than ARK funds, benefits from capex expansion." },
+      { asset: "Autonomous Tech & Robotics (ARKQ)", why: "AI, robotics, and automation. +15.1% avg in Goldilocks, 100% win rate. Benefits from capex expansion in growth regimes." },
     ],
     underperform: [
       { asset: "Gold (GLD)", why: "No inflation to hedge against. Opportunity cost of holding a non-yielding asset rises when equities are running." },

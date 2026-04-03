@@ -248,7 +248,7 @@ REGIME_ETFS = {
         {"ticker": "QQQ",  "name": "Nasdaq 100",          "conviction": 0.85, "note": "Broad growth — +8.5% avg, 100% win rate, 19yr track record"},
         {"ticker": "ARKW", "name": "ARK Next Gen Internet","conviction": 0.70, "note": "High-growth tilt — +17% avg in Goldilocks, volatile but powerful"},
         {"ticker": "WCLD", "name": "Cloud Computing",     "conviction": 0.65, "note": "Cloud/SaaS growth — +16.5% avg, 100% win rate (limited data)"},
-        {"ticker": "BOTZ", "name": "Robotics & AI",       "conviction": 0.55, "note": "AI/automation theme — +7.2% avg, 100% win rate, steady"},
+        {"ticker": "ARKQ", "name": "Autonomous Tech & Robotics","conviction": 0.55, "note": "AI/robotics/automation — +15.1% avg, 100% win rate"},
     ],
     "Deflation": [
         # Cash is king in deflation (purchasing power rises) — implemented via higher cash reserve
