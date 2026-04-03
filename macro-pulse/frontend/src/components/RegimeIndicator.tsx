@@ -13,10 +13,17 @@ function ordinal(n: number) {
   return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+type RegimeOrigin = {
+  regime: string; detectedDate: string; headline: string;
+  situation: string; keyTension: string;
+  whatWouldEndIt: string; whatWouldDeepen: string;
+} | null;
+
 export default function RegimeIndicator() {
   const { mode } = useMode();
   const [data, setData] = useState<RegimeData>(fallback);
   const [live, setLive] = useState(false);
+  const [origin, setOrigin] = useState<RegimeOrigin>(null);
 
   useEffect(() => {
     fetch(apiUrl(`/api/regime?mode=${mode}`))
@@ -31,6 +38,7 @@ export default function RegimeIndicator() {
           earlyTransition: d.earlyTransition,
           earlyRotation: d.earlyRotation || null,
         });
+        setOrigin(d.regimeOrigin || null);
         setLive(true);
       })
       .catch(() => {});
@@ -91,6 +99,31 @@ export default function RegimeIndicator() {
           </div>
           <div className="text-xs text-[#888] mt-2 pt-2 border-t border-[rgba(234,179,8,0.2)]">
             <span className="text-[#eab308] font-bold">What this means:</span> FRED hasn&apos;t confirmed {confirmed} yet — it still reads the pre-crisis data. FRED is so slow that it sometimes only captures a regime after it&apos;s already transitioning. That&apos;s why the geopolitical layer matters — it detected {confirmed} months before the economic data will confirm it, giving you time to position while prices are still attractive.
+          </div>
+        </div>
+      )}
+
+      {/* Why this regime was flagged */}
+      {origin && (
+        <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
+          <div className="text-sm font-bold text-[#e0e0e0] mb-2">Why {origin.regime} was flagged — {origin.detectedDate}</div>
+          <p className="text-xs text-[#888] leading-relaxed mb-3">{origin.situation}</p>
+          {origin.keyTension && (
+            <p className="text-xs text-[#eab308] mb-3">{origin.keyTension}</p>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {origin.whatWouldEndIt && (
+              <div className="p-2 rounded bg-[#0a0a0a]">
+                <div className="text-xs text-[#22c55e] font-bold mb-1">What would end it</div>
+                <div className="text-xs text-[#888]">{origin.whatWouldEndIt}</div>
+              </div>
+            )}
+            {origin.whatWouldDeepen && (
+              <div className="p-2 rounded bg-[#0a0a0a]">
+                <div className="text-xs text-[#ef4444] font-bold mb-1">What would deepen it</div>
+                <div className="text-xs text-[#888]">{origin.whatWouldDeepen}</div>
+              </div>
+            )}
           </div>
         </div>
       )}

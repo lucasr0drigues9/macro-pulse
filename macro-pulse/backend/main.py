@@ -197,6 +197,7 @@ def get_regime(mode: str = "active"):
         "earlyTransition": early_transition,
         "earlyRotation": early_rotation,
         "regimeStartDate": regime_start,
+        "regimeOrigin": _build_regime_origin(synthesis, confirmed_regime, regime_start),
         "mode": mode,
     }
 
@@ -1421,6 +1422,31 @@ def _get_conviction(ticker: str, static_conviction: float, dyn_convictions: dict
 
 
 # ── Helpers ──────────────────────────────────────────────
+
+def _build_regime_origin(synthesis: dict | None, regime: str, start_date: str) -> dict | None:
+    """Build explanation of why the geopolitical layer flagged this regime."""
+    if not synthesis:
+        return None
+
+    headline = synthesis.get("headline", "")
+    situation = synthesis.get("situation", "")
+    key_tension = synthesis.get("key_tension", "")
+    bull_trigger = synthesis.get("bull_case", {}).get("trigger", "")
+    bear_trigger = synthesis.get("bear_case", {}).get("trigger", "")
+
+    if not situation:
+        return None
+
+    return {
+        "regime": regime,
+        "detectedDate": start_date,
+        "headline": headline,
+        "situation": situation,
+        "keyTension": key_tension,
+        "whatWouldEndIt": bull_trigger,
+        "whatWouldDeepen": bear_trigger,
+    }
+
 
 def _load_synthesis() -> dict | None:
     """Load AI synthesis cache."""
