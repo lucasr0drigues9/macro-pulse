@@ -24,17 +24,18 @@ RESULTS_CACHE = f"{CACHE_DIR}/backtest_results.json"
 
 # Same ETF baskets as macro_kelly.py REGIME_ETFS
 REGIME_ETFS = {
-    "Stagflation": ["XLE", "GLD", "DBC", "XLP", "TIP", "XLU"],
-    "Reflation":   ["XLE", "DBC", "GLD", "TIP", "VGK", "XLI"],
-    "Goldilocks":  ["QQQ", "VGK", "IWM"],  # SPY excluded (it's the benchmark)
-    "Deflation":   ["TLT", "GLD", "XLP", "XLU"],  # BIL excluded (cash, ~0 alpha)
+    # Must match macro_kelly.py REGIME_ETFS (SPY excluded — it's the benchmark)
+    "Stagflation": ["XLE", "GLD", "DBC", "XLP", "XLU"],
+    "Reflation":   ["XLI", "IWM", "XLE"],  # SPY excluded
+    "Goldilocks":  ["QQQ", "ARKW", "WCLD", "ARKQ"],  # SPY excluded
+    "Deflation":   ["TLT", "GLD", "XLU", "XLP"],
 }
 
 # ETFs the framework says to AVOID per regime
 REGIME_AVOIDS = {
-    "Stagflation": ["QQQ", "TLT"],
-    "Reflation":   ["QQQ", "TLT"],
-    "Goldilocks":  ["TLT", "XLE", "DBC"],
+    "Stagflation": ["QQQ", "TLT", "IWM"],
+    "Reflation":   ["TLT", "GLD", "DBC"],
+    "Goldilocks":  ["GLD", "DBC", "XLE"],
     "Deflation":   ["DBC", "XLE", "QQQ"],
 }
 
