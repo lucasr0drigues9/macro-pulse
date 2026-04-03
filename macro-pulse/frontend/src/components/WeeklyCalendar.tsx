@@ -19,6 +19,21 @@ const impactColors = {
 export default function WeeklyCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>(fallback);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    try {
+      await fetch(apiUrl("/api/subscribe"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, eventAlerts: true }),
+      });
+    } catch {}
+    setSubmitted(true);
+  };
 
   useEffect(() => {
     fetch(apiUrl("/api/calendar"))
@@ -84,6 +99,34 @@ export default function WeeklyCalendar() {
             </div>
           );
         })}
+      </div>
+
+      {/* Email signup */}
+      <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222] text-center">
+        {submitted ? (
+          <p className="text-sm text-[#22c55e]">You&apos;re in. We&apos;ll notify you after each release.</p>
+        ) : (
+          <>
+            <p className="text-sm text-[#e0e0e0] mb-1">Get notified after each event</p>
+            <p className="text-xs text-[#555] mb-3">Plain English summary of what the data showed and whether your allocation needs to adjust.</p>
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left"
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors"
+              >
+                Notify me
+              </button>
+            </form>
+          </>
+        )}
       </div>
     </section>
   );
