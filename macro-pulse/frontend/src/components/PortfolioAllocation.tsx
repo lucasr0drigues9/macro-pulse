@@ -10,28 +10,15 @@ type Overweight = {
   timing?: { price: number; rsi: number; score: number } | null;
 };
 type Underweight = { ticker: string; name: string; rationale: string };
-type EarlyRotation = {
-  targetRegime: string; totalPct: number;
-  positions: { ticker: string; name: string; weight: number; conviction: number; priceAssessment: string; rationale: string }[];
-} | null;
 type AllocData = {
   regime: RegimeName; kellyFraction: number; cashTarget: number;
   overweight: Overweight[]; underweight: Underweight[];
-  earlyRotation?: EarlyRotation; mode?: string;
 };
 type CalcResult = {
   regime: string; currency: string; deployable: number; cashReserve: number;
-  kellyFraction: number; strategy: string;
-  allocations: { ticker: string; name: string; weight: number; amount: number; conviction: number; category?: string }[];
+  kellyFraction: number;
+  allocations: { ticker: string; name: string; weight: number; amount: number; conviction: number }[];
 };
-
-type Strategy = "current_regime" | "balanced" | "transition_ready";
-
-const STRATEGIES: { id: Strategy; label: string; description: string; color: string }[] = [
-  { id: "current_regime", label: "Current Regime", description: "All-in on Stagflation picks", color: "#ef4444" },
-  { id: "balanced", label: "Balanced", description: "Current regime + cheap transition ETFs", color: "#eab308" },
-  { id: "transition_ready", label: "Transition Ready", description: "Heavier on cheap next-regime ETFs", color: "#22c55e" },
-];
 
 function AssessmentBadge({ assessment }: { assessment: string }) {
   const colors: Record<string, string> = {
@@ -71,7 +58,6 @@ function Calculator() {
   const [portfolioSize, setPortfolioSize] = useState<string>("");
   const [cashAvailable, setCashAvailable] = useState<string>("");
   const [currency, setCurrency] = useState<"EUR" | "USD">("EUR");
-  const [strategy, setStrategy] = useState<Strategy>("balanced");
   const [result, setResult] = useState<CalcResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -86,7 +72,7 @@ function Calculator() {
       const res = await fetch(apiUrl("/api/calculate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency, strategy }),
+        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency }),
       });
       const data = await res.json();
       setResult(data);
@@ -97,37 +83,10 @@ function Calculator() {
   };
 
   const sym = currency === "EUR" ? "€" : "$";
-  const activeStrategy = STRATEGIES.find((s) => s.id === strategy)!;
 
   return (
     <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222]">
       <h4 className="text-sm font-bold text-[#e0e0e0] mb-4">Position Calculator</h4>
-
-      {/* Strategy selector */}
-      <div className="mb-4">
-        <span className="text-xs text-[#555] block mb-2">Investment strategy</span>
-        <div className="flex rounded-lg border border-[#222] overflow-hidden">
-          {STRATEGIES.map((s) => {
-            const isActive = strategy === s.id;
-            return (
-              <button
-                key={s.id}
-                onClick={() => { setStrategy(s.id); setResult(null); }}
-                className="flex-1 px-3 py-2 transition-colors text-center"
-                style={{
-                  backgroundColor: isActive ? s.color + "20" : "transparent",
-                  borderRight: s.id !== "transition_ready" ? "1px solid #222" : undefined,
-                }}
-              >
-                <div className="text-xs font-bold" style={{ color: isActive ? s.color : "#555" }}>
-                  {s.label}
-                </div>
-                <div className="text-xs text-[#555] hidden sm:block">{s.description}</div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="flex gap-2 mb-4">
         <button
@@ -188,7 +147,7 @@ function Calculator() {
       {result && (
         <div className="mt-4">
           <div className="flex flex-wrap gap-4 text-xs text-[#555] mb-3">
-            <span>Strategy: <span style={{ color: activeStrategy.color }}>{activeStrategy.label}</span></span>
+            <span>Kelly fraction: <span className="text-[#e0e0e0]">{(result.kellyFraction * 100).toFixed(1)}%</span></span>
             <span>Deployable: <span className="text-[#22c55e]">{sym}{result.deployable.toLocaleString()}</span></span>
             <span>Cash reserve: <span className="text-[#888]">{sym}{result.cashReserve.toLocaleString()}</span></span>
           </div>
@@ -208,9 +167,6 @@ function Calculator() {
                     <td className="py-2">
                       <span className="font-bold">{r.ticker}</span>
                       <span className="text-[#555] ml-2 text-xs">{r.name}</span>
-                      {r.category === "transition" && (
-                        <span className="text-xs text-[#eab308] ml-2">transition</span>
-                      )}
                     </td>
                     <td className="text-right py-2 text-[#888]">{r.weight}%</td>
                     <td className="text-right py-2 font-bold text-[#22c55e]">
