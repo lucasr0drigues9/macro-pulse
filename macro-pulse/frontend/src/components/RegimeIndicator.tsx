@@ -89,6 +89,9 @@ export default function RegimeIndicator() {
           <div className="text-xs text-[#888]">
             FRED economic data lags reality by 3-4 months. GDP is quarterly (latest: Q4 2025), unemployment is a lagging indicator, and CPI captures prices with a 1-2 month delay. The geopolitical layer reads current events daily and detects regime shifts before the economic data confirms them.
           </div>
+          <div className="text-xs text-[#888] mt-2 pt-2 border-t border-[rgba(234,179,8,0.2)]">
+            <span className="text-[#eab308] font-bold">What this means:</span> FRED hasn&apos;t confirmed {confirmed} yet — it still reads the pre-crisis data. Historically, {confirmed} lasts 2–9 months from FRED confirmation. Since FRED likely won&apos;t confirm until Q1 GDP is released (late April), the current regime could have months left to run. The geopolitical layer gave an early signal — the FRED clock hasn&apos;t even started.
+          </div>
         </div>
       )}
 
