@@ -55,16 +55,14 @@ function AllocationBar({ ticker, weight, color }: { ticker: string; weight: numb
 }
 
 function Calculator() {
-  const [portfolioSize, setPortfolioSize] = useState<string>("");
-  const [cashAvailable, setCashAvailable] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
   const [currency, setCurrency] = useState<"EUR" | "USD">("EUR");
   const [result, setResult] = useState<CalcResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [consent, setConsent] = useState(false);
 
   const calculate = async () => {
-    const total = parseFloat(portfolioSize) || 0;
-    const cash = parseFloat(cashAvailable) || 0;
+    const cash = parseFloat(amount) || 0;
     if (cash <= 0 || !consent) return;
 
     setLoading(true);
@@ -72,7 +70,7 @@ function Calculator() {
       const res = await fetch(apiUrl("/api/calculate"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolioSize: total, cashAvailable: cash, currency }),
+        body: JSON.stringify({ portfolioSize: 0, cashAvailable: cash, currency }),
       });
       const data = await res.json();
       setResult(data);
@@ -103,27 +101,15 @@ function Calculator() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label className="text-xs text-[#555] block mb-1">Existing portfolio value ({sym}) — 0 if starting fresh</label>
-          <input
-            type="number"
-            value={portfolioSize}
-            onChange={(e) => setPortfolioSize(e.target.value)}
-            placeholder="0"
-            className="w-full bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none"
-          />
-        </div>
-        <div>
-          <label className="text-xs text-[#555] block mb-1">Cash to deploy ({sym})</label>
-          <input
-            type="number"
-            value={cashAvailable}
-            onChange={(e) => setCashAvailable(e.target.value)}
-            placeholder="25000"
-            className="w-full bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none"
-          />
-        </div>
+      <div className="mb-4">
+        <label className="text-xs text-[#555] block mb-1">How much do you want to invest? ({sym})</label>
+        <input
+          type="number"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="10000"
+          className="w-full sm:w-64 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none"
+        />
       </div>
 
       <label className="flex items-start gap-2 text-xs text-[#888] mb-3 cursor-pointer">
