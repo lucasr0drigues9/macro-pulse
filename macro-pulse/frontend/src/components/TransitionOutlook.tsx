@@ -35,6 +35,21 @@ const assessmentColors: Record<string, string> = {
 
 export default function TransitionOutlook() {
   const [data, setData] = useState<TransitionData | null>(null);
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    try {
+      await fetch(apiUrl("/api/subscribe"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, regimeAlerts: true }),
+      });
+    } catch {}
+    setSubmitted(true);
+  };
 
   useEffect(() => {
     fetch(apiUrl("/api/transition"))
@@ -152,6 +167,34 @@ export default function TransitionOutlook() {
             </div>
           );
         })}
+      </div>
+
+      {/* Email signup */}
+      <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222] text-center">
+        {submitted ? (
+          <p className="text-sm text-[#22c55e]">You&apos;re in. We&apos;ll alert you when the regime shifts.</p>
+        ) : (
+          <>
+            <p className="text-sm text-[#e0e0e0] mb-1">Don&apos;t miss the transition</p>
+            <p className="text-xs text-[#555] mb-3">Get notified when triggers fire so you can act at the right time.</p>
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left"
+              />
+              <button
+                type="submit"
+                className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors"
+              >
+                Alert me
+              </button>
+            </form>
+          </>
+        )}
       </div>
 
       <p className="mt-4 text-xs text-[#333] text-center italic">
