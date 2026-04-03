@@ -42,9 +42,9 @@ export default function TransitionOutlook() {
 
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Preparing for Transition</h2>
+      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Transition Radar</h2>
       <p className="text-xs text-[#555] mb-6">
-        ETFs likely to rise if the regime shifts — ranked by transition probability and current price attractiveness
+        Scanning for regime shifts — ETFs ranked by transition probability and current price attractiveness
       </p>
 
       <div className="space-y-6">
