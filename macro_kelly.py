@@ -243,12 +243,12 @@ REGIME_ETFS = {
         {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.45, "note": "Commodity inflation play — +8.1% avg"},
     ],
     "Goldilocks": [
-        # Best environment for equities — SPY avg +3.9%, QQQ +5.5%
-        # Sector picking barely beats index — own the market + growth tilt
-        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.95, "note": "Core holding — broad market thrives in Goldilocks"},
-        {"ticker": "QQQ",  "name": "Growth stocks",       "conviction": 0.85, "note": "Best performer in Goldilocks — +5.5% avg, 88% win rate"},
-        {"ticker": "BRK-B","name": "Berkshire Hathaway",   "conviction": 0.70, "note": "Quality compounders — +4.5% avg, 88% win rate"},
-        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.40, "note": "Defensive yield — surprisingly strong in Goldilocks +5.2%"},
+        # Best environment for growth — SPY core + high-growth tilts
+        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.95, "note": "Core holding — +6.2% avg, 100% win rate, hard to beat"},
+        {"ticker": "QQQ",  "name": "Nasdaq 100",          "conviction": 0.85, "note": "Broad growth — +8.5% avg, 100% win rate, 19yr track record"},
+        {"ticker": "ARKW", "name": "ARK Next Gen Internet","conviction": 0.70, "note": "High-growth tilt — +17% avg in Goldilocks, volatile but powerful"},
+        {"ticker": "WCLD", "name": "Cloud Computing",     "conviction": 0.65, "note": "Cloud/SaaS growth — +16.5% avg, 100% win rate (limited data)"},
+        {"ticker": "BOTZ", "name": "Robotics & AI",       "conviction": 0.55, "note": "AI/automation theme — +7.2% avg, 100% win rate, steady"},
     ],
     "Deflation": [
         # Cash is king in deflation (purchasing power rises) — implemented via higher cash reserve

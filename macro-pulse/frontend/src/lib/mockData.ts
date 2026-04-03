@@ -117,12 +117,13 @@ export const playbookData: Record<RegimeName, {
   },
   Goldilocks: {
     description: "Rising growth + Falling inflation",
-    whatHappens: "The best of all worlds. The economy expands while inflation cools, giving central banks room to cut rates or hold steady. Corporate earnings grow, multiples expand, and risk appetite is high. In this regime, broad market exposure is hard to beat — sector picking adds marginal value at best.",
+    whatHappens: "The best of all worlds. The economy expands while inflation cools, giving central banks room to cut rates or hold steady. Corporate earnings grow, multiples expand, and risk appetite is high. SPY is the core — it's hard to beat with sector picks. Layer high-growth ETFs on top for extra upside.",
     outperform: [
-      { asset: "S&P 500 (SPY)", why: "Core holding. When everything is rising, owning the whole market is the simplest and most reliable strategy. Historically +3.9% avg in Goldilocks." },
-      { asset: "Nasdaq (QQQ)", why: "Growth tilt on top of SPY. Tech benefits most from falling rates — best single performer at +5.5% avg with 88% win rate." },
-      { asset: "Berkshire Hathaway (BRK-B)", why: "Quality compounder. Buffett's cash pile gets deployed in exactly this environment. +4.5% avg, 88% win rate." },
-      { asset: "Utilities (XLU)", why: "Surprisingly strong in Goldilocks — +5.2% avg. Defensive yield plus falling rate expectations boost valuations." },
+      { asset: "S&P 500 (SPY)", why: "Core holding. +6.2% avg, 100% win rate. When everything is rising, owning the whole market is the simplest and most reliable strategy." },
+      { asset: "Nasdaq 100 (QQQ)", why: "Broad growth exposure. +8.5% avg, 100% win rate across 19 years. The default growth tilt on top of SPY." },
+      { asset: "ARK Next Gen Internet (ARKW)", why: "High-growth tilt — +17% avg in Goldilocks. Volatile but powerful when growth runs and rates fall. Limited data." },
+      { asset: "Cloud Computing (WCLD)", why: "SaaS and cloud companies thrive when enterprises invest in growth. +16.5% avg, 100% win rate (limited data)." },
+      { asset: "Robotics & AI (BOTZ)", why: "AI and automation theme. +7.2% avg, 100% win rate. Steadier than ARK funds, benefits from capex expansion." },
     ],
     underperform: [
       { asset: "Gold (GLD)", why: "No inflation to hedge against. Opportunity cost of holding a non-yielding asset rises when equities are running." },
