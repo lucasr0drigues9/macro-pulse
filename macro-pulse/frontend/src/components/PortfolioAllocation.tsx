@@ -65,7 +65,7 @@ function Calculator() {
   const calculate = async () => {
     const total = parseFloat(portfolioSize) || 0;
     const cash = parseFloat(cashAvailable) || 0;
-    if (total <= 0 || cash <= 0 || !consent) return;
+    if (cash <= 0 || !consent) return;
 
     setLoading(true);
     try {
