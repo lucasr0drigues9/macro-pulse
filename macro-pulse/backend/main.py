@@ -775,7 +775,7 @@ def get_backtest():
             "spyReturn": worst_call["spyReturn"],
         } if worst_call else None,
         "regimeBreakdown": regime_breakdown,
-        "timeline": timeline_data[:20],  # Last 20 periods
+        "timeline": timeline_data,  # All periods
     }
 
 
