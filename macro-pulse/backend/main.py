@@ -428,16 +428,26 @@ def calculate_allocation(body: dict):
     cash_reserve = round(cash_available * cash_reserve_pct)
     deployable = cash_available - cash_reserve
 
-    # Allocate proportionally by conviction
-    total_conviction = sum(
-        _get_conviction(e["ticker"], e["conviction"], dyn_convictions)
-        for e in picks
-    )
+    # Allocate by conviction × value score — buy more of what's cheap
+    from macro_kelly import get_etf_timing
 
-    allocations = []
+    raw_scores = []
     for etf in picks:
         conviction = _get_conviction(etf["ticker"], etf["conviction"], dyn_convictions)
-        weight = conviction / total_conviction if total_conviction > 0 else 1 / len(picks)
+        timing = get_etf_timing(etf["ticker"])
+        # Timing score: 0-100, higher = cheaper. Default 50 if no data.
+        value_score = timing["score"] if timing else 50
+        # Combined: conviction matters, but cheap ETFs get a boost
+        # conviction (0.4-0.95) × value_multiplier (0.75-1.75)
+        value_multiplier = 0.75 + (value_score / 100)
+        raw_scores.append(conviction * value_multiplier)
+
+    total_score = sum(raw_scores) if raw_scores else 1
+
+    allocations = []
+    for i, etf in enumerate(picks):
+        conviction = _get_conviction(etf["ticker"], etf["conviction"], dyn_convictions)
+        weight = raw_scores[i] / total_score if total_score > 0 else 1 / len(picks)
         amount = round(deployable * weight)
         allocations.append({
             "ticker": etf["ticker"],
