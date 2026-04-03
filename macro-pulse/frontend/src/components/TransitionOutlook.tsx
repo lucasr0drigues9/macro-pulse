@@ -16,8 +16,13 @@ type RegimeOutlook = {
   confirmationSignals: string[]; etfs: EtfOpportunity[];
 };
 
+type DurationStats = {
+  avg: number; min: number; max: number; periods: number;
+} | null;
+
 type TransitionData = {
   currentRegime: string;
+  durationStats: DurationStats;
   outlook: RegimeOutlook[];
 };
 
@@ -43,9 +48,14 @@ export default function TransitionOutlook() {
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
       <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Transition Radar</h2>
-      <p className="text-xs text-[#555] mb-6">
+      <p className="text-xs text-[#555] mb-2">
         Scanning for regime shifts — ETFs ranked by transition probability and current price attractiveness
       </p>
+      {data.durationStats && (
+        <p className="text-xs text-[#888] mb-6">
+          {data.currentRegime} has historically lasted {data.durationStats.min}–{data.durationStats.max} months (avg {data.durationStats.avg}mo across {data.durationStats.periods} periods). Regimes don&apos;t last forever — these are the assets to watch when it shifts.
+        </p>
+      )}
 
       <div className="space-y-6">
         {data.outlook.map((outlook) => {

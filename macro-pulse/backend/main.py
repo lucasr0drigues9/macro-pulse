@@ -1014,8 +1014,34 @@ def get_transition_outlook():
             "etfs": etf_opportunities,
         })
 
+    # Historical duration stats for current regime
+    duration_stats = None
+    try:
+        from backtest_regime import build_regime_timeline, identify_periods
+        from datetime import datetime as _dt
+        from collections import defaultdict
+        timeline = build_regime_timeline()
+        periods = identify_periods(timeline)
+        durations = defaultdict(list)
+        for p in periods:
+            s = _dt.strptime(p["start"], "%Y-%m-%d")
+            e = _dt.strptime(p["end"], "%Y-%m-%d")
+            months = max(1, (e.year - s.year) * 12 + (e.month - s.month))
+            durations[p["regime"]].append(months)
+        d = durations.get(regime, [])
+        if d:
+            duration_stats = {
+                "avg": round(sum(d) / len(d), 1),
+                "min": min(d),
+                "max": max(d),
+                "periods": len(d),
+            }
+    except Exception:
+        pass
+
     return {
         "currentRegime": regime,
+        "durationStats": duration_stats,
         "outlook": outlook,
     }
 
