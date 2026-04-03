@@ -84,7 +84,15 @@ function Calculator() {
 
   return (
     <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222]">
-      <h4 className="text-sm font-bold text-[#e0e0e0] mb-4">Position Calculator</h4>
+      <h4 className="text-sm font-bold text-[#e0e0e0] mb-2">Position Calculator</h4>
+      <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] mb-4">
+        <p className="text-xs text-[#888] leading-relaxed">
+          This calculator buys more of what&apos;s cheap and less of what&apos;s already extended.
+          All regime picks have the same macro tailwind — but entry price matters.
+          An ETF that dropped 12% in a Stagflation regime is a better buy than one that already ran up 14%,
+          because the underlying thesis is the same but you get a lower price.
+        </p>
+      </div>
 
       <div className="flex gap-2 mb-4">
         <button
