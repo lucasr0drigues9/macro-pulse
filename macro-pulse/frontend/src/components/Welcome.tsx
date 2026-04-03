@@ -3,16 +3,16 @@
 import { REGIME_COLORS } from "@/lib/mockData";
 
 const seasons = [
-  { name: "Stagflation", desc: "Falling growth, rising inflation", color: REGIME_COLORS.Stagflation.color },
-  { name: "Goldilocks", desc: "Rising growth, falling inflation", color: REGIME_COLORS.Goldilocks.color },
-  { name: "Reflation", desc: "Rising growth, rising inflation", color: REGIME_COLORS.Reflation.color },
-  { name: "Deflation", desc: "Falling growth, falling inflation", color: REGIME_COLORS.Deflation.color },
+  { name: "Stagflation", desc: "SPY struggles — defend with energy, gold, commodities", color: REGIME_COLORS.Stagflation.color },
+  { name: "Goldilocks", desc: "SPY thrives — hold the market", color: REGIME_COLORS.Goldilocks.color },
+  { name: "Reflation", desc: "SPY does well — tilt toward cyclicals", color: REGIME_COLORS.Reflation.color },
+  { name: "Deflation", desc: "SPY loses money — defend with bonds, gold, cash", color: REGIME_COLORS.Deflation.color },
 ];
 
 const steps = [
-  { num: "1", title: "Read the signals", desc: "FRED economic data + daily AI geopolitical analysis" },
-  { num: "2", title: "Classify the regime", desc: "Map conditions to one of four economic seasons" },
-  { num: "3", title: "Show what works", desc: "Which ETFs historically outperform in this regime" },
+  { num: "1", title: "Detect the regime", desc: "AI geopolitical analysis + FRED confirmation signal" },
+  { num: "2", title: "Hold or defend", desc: "Growth regime → hold SPY. Crisis regime → rotate to defensive picks" },
+  { num: "3", title: "Buy what's cheap", desc: "Same regime thesis, better entry price — the calculator does this for you" },
 ];
 
 export default function Welcome() {
@@ -22,12 +22,12 @@ export default function Welcome() {
       <div className="text-center mb-10">
         <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">Macro Pulse</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          Track economic regimes in real time.<br className="hidden sm:block" /> Know what to own and when.
+          The S&amp;P 500 works most of the time.<br className="hidden sm:block" /> This tool tells you when it doesn&apos;t.
         </p>
         <p className="text-sm text-[#888] max-w-lg mx-auto leading-relaxed">
-          The economy cycles through four seasons. Each one rewards different assets.
-          This tool detects which season we&apos;re in using live economic data and
-          AI-powered geopolitical analysis, then shows you what historically works.
+          In growth regimes, holding SPY is hard to beat. But in Stagflation and Deflation,
+          the S&amp;P 500 underperforms or loses money — and defensive assets take over.
+          This tool detects which regime we&apos;re in so you know when to defend your portfolio.
         </p>
       </div>
 
@@ -67,6 +67,13 @@ export default function Welcome() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* Key insight */}
+      <div className="p-3 rounded-lg bg-[#111] border border-[#222] mb-8">
+        <p className="text-xs text-[#888] text-center leading-relaxed">
+          <span className="text-[#e0e0e0]">19 years of data (2007–2026):</span> In Goldilocks and Reflation, SPY averaged +6-7% — hard to beat with sector picks. In Stagflation and Deflation, defensive picks returned +2-7% while SPY averaged -1% to +5%. The framework&apos;s value is knowing when to stop holding the market and start defending.
+        </p>
       </div>
 
       {/* Scroll prompt */}
