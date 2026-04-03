@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { backtestSummary as fallbackSummary, regimeTimeline as fallbackTimeline, REGIME_COLORS, type RegimeName } from "@/lib/mockData";
+import { REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
 
 type TimelineEntry = {
   regime: RegimeName; start: string; end: string; months: number;
-  picksReturn: number | null; spyReturn: number | null; outperformed: boolean | null;
+  picksReturn: number | null; spyReturn: number | null;
+  profitable: boolean | null; beatSpy: boolean | null;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
-  picksOutperformedSpy: number; picksOutperformedPct: number;
+  profitableCount: number; profitablePct: number;
+  beatSpyCount: number; beatSpyPct: number;
   avoidAccuracy: number;
   bestCall: { start: string; regime: RegimeName; picksReturn: number; spyReturn: number } | null;
   worstCall: { start: string; regime: RegimeName; picksReturn: number; spyReturn: number } | null;
@@ -29,21 +31,9 @@ export default function RegimeHistory() {
       .catch(() => {});
   }, []);
 
-  // Use live data or fallback
-  const s = data || {
-    totalRegimes: fallbackSummary.totalRegimes,
-    yearRange: fallbackSummary.yearRange,
-    picksOutperformedSpy: fallbackSummary.picksOutperformedSpy,
-    picksOutperformedPct: fallbackSummary.picksOutperformedPct,
-    avoidAccuracy: 54.8,
-    bestCall: { start: fallbackSummary.bestCall.date, regime: fallbackSummary.bestCall.regime, picksReturn: fallbackSummary.bestCall.picksReturn, spyReturn: fallbackSummary.bestCall.spyReturn },
-    worstCall: { start: fallbackSummary.worstCall.date, regime: fallbackSummary.worstCall.regime, picksReturn: fallbackSummary.worstCall.picksReturn, spyReturn: fallbackSummary.worstCall.spyReturn },
-    regimeBreakdown: Object.fromEntries(
-      Object.entries(fallbackSummary.regimeBreakdown).map(([k, v]) => [k, { ...v, kellyHalf: 0, observations: 0 }])
-    ),
-    timeline: fallbackTimeline as TimelineEntry[],
-  };
+  if (!data) return null;
 
+  const s = data;
   const filteredTimeline = filter === "All"
     ? s.timeline
     : s.timeline.filter((t) => t.regime === filter);
@@ -78,13 +68,8 @@ export default function RegimeHistory() {
                 {bd.winRate.toFixed(0)}%
               </div>
               <div className="text-xs text-[#555]">
-                win rate · {bd.count} periods
+                profitable · {bd.count} periods
               </div>
-              {bd.kellyHalf > 0 && (
-                <div className="text-xs text-[#888] mt-1">
-                  Kelly: {bd.kellyHalf}%
-                </div>
-              )}
             </button>
           );
         })}
@@ -156,9 +141,9 @@ export default function RegimeHistory() {
                   </span>
                 </div>
                 <div className="text-xs sm:text-right">
-                  {period.outperformed === true && <span className="text-[#22c55e]">✓ Outperformed</span>}
-                  {period.outperformed === false && <span className="text-[#ef4444]">✗ Underperformed</span>}
-                  {period.outperformed === null && <span className="text-[#333]">—</span>}
+                  {period.profitable === true && <span className="text-[#22c55e]">✓ Profit</span>}
+                  {period.profitable === false && <span className="text-[#ef4444]">✗ Loss</span>}
+                  {period.profitable === null && <span className="text-[#333]">—</span>}
                 </div>
               </div>
             );
@@ -180,14 +165,16 @@ export default function RegimeHistory() {
             <span className="text-[#e0e0e0] font-bold">{s.totalRegimes} ({s.yearRange})</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#555]">Picks outperformed SPY</span>
-            <span className="text-[#e0e0e0] font-bold">
-              {s.picksOutperformedSpy}/{s.totalRegimes} ({s.picksOutperformedPct}%)
+            <span className="text-[#555]">Profitable periods</span>
+            <span className="text-[#22c55e] font-bold">
+              {s.profitableCount}/{s.totalRegimes} ({s.profitablePct}%)
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-[#555]">Avoid accuracy</span>
-            <span className="text-[#e0e0e0] font-bold">{s.avoidAccuracy}%</span>
+            <span className="text-[#555]">Beat SPY</span>
+            <span className="text-[#888] font-bold">
+              {s.beatSpyCount}/{s.totalRegimes} ({s.beatSpyPct}%)
+            </span>
           </div>
           {s.bestCall && (
             <div className="flex justify-between">
@@ -195,8 +182,7 @@ export default function RegimeHistory() {
               <span className="font-bold">
                 <span style={{ color: REGIME_COLORS[s.bestCall.regime]?.color }}>{s.bestCall.regime}</span>{" "}
                 <span className="text-[#555]">{s.bestCall.start}</span>{" "}
-                <span className="text-[#22c55e]">+{s.bestCall.picksReturn.toFixed(1)}%</span>{" "}
-                <span className="text-[#555]">vs SPY {s.bestCall.spyReturn >= 0 ? "+" : ""}{s.bestCall.spyReturn.toFixed(1)}%</span>
+                <span className="text-[#22c55e]">{s.bestCall.picksReturn >= 0 ? "+" : ""}{s.bestCall.picksReturn.toFixed(1)}%</span>
               </span>
             </div>
           )}
@@ -207,7 +193,7 @@ export default function RegimeHistory() {
                 <span style={{ color: REGIME_COLORS[s.worstCall.regime]?.color }}>{s.worstCall.regime}</span>{" "}
                 <span className="text-[#555]">{s.worstCall.start}</span>{" "}
                 <span className="text-[#ef4444]">{s.worstCall.picksReturn >= 0 ? "+" : ""}{s.worstCall.picksReturn.toFixed(1)}%</span>{" "}
-                <span className="text-[#555]">vs SPY +{s.worstCall.spyReturn.toFixed(1)}%</span>
+                <span className="text-[#555]">vs SPY {s.worstCall.spyReturn >= 0 ? "+" : ""}{s.worstCall.spyReturn.toFixed(1)}%</span>
               </span>
             </div>
           )}
@@ -215,7 +201,7 @@ export default function RegimeHistory() {
       </div>
 
       <p className="mt-4 text-xs text-[#333] text-center italic">
-        Backtested performance. Does not represent live trading results. Past performance does not guarantee future results.
+        Backtested performance with 2-month regime smoothing. Does not represent live trading results. Past performance does not guarantee future results.
       </p>
     </section>
   );

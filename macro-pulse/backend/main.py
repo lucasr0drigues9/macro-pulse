@@ -690,7 +690,9 @@ def get_backtest():
             prices, BT_REGIME_ETFS.get(regime, []), start, end
         )
 
-        outperformed = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
+        # Positive return = win, negative = loss (not vs SPY — absolute)
+        profitable = (picks_ret or 0) > 0 if picks_ret is not None else None
+        beat_spy = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
 
         timeline_data.append({
             "regime": regime,
@@ -699,32 +701,34 @@ def get_backtest():
             "months": months,
             "picksReturn": picks_ret,
             "spyReturn": spy_ret,
-            "outperformed": outperformed,
+            "profitable": profitable,
+            "beatSpy": beat_spy,
         })
 
     timeline_data.reverse()  # Most recent first
 
     # Compute scorecard from real data
-    valid = [t for t in timeline_data if t["outperformed"] is not None]
-    wins = [t for t in valid if t["outperformed"]]
+    valid = [t for t in timeline_data if t["profitable"] is not None]
+    profitable_count = len([t for t in valid if t["profitable"]])
+    profitable_pct = round(profitable_count / len(valid) * 100, 1) if valid else 0
+    beat_spy_count = len([t for t in valid if t.get("beatSpy")])
+    beat_spy_pct = round(beat_spy_count / len(valid) * 100, 1) if valid else 0
     total_regimes = len(timeline_data)
-    outperformed_count = len(wins)
-    outperformed_pct = round(outperformed_count / len(valid) * 100, 1) if valid else 0
 
-    # Best and worst calls
-    best_call = max(valid, key=lambda t: (t["picksReturn"] or 0) - (t["spyReturn"] or 0)) if valid else None
-    worst_call = min(valid, key=lambda t: (t["picksReturn"] or 0) - (t["spyReturn"] or 0)) if valid else None
+    # Best and worst calls by absolute return
+    best_call = max(valid, key=lambda t: t["picksReturn"] or 0) if valid else None
+    worst_call = min(valid, key=lambda t: t["picksReturn"] or 0) if valid else None
 
     # Per-regime breakdown
     regime_breakdown = {}
     for regime_name in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
         rk = summary.get("regime_kelly", {}).get(regime_name, {})
         regime_periods = [t for t in timeline_data if t["regime"] == regime_name]
-        regime_valid = [t for t in regime_periods if t["outperformed"] is not None]
-        regime_wins = [t for t in regime_valid if t["outperformed"]]
+        regime_valid = [t for t in regime_periods if t["profitable"] is not None]
+        regime_profitable = [t for t in regime_valid if t["profitable"]]
         regime_breakdown[regime_name] = {
             "count": len(regime_periods),
-            "winRate": round(len(regime_wins) / len(regime_valid) * 100, 1) if regime_valid else 0,
+            "winRate": round(len(regime_profitable) / len(regime_valid) * 100, 1) if regime_valid else 0,
             "kellyHalf": round(rk.get("kelly_half", 0) * 100, 1),
             "observations": rk.get("observations", 0),
         }
@@ -732,8 +736,10 @@ def get_backtest():
     return {
         "totalRegimes": total_regimes,
         "yearRange": f"2007–2026",
-        "picksOutperformedSpy": outperformed_count,
-        "picksOutperformedPct": outperformed_pct,
+        "profitableCount": profitable_count,
+        "profitablePct": profitable_pct,
+        "beatSpyCount": beat_spy_count,
+        "beatSpyPct": beat_spy_pct,
         "avoidAccuracy": round(summary.get("avoid_accuracy", 0) * 100, 1),
         "bestCall": {
             "start": best_call["start"],
