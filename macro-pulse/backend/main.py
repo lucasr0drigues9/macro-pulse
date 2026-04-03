@@ -423,16 +423,10 @@ def calculate_allocation(body: dict):
     dyn_convictions, cash_pct = get_dynamic_convictions()
     kelly = kelly_fraction(regime)
 
-    cash_target = min(30, max(10, cash_pct or 15))
-    cash_reserve = total_investable * cash_target / 100
-
-    # Deployable: cash available minus what we need to keep as reserve
-    deployable = max(0, cash_available - max(0, cash_reserve - portfolio_size))
-    # Kelly scales how much of that we actually deploy
-    if kelly > 0:
-        deployable = min(deployable, total_investable * kelly)
-    deployable = max(deployable, cash_available * 0.3)  # deploy at least 30% of cash
-    deployable = min(deployable, cash_available)  # never deploy more than cash available
+    # Simple rule: deploy + reserve = cash available. Nothing left over.
+    cash_reserve_pct = min(30, max(10, cash_pct or 15)) / 100
+    cash_reserve = round(cash_available * cash_reserve_pct)
+    deployable = cash_available - cash_reserve
 
     # Allocate proportionally by conviction
     total_conviction = sum(
