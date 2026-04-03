@@ -297,14 +297,14 @@ def get_allocation(mode: str = "active"):
     # Aggressive: conviction-proportional with less cash, acts faster
     overweight = []
     total_conviction = sum(
-        (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"])
+        _get_conviction(e["ticker"], e["conviction"], dyn_convictions)
         for e in picks
     )
     avg_conviction = total_conviction / len(picks) if picks else 1
 
     for etf in picks:
         ticker = etf["ticker"]
-        conviction = dyn_convictions.get(ticker, etf["conviction"]) if dyn_convictions else etf["conviction"]
+        conviction = _get_conviction(ticker, etf["conviction"], dyn_convictions)
 
         if mode == "conservative":
             # Flatten toward equal weight
@@ -447,12 +447,12 @@ def calculate_allocation(body: dict):
 
     # ── Current regime allocations ──
     total_conviction = sum(
-        (dyn_convictions.get(e["ticker"], e["conviction"]) if dyn_convictions else e["conviction"])
+        _get_conviction(e["ticker"], e["conviction"], dyn_convictions)
         for e in picks
     )
     allocations = []
     for etf in picks:
-        conviction = dyn_convictions.get(etf["ticker"], etf["conviction"]) if dyn_convictions else etf["conviction"]
+        conviction = _get_conviction(etf["ticker"], etf["conviction"], dyn_convictions)
         weight_of_regime = conviction / total_conviction if total_conviction > 0 else 1 / len(picks)
         amount = round(regime_budget * weight_of_regime)
         weight = round(amount / deployable * 100, 1) if deployable > 0 else 0
@@ -1247,6 +1247,14 @@ async def cron_weekly(request: Request):
     )
 
     return {"ok": True, "regime": regime, "emailsSent": sent}
+
+
+def _get_conviction(ticker: str, static_conviction: float, dyn_convictions: dict | None) -> float:
+    """Get conviction for an ETF — dynamic override can increase but never decrease below static."""
+    if not dyn_convictions:
+        return static_conviction
+    dynamic = dyn_convictions.get(ticker, static_conviction)
+    return max(dynamic, static_conviction)
 
 
 # ── Helpers ──────────────────────────────────────────────
