@@ -81,12 +81,17 @@ export default function RegimeIndicator() {
           <div className="text-xs text-[#333] mt-2">Updated daily · {geoSignal.lastUpdated}</div>
         </div>
         <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-          <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — FRED Economic Data</div>
+          <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — FRED (Q4 2025 data)</div>
           <div className="text-xl font-bold" style={{ color: fredColor.color }}>
             {fredSignal.regime}
           </div>
           <div className="text-xs text-[#555] mt-1">{fredSignal.note}</div>
-          <div className="text-xs text-[#333] mt-2">Updated on release dates · {fredSignal.lastUpdated}</div>
+          {lagWarning && (
+            <div className="text-xs text-[#eab308] mt-2">
+              FRED previously confirmed Stagflation (Nov 2025 – Feb 2026 using Q2–Q3 data). The Q4 2025 GDP showed a brief growth recovery, reverting the signal to Reflation. The AI layer overrides this because the Iran/Hormuz crisis has since made that recovery irrelevant.
+            </div>
+          )}
+          <div className="text-xs text-[#333] mt-2">Latest data: {fredSignal.lastUpdated}</div>
         </div>
       </div>
 
