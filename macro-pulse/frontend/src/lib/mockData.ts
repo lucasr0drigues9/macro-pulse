@@ -117,11 +117,12 @@ export const playbookData: Record<RegimeName, {
   },
   Goldilocks: {
     description: "Rising growth + Falling inflation",
-    whatHappens: "The best of all worlds. The economy expands while inflation cools, giving central banks room to cut rates or hold steady. Corporate earnings grow, multiples expand, and risk appetite is high. This is when the broadest range of assets performs well.",
+    whatHappens: "The best of all worlds. The economy expands while inflation cools, giving central banks room to cut rates or hold steady. Corporate earnings grow, multiples expand, and risk appetite is high. In this regime, broad market exposure is hard to beat — sector picking adds marginal value at best.",
     outperform: [
-      { asset: "S&P 500 (SPY)", why: "Broad equity exposure thrives when earnings grow and rates are stable or falling. The rising tide lifts most boats." },
-      { asset: "Quality Growth (BRK-B)", why: "Companies with strong fundamentals compound earnings in a supportive macro environment with low cost of capital." },
-      { asset: "Nasdaq (QQQ)", why: "Tech and growth stocks benefit most from falling rates — their long-duration cash flows are worth more at lower discount rates." },
+      { asset: "S&P 500 (SPY)", why: "Core holding. When everything is rising, owning the whole market is the simplest and most reliable strategy. Historically +3.9% avg in Goldilocks." },
+      { asset: "Nasdaq (QQQ)", why: "Growth tilt on top of SPY. Tech benefits most from falling rates — best single performer at +5.5% avg with 88% win rate." },
+      { asset: "Berkshire Hathaway (BRK-B)", why: "Quality compounder. Buffett's cash pile gets deployed in exactly this environment. +4.5% avg, 88% win rate." },
+      { asset: "Utilities (XLU)", why: "Surprisingly strong in Goldilocks — +5.2% avg. Defensive yield plus falling rate expectations boost valuations." },
     ],
     underperform: [
       { asset: "Gold (GLD)", why: "No inflation to hedge against. Opportunity cost of holding a non-yielding asset rises when equities are running." },
@@ -132,16 +133,17 @@ export const playbookData: Record<RegimeName, {
   },
   Reflation: {
     description: "Rising growth + Rising inflation",
-    whatHappens: "The economy is heating up and prices are rising with it. Central banks are beginning to worry but haven't tightened aggressively yet. Corporate revenues surge but input costs are climbing. The early phase rewards risk-taking; the late phase punishes it.",
+    whatHappens: "The economy is heating up and prices are rising with it. Central banks are beginning to worry but haven't tightened aggressively yet. In this regime, broad market exposure works well — SPY averages +7.5%. The framework tilts toward cyclical sectors that benefit most from the expansion.",
     outperform: [
-      { asset: "Industrials (XLI)", why: "Manufacturing and infrastructure companies benefit directly from economic expansion and rising demand." },
-      { asset: "Small Caps (IWM)", why: "Small caps are more domestically exposed and benefit from early-cycle economic acceleration." },
-      { asset: "Superinvestor Picks (GURU)", why: "Active managers' high-conviction positions tend to outperform when the economy is growing and risk appetite is high." },
+      { asset: "S&P 500 (SPY)", why: "Core holding. Broad market captures the economic expansion. SPY avg +7.5% in Reflation — the benchmark to beat." },
+      { asset: "Industrials (XLI)", why: "Cyclical tilt. Manufacturing and infrastructure companies benefit directly from economic expansion. +8.1% avg, 88% win rate." },
+      { asset: "Small Caps (IWM)", why: "Small caps lead in early expansion — more domestic exposure, higher beta. +8.1% avg." },
+      { asset: "Energy (XLE)", why: "Commodity inflation play. Energy revenues rise with prices. +8.1% avg in Reflation." },
     ],
     underperform: [
       { asset: "Long Bonds (TLT)", why: "Rising inflation and growth expectations push long-term yields higher, hammering bond prices." },
-      { asset: "Utilities (XLU)", why: "Defensive yield plays lose appeal when growth is abundant and rates are rising." },
       { asset: "Gold (GLD)", why: "Gold underperforms during reflation because real rates are positive and growth assets offer better returns." },
+      { asset: "Commodities ex-energy (DBC)", why: "Broad commodity basket underperforms — only 50% win rate. Energy-specific exposure (XLE) is more targeted." },
     ],
     historicalExamples: ["2003–2006 (housing boom)", "2009–2011 (post-GFC recovery)", "2021 (reopening trade)", "2025 Q1 (pre-Hormuz expansion)"],
   },

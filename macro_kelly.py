@@ -235,20 +235,20 @@ REGIME_ETFS = {
         {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.40, "note": "50% win rate + AI energy demand"},
     ],
     "Reflation": [
-        # GURU dominates (+8.0%) — hedge fund 13F picks outperform here
-        {"ticker": "GURU", "name": "Hedge fund 13F picks","conviction": 0.95, "note": "Best performer in Reflation (+8.0%)"},
-        {"ticker": "XLI",  "name": "Industrials",         "conviction": 0.70, "note": "69% backtest win rate"},
-        {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.55, "note": "Commodity inflation play"},
-        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.35, "note": "Inflation hedge"},
-        {"ticker": "DBC",  "name": "Commodities",         "conviction": 0.30, "note": "Broad commodity exposure"},
+        # Growth regime — SPY does well, sector tilts add marginal alpha
+        # SPY avg +7.5%, picks avg +6.2% — own the market + tilt toward cyclicals
+        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.90, "note": "Core holding — SPY avg +7.5% in Reflation, hard to beat"},
+        {"ticker": "XLI",  "name": "Industrials",         "conviction": 0.70, "note": "Cyclical tilt — 88% win rate, +8.1% avg"},
+        {"ticker": "IWM",  "name": "Small caps",          "conviction": 0.60, "note": "Small caps lead in early expansion — +8.1% avg"},
+        {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.45, "note": "Commodity inflation play — +8.1% avg"},
     ],
     "Goldilocks": [
-        # SPY/BRK-B dominate — index investing is hard to beat
-        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.95, "note": "Index is king in Goldilocks"},
-        {"ticker": "BRK-B","name": "Berkshire Hathaway",   "conviction": 0.80, "note": "Buffett — quality + cash pile"},
-        {"ticker": "QQQ",  "name": "Growth stocks",       "conviction": 0.70, "note": "75% backtest win rate"},
-        {"ticker": "GURU", "name": "Hedge fund 13F picks","conviction": 0.35, "note": "Smart money follows growth"},
-        {"ticker": "IWM",  "name": "Small caps",          "conviction": 0.25, "note": "Risk-on signal"},
+        # Best environment for equities — SPY avg +3.9%, QQQ +5.5%
+        # Sector picking barely beats index — own the market + growth tilt
+        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.95, "note": "Core holding — broad market thrives in Goldilocks"},
+        {"ticker": "QQQ",  "name": "Growth stocks",       "conviction": 0.85, "note": "Best performer in Goldilocks — +5.5% avg, 88% win rate"},
+        {"ticker": "BRK-B","name": "Berkshire Hathaway",   "conviction": 0.70, "note": "Quality compounders — +4.5% avg, 88% win rate"},
+        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.40, "note": "Defensive yield — surprisingly strong in Goldilocks +5.2%"},
     ],
     "Deflation": [
         # Cash is king in deflation (purchasing power rises) — implemented via higher cash reserve
