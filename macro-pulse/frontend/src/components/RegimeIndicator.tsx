@@ -88,7 +88,7 @@ export default function RegimeIndicator() {
           <div className="text-xs text-[#555] mt-1">{fredSignal.note}</div>
           {lagWarning && (
             <div className="text-xs text-[#eab308] mt-2">
-              FRED previously confirmed Stagflation (Nov 2025 – Feb 2026 using Q2–Q3 data). The Q4 2025 GDP showed a brief growth recovery, reverting the signal to Reflation. The AI layer overrides this because the Iran/Hormuz crisis has since made that recovery irrelevant.
+              FRED indicated Reflation from Q4 2025 data but the signal was barely positive (growth score 0.33). The geopolitical layer overrides this as not relevant given current conditions. FRED confirmation of Q1 2026 is expected in May 2026. Until then, we rely on the AI geopolitical analysis to determine the current regime.
             </div>
           )}
           <div className="text-xs text-[#333] mt-2">Latest data: {fredSignal.lastUpdated}</div>
