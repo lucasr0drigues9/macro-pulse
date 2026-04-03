@@ -978,6 +978,99 @@ def get_transition_outlook():
     }
 
 
+@app.post("/api/send-event-alert")
+async def send_event_alert(request: Request):
+    """Send a post-event analysis email for a specific economic release."""
+    cron_secret = os.getenv("CRON_SECRET", "")
+    if cron_secret and request.headers.get("x-cron-secret") != cron_secret:
+        return {"error": "Unauthorized"}
+
+    body = await request.json()
+    event_name = body.get("eventName", "")
+    if not event_name:
+        return {"error": "eventName required"}
+
+    from macro_kelly import get_current_regime
+    import requests as req
+
+    regime, fred_regime, _ = get_current_regime()
+    synthesis = _load_synthesis()
+    situation = synthesis.get("situation", "") if synthesis else ""
+
+    # Use Claude to generate the analysis
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        return {"error": "No Anthropic API key"}
+
+    prompt = f"""You are a macro economist writing a brief post-event email for investors.
+
+Event: {event_name}
+Current regime: {regime} (confirmed by geopolitical signal)
+FRED regime: {fred_regime}
+Current situation: {situation}
+
+Write three short paragraphs (2-3 sentences each):
+1. "What happened" — what the data showed (use realistic numbers for this event type)
+2. "Impact on {regime}" — how this affects the current regime thesis
+3. "Action" — one sentence on what investors should do (hold, adjust, or watch)
+
+Also suggest what the next important release to watch is.
+
+Keep it concise and plain English. No jargon. Write as if explaining to a smart friend who invests but isn't an economist.
+
+Respond in JSON format:
+{{"analysis": "...", "impact": "...", "action": "...", "nextRelease": "..."}}"""
+
+    try:
+        r = req.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": anthropic_key,
+                "anthropic-version": "2023-06-01",
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 500,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=30,
+        )
+        data = r.json()
+        text = "".join(b.get("text", "") for b in data.get("content", []))
+
+        import json as _json
+        # Parse JSON from response
+        clean = text.strip()
+        if "```" in clean:
+            clean = clean.split("```")[1]
+            if clean.startswith("json"):
+                clean = clean[4:]
+            clean = clean.strip()
+        if not clean.startswith("{"):
+            start = clean.find("{")
+            end = clean.rfind("}") + 1
+            if start != -1:
+                clean = clean[start:end]
+
+        result = _json.loads(clean)
+
+        import emails
+        sent = emails.send_event_breakdown(
+            event_name=event_name,
+            regime=regime,
+            analysis=result.get("analysis", ""),
+            impact_on_regime=result.get("impact", ""),
+            action_needed=result.get("action", ""),
+            next_release=result.get("nextRelease", "Check the dashboard"),
+        )
+
+        return {"ok": True, "emailsSent": sent, "analysis": result}
+
+    except Exception as e:
+        return {"error": str(e), "emailsSent": 0}
+
+
 # ── Cron Jobs ────────────────────────────────────────────
 # Called by Railway cron or external scheduler via secret header
 

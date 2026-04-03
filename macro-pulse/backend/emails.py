@@ -93,6 +93,38 @@ def _regime_badge(regime: str) -> str:
 # ── Email Types ──────────────────────────────────────────
 
 
+def send_event_breakdown(event_name: str, regime: str, analysis: str,
+                         impact_on_regime: str, action_needed: str,
+                         next_release: str) -> int:
+    """Post-event breakdown — what happened, what it means, what to do."""
+    subject = f"{event_name} — What it means for {regime}"
+    body = f"""
+    <div style="background:#111;border:1px solid #222;border-radius:8px;padding:16px;margin:0 0 16px;">
+        <p style="margin:0;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;">Event Analysis</p>
+        <p style="margin:8px 0 0;font-size:16px;font-weight:bold;color:#e0e0e0;">{event_name}</p>
+    </div>
+    <h3 style="font-size:13px;color:#e0e0e0;margin:16px 0 4px;">What happened</h3>
+    <p style="color:#888;font-size:13px;line-height:1.6;">{analysis}</p>
+    <h3 style="font-size:13px;color:#e0e0e0;margin:16px 0 4px;">Impact on {regime}</h3>
+    <p style="color:#888;font-size:13px;line-height:1.6;">{impact_on_regime}</p>
+    <div style="background:#111;border:1px solid #222;border-radius:8px;padding:16px;margin:16px 0;">
+        <p style="margin:0;font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;">Action</p>
+        <p style="margin:8px 0 0;font-size:13px;color:#e0e0e0;">{action_needed}</p>
+    </div>
+    <p style="font-size:12px;color:#555;">Next release to watch: {next_release}</p>
+    <p style="text-align:center;margin:16px 0;">
+        <a href="{SITE_URL}" style="background:#222;color:#e0e0e0;padding:10px 24px;border-radius:4px;text-decoration:none;font-size:13px;">View dashboard →</a>
+    </p>
+    """
+    html = _email_wrapper(subject, body)
+    subs = _load_subscribers("eventAlerts")
+    sent = 0
+    for s in subs:
+        if _send(s["email"], subject, html):
+            sent += 1
+    return sent
+
+
 def send_regime_unchanged(release_name: str, regime: str, summary: str, next_release: str) -> int:
     """After an economic release — regime held steady."""
     subject = f"{release_name} — Regime unchanged — {regime}"
