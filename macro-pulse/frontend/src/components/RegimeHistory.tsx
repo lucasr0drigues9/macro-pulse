@@ -113,9 +113,10 @@ export default function RegimeHistory() {
                     {period.regime}
                   </span>
                 </div>
-                <div className="text-xs sm:w-48">
-                  <span className="text-[#888]">{period.quarterLabel || `${period.start} → ${period.end}`}</span>
+                <div className="text-xs sm:w-56">
+                  <span className="text-[#888]">{period.start} → {period.end}</span>
                   <span className="text-[#333] ml-1">({period.months}mo)</span>
+                  <div className="text-[#555]">FRED: {period.quarterLabel}</div>
                 </div>
                 <div className="flex-1 flex items-center gap-4 text-xs">
                   <span>
