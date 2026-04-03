@@ -150,6 +150,7 @@ def build_regime_timeline():
         timeline.append({"date": date, "regime_raw": regime})
 
     # Apply regime smoothing — require 2 consecutive months before flipping
+    # When confirmed, retroactively tag the pending months too
     if len(timeline) < 2:
         for t in timeline:
             t["regime"] = t["regime_raw"]
@@ -157,35 +158,33 @@ def build_regime_timeline():
 
     timeline[0]["regime"] = timeline[0]["regime_raw"]
     confirmed = timeline[0]["regime_raw"]
-    pending   = None
-    pending_count = 0
+    pending = None
+    pending_start = 0
 
     for i in range(1, len(timeline)):
         raw = timeline[i]["regime_raw"]
         if raw == confirmed:
-            # Same as confirmed regime — reset pending
             pending = None
-            pending_count = 0
             timeline[i]["regime"] = confirmed
         elif raw == pending:
-            # Second consecutive month of new regime — confirm it
-            pending_count += 1
-            if pending_count >= 2:
-                confirmed = pending
-                pending = None
-                pending_count = 0
-            timeline[i]["regime"] = confirmed if pending_count < 2 else confirmed
+            # 2nd consecutive month of new regime — confirm and backfill
+            confirmed = pending
+            # Retroactively tag all pending months with the new regime
+            for j in range(pending_start, i + 1):
+                timeline[j]["regime"] = confirmed
+            pending = None
         else:
-            # New candidate regime — start counting
+            # New candidate — start tracking
             pending = raw
-            pending_count = 1
+            pending_start = i
             timeline[i]["regime"] = confirmed
 
     return timeline
 
 
 def identify_periods(timeline):
-    """Group contiguous months with the same regime into periods."""
+    """Group contiguous months with the same regime into periods.
+    Then merge 1-month periods into the previous period (noise removal)."""
     if not timeline:
         return []
 
@@ -201,7 +200,20 @@ def identify_periods(timeline):
     current["end"] = timeline[-1]["date"]
     periods.append(current)
 
-    return periods
+    # Merge 1-month periods into the previous period
+    from datetime import datetime
+    merged = []
+    for p in periods:
+        s = datetime.strptime(p["start"], "%Y-%m-%d")
+        e = datetime.strptime(p["end"], "%Y-%m-%d")
+        months = (e.year - s.year) * 12 + (e.month - s.month)
+        if months < 2 and merged:
+            # Absorb into previous period
+            merged[-1]["end"] = p["end"]
+        else:
+            merged.append(dict(p))
+
+    return merged
 
 
 def compute_return(prices, start_date, end_date):
