@@ -105,17 +105,17 @@ function Calculator() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
         <div>
-          <label className="text-xs text-[#555] block mb-1">Total portfolio size ({sym})</label>
+          <label className="text-xs text-[#555] block mb-1">Existing portfolio value ({sym}) — 0 if starting fresh</label>
           <input
             type="number"
             value={portfolioSize}
             onChange={(e) => setPortfolioSize(e.target.value)}
-            placeholder="100000"
+            placeholder="0"
             className="w-full bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none"
           />
         </div>
         <div>
-          <label className="text-xs text-[#555] block mb-1">Cash available to deploy ({sym})</label>
+          <label className="text-xs text-[#555] block mb-1">Cash to deploy ({sym})</label>
           <input
             type="number"
             value={cashAvailable}

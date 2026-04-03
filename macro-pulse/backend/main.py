@@ -415,9 +415,8 @@ def calculate_allocation(body: dict):
     if cash_available <= 0:
         return {"error": "Cash available must be positive", "allocations": []}
 
-    # First-time investor: if portfolio size is 0, treat cash as the full portfolio
-    if portfolio_size <= 0:
-        portfolio_size = cash_available
+    # Total investable = existing portfolio + new cash
+    total_investable = portfolio_size + cash_available
 
     regime, _, _ = get_current_regime()
     picks = REGIME_ETFS.get(regime, [])
@@ -425,12 +424,15 @@ def calculate_allocation(body: dict):
     kelly = kelly_fraction(regime)
 
     cash_target = min(30, max(10, cash_pct or 15))
-    cash_reserve = portfolio_size * cash_target / 100
+    cash_reserve = total_investable * cash_target / 100
 
-    # Deployable amount
-    kelly_deployable = portfolio_size * kelly if kelly > 0 else cash_available * 0.5
-    deployable = min(cash_available, max(kelly_deployable, cash_available * 0.3))
-    deployable = min(deployable, max(0, portfolio_size - cash_reserve))
+    # Deployable: cash available minus what we need to keep as reserve
+    deployable = max(0, cash_available - max(0, cash_reserve - portfolio_size))
+    # Kelly scales how much of that we actually deploy
+    if kelly > 0:
+        deployable = min(deployable, total_investable * kelly)
+    deployable = max(deployable, cash_available * 0.3)  # deploy at least 30% of cash
+    deployable = min(deployable, cash_available)  # never deploy more than cash available
 
     # Allocate proportionally by conviction
     total_conviction = sum(
