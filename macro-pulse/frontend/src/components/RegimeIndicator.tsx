@@ -106,7 +106,12 @@ export default function RegimeIndicator() {
       {/* Why this regime was flagged */}
       {origin && (
         <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
-          <div className="text-sm font-bold text-[#e0e0e0] mb-2">Why {origin.regime} was flagged — {origin.detectedDate}</div>
+          <div className="text-sm font-bold text-[#e0e0e0] mb-2">Why {origin.regime} was flagged</div>
+          <div className="text-xs text-[#555] mb-3 p-2 rounded bg-[#0a0a0a] leading-relaxed">
+            <span className="text-[#888]">Nov 2025:</span> FRED data first detected Stagflation conditions — rising inflation meeting slowing growth. Regime picks began outperforming (+14% vs SPY +0.7% through February).
+            <br /><span className="text-[#888]">Oct 2025:</span> A brief Reflation reading appeared but lasted only one month — absorbed into the Stagflation trend by the smoothing filter.
+            <br /><span className="text-[#888]">Feb 28, 2026:</span> The US-Israel airstrikes on Iran and the Strait of Hormuz blockade deepened the existing Stagflation into a full energy crisis, validating the signal the data had been showing for months.
+          </div>
           <p className="text-xs text-[#888] leading-relaxed mb-3">{origin.situation}</p>
           {origin.keyTension && (
             <p className="text-xs text-[#eab308] mb-3">{origin.keyTension}</p>
