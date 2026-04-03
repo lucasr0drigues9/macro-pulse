@@ -1002,6 +1002,16 @@ async def send_event_alert(request: Request):
     if not anthropic_key:
         return {"error": "No Anthropic API key"}
 
+    # Get upcoming calendar for context
+    calendar_events = []
+    try:
+        cal = get_calendar()
+        calendar_events = cal.get("events", [])
+    except Exception:
+        pass
+    upcoming = [e for e in calendar_events if e.get("date", "") > body.get("eventDate", "2026-04-01")]
+    upcoming_text = "\n".join(f"- {e['name']} ({e['date']})" for e in upcoming[:5]) if upcoming else "Check macro-pulse.io for upcoming releases"
+
     prompt = f"""You are a macro economist writing a brief post-event email for investors.
 
 Event: {event_name}
@@ -1009,12 +1019,15 @@ Current regime: {regime} (confirmed by geopolitical signal)
 FRED regime: {fred_regime}
 Current situation: {situation}
 
+Upcoming releases after this event:
+{upcoming_text}
+
 Write three short paragraphs (2-3 sentences each):
 1. "What happened" — what the data showed (use realistic numbers for this event type)
 2. "Impact on {regime}" — how this affects the current regime thesis
 3. "Action" — one sentence on what investors should do (hold, adjust, or watch)
 
-Also suggest what the next important release to watch is.
+For "nextRelease", pick the most relevant upcoming release from the list above.
 
 Keep it concise and plain English. No jargon. Write as if explaining to a smart friend who invests but isn't an economist.
 
