@@ -412,8 +412,12 @@ def calculate_allocation(body: dict):
     cash_available = float(body.get("cashAvailable", 0))
     currency = body.get("currency", "EUR")
 
-    if portfolio_size <= 0 or cash_available <= 0:
-        return {"error": "Portfolio size and cash must be positive", "allocations": []}
+    if cash_available <= 0:
+        return {"error": "Cash available must be positive", "allocations": []}
+
+    # First-time investor: if portfolio size is 0, treat cash as the full portfolio
+    if portfolio_size <= 0:
+        portfolio_size = cash_available
 
     regime, _, _ = get_current_regime()
     picks = REGIME_ETFS.get(regime, [])
