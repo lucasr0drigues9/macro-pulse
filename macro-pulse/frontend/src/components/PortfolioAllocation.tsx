@@ -14,12 +14,6 @@ type AllocData = {
   regime: RegimeName; kellyFraction: number; cashTarget: number;
   overweight: Overweight[]; underweight: Underweight[];
 };
-type CalcResult = {
-  regime: string; currency: string; deployable: number; cashReserve: number;
-  kellyFraction: number;
-  allocations: { ticker: string; name: string; weight: number; amount: number; conviction: number }[];
-};
-
 function AssessmentBadge({ assessment }: { assessment: string }) {
   const colors: Record<string, string> = {
     "Still attractive": "#22c55e",
@@ -50,134 +44,6 @@ function AllocationBar({ ticker, weight, color }: { ticker: string; weight: numb
         />
       </div>
       <span className="text-xs text-[#888] w-10">{weight}%</span>
-    </div>
-  );
-}
-
-function Calculator() {
-  const [amount, setAmount] = useState<string>("");
-  const [currency, setCurrency] = useState<"EUR" | "USD">("EUR");
-  const [result, setResult] = useState<CalcResult | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [consent, setConsent] = useState(false);
-
-  const calculate = async () => {
-    const cash = parseFloat(amount) || 0;
-    if (cash <= 0 || !consent) return;
-
-    setLoading(true);
-    try {
-      const res = await fetch(apiUrl("/api/calculate"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ portfolioSize: 0, cashAvailable: cash, currency }),
-      });
-      const data = await res.json();
-      setResult(data);
-    } catch {
-      setResult(null);
-    }
-    setLoading(false);
-  };
-
-  const sym = currency === "EUR" ? "€" : "$";
-
-  return (
-    <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222]">
-      <h4 className="text-sm font-bold text-[#e0e0e0] mb-2">Position Calculator</h4>
-      <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] mb-4">
-        <p className="text-xs text-[#888] leading-relaxed">
-          This calculator buys more of what&apos;s cheap and less of what&apos;s already extended.
-          All regime picks have the same macro tailwind — but entry price matters.
-          An ETF that dropped 12% in a Stagflation regime is a better buy than one that already ran up 14%,
-          because the underlying thesis is the same but you get a lower price.
-        </p>
-      </div>
-
-      <div className="flex gap-2 mb-4">
-        <button
-          onClick={() => setCurrency("EUR")}
-          className={`px-3 py-1 text-xs rounded ${currency === "EUR" ? "bg-[#222] text-[#e0e0e0]" : "text-[#555]"}`}
-        >
-          EUR
-        </button>
-        <button
-          onClick={() => setCurrency("USD")}
-          className={`px-3 py-1 text-xs rounded ${currency === "USD" ? "bg-[#222] text-[#e0e0e0]" : "text-[#555]"}`}
-        >
-          USD
-        </button>
-      </div>
-
-      <div className="mb-4">
-        <label className="text-xs text-[#555] block mb-1">How much do you want to invest? ({sym})</label>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="10000"
-          className="w-full sm:w-64 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none"
-        />
-      </div>
-
-      <label className="flex items-start gap-2 text-xs text-[#888] mb-3 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={consent}
-          onChange={(e) => setConsent(e.target.checked)}
-          className="rounded mt-0.5"
-        />
-        <span>I understand this tool is for educational purposes only and does not constitute financial advice</span>
-      </label>
-
-      <button
-        onClick={calculate}
-        disabled={loading || !consent}
-        className="w-full sm:w-auto px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
-      >
-        {loading ? "Calculating..." : "Calculate allocation"}
-      </button>
-
-      {result && (
-        <div className="mt-4">
-          <div className="flex flex-wrap gap-4 text-xs text-[#555] mb-3">
-            <span>Kelly fraction: <span className="text-[#e0e0e0]">{(result.kellyFraction * 100).toFixed(1)}%</span></span>
-            <span>Deployable: <span className="text-[#22c55e]">{sym}{result.deployable.toLocaleString()}</span></span>
-            <span>Cash reserve: <span className="text-[#888]">{sym}{result.cashReserve.toLocaleString()}</span></span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="text-[#555] text-xs uppercase tracking-wider border-b border-[#222]">
-                  <th className="text-left py-2">ETF</th>
-                  <th className="text-right py-2">Weight</th>
-                  <th className="text-right py-2">Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.allocations.map((r) => (
-                  <tr key={r.ticker} className="border-b border-[#181818]">
-                    <td className="py-2">
-                      <span className="font-bold">{r.ticker}</span>
-                      <span className="text-[#555] ml-2 text-xs">{r.name}</span>
-                    </td>
-                    <td className="text-right py-2 text-[#888]">{r.weight}%</td>
-                    <td className="text-right py-2 font-bold text-[#22c55e]">
-                      {sym}{r.amount.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="mt-2 text-right text-xs text-[#555]">
-              Total deployed: {sym}{result.allocations.reduce((s, r) => s + r.amount, 0).toLocaleString()}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <p className="mt-3 text-xs text-[#333] italic">No user data is stored. Calculation runs on the server and result is discarded.</p>
     </div>
   );
 }
@@ -255,11 +121,11 @@ export default function PortfolioAllocation() {
         </div>
       </div>
 
-      <p className="mt-6 text-xs text-[#555] text-center">
-        Buy recommendations factor in current ETF prices relative to historical regime averages. Allocation updates automatically when the regime changes or an early signal fires.
-      </p>
-
-      <Calculator />
+      <div className="mt-6 p-3 rounded-lg bg-[#111] border border-[#222]">
+        <p className="text-xs text-[#888] leading-relaxed">
+          <span className="text-[#e0e0e0] font-bold">Buying tip:</span> All regime picks have the same macro tailwind. Prioritise the ones marked <span className="text-[#22c55e]">Still attractive</span> — same thesis, better entry price. ETFs marked <span className="text-[#ef4444]">Extended</span> may still perform but offer less upside from current levels. Allocation updates automatically when the regime changes.
+        </p>
+      </div>
 
       <p className="mt-4 text-xs text-[#333] text-center italic">
         This is a systematic framework output, not personalised financial advice. Always do your own research.
