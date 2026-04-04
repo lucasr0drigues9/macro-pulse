@@ -20,9 +20,17 @@ type DurationStats = {
   avg: number; min: number; max: number; periods: number;
 } | null;
 
+type RotationPhase = {
+  phase: string; action: string; picks: string; signal: string;
+};
+type RotationSequence = {
+  title: string; phases: RotationPhase[];
+} | null;
+
 type TransitionData = {
   currentRegime: string;
   durationStats: DurationStats;
+  rotationSequence: RotationSequence;
   outlook: RegimeOutlook[];
 };
 
@@ -168,6 +176,51 @@ export default function TransitionOutlook() {
           );
         })}
       </div>
+
+      {/* Rotation sequence */}
+      {data.rotationSequence && (
+        <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222]">
+          <h3 className="text-sm font-bold text-[#e0e0e0] mb-1">{data.rotationSequence.title}</h3>
+          <p className="text-xs text-[#555] mb-4">The likely path through regimes — not a prediction, but the historical pattern.</p>
+          <div className="space-y-3">
+            {data.rotationSequence.phases.map((phase, i) => {
+              const isNow = i === 0;
+              return (
+                <div
+                  key={i}
+                  className="flex items-start gap-3"
+                >
+                  <div className="flex flex-col items-center shrink-0">
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center text-xs"
+                      style={{
+                        backgroundColor: isNow ? "#22c55e20" : "#222",
+                        color: isNow ? "#22c55e" : "#555",
+                        border: isNow ? "1px solid #22c55e40" : "1px solid #333",
+                      }}
+                    >
+                      {isNow ? "●" : i}
+                    </div>
+                    {i < data.rotationSequence!.phases.length - 1 && (
+                      <div className="w-px h-8 bg-[#222]" />
+                    )}
+                  </div>
+                  <div className="pb-2">
+                    <div className="text-sm font-bold text-[#e0e0e0]">{phase.phase}</div>
+                    <div className="text-xs text-[#888] mt-0.5">{phase.action}</div>
+                    <div className="text-xs text-[#555] mt-1">
+                      ETFs: <span className="text-[#888]">{phase.picks}</span>
+                    </div>
+                    <div className="text-xs text-[#555] mt-0.5">
+                      Signal: <span className="text-[#eab308]">{phase.signal}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Email signup */}
       <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222] text-center">

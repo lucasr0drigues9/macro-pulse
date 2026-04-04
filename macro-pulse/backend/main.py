@@ -837,9 +837,10 @@ def get_transition_outlook():
         scenario = bull_case.get("scenario", "")
 
         if regime == "Stagflation":
-            # Bull case from Stagflation: crisis ends
-            # Could go to Goldilocks (full recovery) or Reflation (growth back but inflation stays)
-            for target, score in [("Goldilocks", 35), ("Reflation", 25)]:
+            # Historical pattern: Stagflation → Reflation → Goldilocks (not direct to Goldilocks)
+            # 1990 Gulf War: Stagflation ended Feb 1991 → Reflation Feb-Aug → Goldilocks Aug onwards
+            # Reflation is most likely next step — growth recovers but inflation stays sticky
+            for target, score in [("Reflation", 45), ("Goldilocks", 20)]:
                 if target not in possible_regimes:
                     possible_regimes[target] = {"score": 0, "source": "", "signals": []}
                 possible_regimes[target]["score"] += score
@@ -965,9 +966,67 @@ def get_transition_outlook():
     except Exception:
         pass
 
+    # Build rotation sequence — the expected path through regimes
+    rotation_sequence = None
+    if regime == "Stagflation":
+        rotation_sequence = {
+            "title": "Expected rotation sequence (based on 1990 Gulf War pattern)",
+            "phases": [
+                {
+                    "phase": "Now — Stagflation",
+                    "action": "Hold defensive positions",
+                    "picks": "XLE, GLD, DBC, XLP, XLU",
+                    "signal": "Current regime — geopolitical crisis ongoing",
+                },
+                {
+                    "phase": "Phase 1 — Early signal",
+                    "action": "Add small starter positions in cyclicals",
+                    "picks": "SPY, XLI, BRK-B (5-10% starters)",
+                    "signal": "Oil drops toward $85, Hormuz reopens, geopolitical override lifts",
+                },
+                {
+                    "phase": "Phase 2 — Reflation confirmed",
+                    "action": "Rotate toward cyclicals, reduce gold and bonds",
+                    "picks": "SPY, XLE, XLI, BRK-B",
+                    "signal": "FRED confirms growth recovering + inflation still elevated",
+                },
+                {
+                    "phase": "Phase 3 — Goldilocks (3-6 months later)",
+                    "action": "Full rotation to growth and innovation",
+                    "picks": "SPY, QQQ, ARKW, FTEC, ARKQ",
+                    "signal": "Inflation cools below 0.3% monthly, Fed signals rate cuts",
+                },
+            ],
+        }
+    elif regime == "Deflation":
+        rotation_sequence = {
+            "title": "Expected rotation sequence",
+            "phases": [
+                {
+                    "phase": "Now — Deflation",
+                    "action": "Hold defensive positions + recovery upside",
+                    "picks": "TLT, GLD, FTEC",
+                    "signal": "Current regime — economic contraction",
+                },
+                {
+                    "phase": "Phase 1 — Reflation",
+                    "action": "Rotate to cyclicals as growth recovers",
+                    "picks": "SPY, XLE, XLI, BRK-B",
+                    "signal": "GDP turns positive, unemployment peaks",
+                },
+                {
+                    "phase": "Phase 2 — Goldilocks",
+                    "action": "Full rotation to growth",
+                    "picks": "SPY, QQQ, ARKW, FTEC, ARKQ",
+                    "signal": "Sustained growth with controlled inflation",
+                },
+            ],
+        }
+
     return {
         "currentRegime": regime,
         "durationStats": duration_stats,
+        "rotationSequence": rotation_sequence,
         "outlook": outlook,
     }
 
