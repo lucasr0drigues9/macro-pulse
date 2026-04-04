@@ -58,7 +58,7 @@ export default function Home() {
           <a href="/terms" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Terms of Service</a>
         </div>
         <p className="text-xs text-[#555] mt-4">
-          Built by <span className="font-[family-name:var(--font-dancing)] text-lg not-italic">Lucas Rodrigues</span> — <a href="https://www.linkedin.com/in/lucas-rodrigues-27a51b1a3/" target="_blank" rel="noopener noreferrer" className="hover:text-[#888] underline underline-offset-2">follow along on LinkedIn</a>
+          Built by <em>Lucas Rodrigues</em> — <a href="https://www.linkedin.com/in/lucas-rodrigues-27a51b1a3/" target="_blank" rel="noopener noreferrer" className="hover:text-[#888] underline underline-offset-2">follow along on LinkedIn</a>
         </p>
       </footer>
     </main>
