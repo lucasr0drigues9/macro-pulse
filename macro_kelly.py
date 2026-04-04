@@ -235,12 +235,11 @@ REGIME_ETFS = {
         {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.40, "note": "50% win rate + AI energy demand"},
     ],
     "Reflation": [
-        # Growth regime — SPY does well, sector tilts add marginal alpha
-        # SPY avg +7.5%, picks avg +6.2% — own the market + tilt toward cyclicals
-        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.90, "note": "Core holding — SPY avg +7.5% in Reflation, hard to beat"},
-        {"ticker": "XLI",  "name": "Industrials",         "conviction": 0.70, "note": "Cyclical tilt — 88% win rate, +8.1% avg"},
-        {"ticker": "IWM",  "name": "Small caps",          "conviction": 0.60, "note": "Small caps lead in early expansion — +8.1% avg"},
-        {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.45, "note": "Commodity inflation play — +8.1% avg"},
+        # Growth regime — SPY core + cyclical tilts
+        {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.90, "note": "Core holding — +7.5% avg in Reflation, hard to beat"},
+        {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.75, "note": "Top Reflation performer — +10.7% avg, commodity inflation play"},
+        {"ticker": "XLI",  "name": "Industrials",         "conviction": 0.70, "note": "Cyclical tilt — +9.6% avg, benefits from capex expansion"},
+        {"ticker": "BRK-B","name": "Berkshire Hathaway",   "conviction": 0.55, "note": "Quality compounder — +8.9% avg, insurance float benefits from rising rates"},
     ],
     "Goldilocks": [
         # Best environment for growth — SPY core + high-growth tilts
