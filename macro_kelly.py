@@ -251,11 +251,10 @@ REGIME_ETFS = {
         {"ticker": "ARKQ", "name": "Autonomous Tech & Robotics","conviction": 0.55, "note": "AI/robotics/automation — +15.1% avg, 100% win rate"},
     ],
     "Deflation": [
-        # Cash is king in deflation (purchasing power rises) — implemented via higher cash reserve
-        {"ticker": "TLT",  "name": "Long bonds",          "conviction": 0.90, "note": "Bond rally as rates get cut — best deflation asset"},
-        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.80, "note": "Store of value when financial stress rises"},
-        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.50, "note": "Defensive yield — stable demand regardless of cycle"},
-        {"ticker": "XLP",  "name": "Consumer staples",    "conviction": 0.40, "note": "Defensive earnings — people still buy essentials"},
+        # Defence + upside: TLT/GLD for capital preservation, WCLD for recovery upside
+        {"ticker": "TLT",  "name": "Long bonds",          "conviction": 0.90, "note": "Bond rally as rates get cut — +4.7% avg, 86% win rate"},
+        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.80, "note": "Store of value — +5.9% avg, 71% win rate"},
+        {"ticker": "WCLD", "name": "Cloud Computing",     "conviction": 0.55, "note": "Recovery upside — +11.6% avg in Deflation, captures rebound"},
     ],
 }
 

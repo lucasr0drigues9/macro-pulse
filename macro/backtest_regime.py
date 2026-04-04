@@ -28,7 +28,7 @@ REGIME_ETFS = {
     "Stagflation": ["XLE", "GLD", "DBC", "XLP", "XLU"],
     "Reflation":   ["XLI", "IWM", "XLE"],  # SPY excluded
     "Goldilocks":  ["QQQ", "ARKW", "WCLD", "ARKQ"],  # SPY excluded
-    "Deflation":   ["TLT", "GLD", "XLU", "XLP"],
+    "Deflation":   ["TLT", "GLD", "WCLD"],
 }
 
 # ETFs the framework says to AVOID per regime
