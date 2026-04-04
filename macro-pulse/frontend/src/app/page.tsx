@@ -48,6 +48,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
         <p className="text-xs text-[#555]">
+          Built by Lucas Rodrigues — <a href="https://www.linkedin.com/in/lucas-rodrigues-27a51b1a3/" target="_blank" rel="noopener noreferrer" className="hover:text-[#888] underline underline-offset-2">follow the build on LinkedIn</a>
+        </p>
+        <p className="text-xs text-[#555] mt-1">
           Macro Pulse — Built on Ray Dalio&apos;s four-season framework
         </p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
