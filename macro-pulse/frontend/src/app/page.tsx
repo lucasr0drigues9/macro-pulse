@@ -48,9 +48,6 @@ export default function Home() {
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
         <p className="text-xs text-[#555]">
-          Built by Lucas Rodrigues — <a href="https://www.linkedin.com/in/lucas-rodrigues-27a51b1a3/" target="_blank" rel="noopener noreferrer" className="hover:text-[#888] underline underline-offset-2">follow the build on LinkedIn</a>
-        </p>
-        <p className="text-xs text-[#555] mt-1">
           Macro Pulse — Built on Ray Dalio&apos;s four-season framework
         </p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
@@ -60,6 +57,9 @@ export default function Home() {
           <a href="/disclaimer" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Disclaimer</a>
           <a href="/terms" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Terms of Service</a>
         </div>
+        <p className="text-xs text-[#555] mt-4">
+          Built by <em>Lucas Rodrigues</em> — <a href="https://www.linkedin.com/in/lucas-rodrigues-27a51b1a3/" target="_blank" rel="noopener noreferrer" className="hover:text-[#888] underline underline-offset-2">follow the build on LinkedIn</a>
+        </p>
       </footer>
     </main>
   );
