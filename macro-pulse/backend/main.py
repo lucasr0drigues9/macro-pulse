@@ -1291,15 +1291,41 @@ async def cron_daily(request: Request):
     old_synthesis = _load_synthesis()
     old_geo = old_synthesis.get("etf_convictions", {}) if old_synthesis else {}
 
-    # Force refresh geo data (delete cache to bypass TTL)
+    # Try to refresh geo data — only delete cache if refresh succeeds
     geo_cache = os.path.join(MACRO, ".macro_cache", "geopolitical.json")
     synth_cache = os.path.join(MACRO, ".macro_cache", "geo_synthesis.json")
-    for f in [geo_cache, synth_cache]:
-        if os.path.exists(f):
-            os.remove(f)
+
+    # Temporarily remove cache to force refresh
+    geo_backup = None
+    synth_backup = None
+    try:
+        if os.path.exists(geo_cache):
+            with open(geo_cache) as f:
+                geo_backup = f.read()
+            os.remove(geo_cache)
+        if os.path.exists(synth_cache):
+            with open(synth_cache) as f:
+                synth_backup = f.read()
+            os.remove(synth_cache)
+    except Exception:
+        pass
 
     # Refresh
     geo = get_geopolitical_risks()
+
+    # If refresh failed (empty/None), restore backups
+    if not geo or not geo.get("overall_regime_bias"):
+        try:
+            if geo_backup:
+                with open(geo_cache, "w") as f:
+                    f.write(geo_backup)
+            if synth_backup:
+                with open(synth_cache, "w") as f:
+                    f.write(synth_backup)
+            geo = get_geopolitical_risks()  # Re-read from restored cache
+        except Exception:
+            pass
+
     regime, fred_regime, lag_warning = get_current_regime()
 
     # Check if geo override changed
