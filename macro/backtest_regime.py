@@ -27,8 +27,8 @@ REGIME_ETFS = {
     # Must match macro_kelly.py REGIME_ETFS (SPY excluded — it's the benchmark)
     "Stagflation": ["XLE", "GLD", "DBC", "XLP", "XLU"],
     "Reflation":   ["XLE", "XLI", "BRK-B"],  # SPY excluded
-    "Goldilocks":  ["QQQ", "ARKW", "WCLD", "ARKQ"],  # SPY excluded
-    "Deflation":   ["TLT", "GLD", "WCLD"],
+    "Goldilocks":  ["QQQ", "ARKW", "FTEC", "ARKQ"],  # SPY excluded
+    "Deflation":   ["TLT", "GLD", "FTEC"],
 }
 
 # ETFs the framework says to AVOID per regime

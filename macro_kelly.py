@@ -246,14 +246,14 @@ REGIME_ETFS = {
         {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.95, "note": "Core holding — +6.2% avg, 100% win rate, hard to beat"},
         {"ticker": "QQQ",  "name": "Nasdaq 100",          "conviction": 0.85, "note": "Broad growth — +8.5% avg, 100% win rate, 19yr track record"},
         {"ticker": "ARKW", "name": "ARK Next Gen Internet","conviction": 0.70, "note": "High-growth tilt — +17% avg in Goldilocks, volatile but powerful"},
-        {"ticker": "WCLD", "name": "Cloud Computing",     "conviction": 0.65, "note": "Cloud/SaaS growth — +16.5% avg, 100% win rate (limited data)"},
+        {"ticker": "FTEC", "name": "Fidelity MSCI IT",    "conviction": 0.65, "note": "Broad tech — +9.9% avg, holds AI winners (Nvidia, MSFT, Apple)"},
         {"ticker": "ARKQ", "name": "Autonomous Tech & Robotics","conviction": 0.55, "note": "AI/robotics/automation — +15.1% avg, 100% win rate"},
     ],
     "Deflation": [
         # Defence + upside: TLT/GLD for capital preservation, WCLD for recovery upside
         {"ticker": "TLT",  "name": "Long bonds",          "conviction": 0.90, "note": "Bond rally as rates get cut — +4.7% avg, 86% win rate"},
         {"ticker": "GLD",  "name": "Gold",                "conviction": 0.80, "note": "Store of value — +5.9% avg, 71% win rate"},
-        {"ticker": "WCLD", "name": "Cloud Computing",     "conviction": 0.55, "note": "Recovery upside — +11.6% avg in Deflation, captures rebound"},
+        {"ticker": "FTEC", "name": "Fidelity MSCI IT",    "conviction": 0.55, "note": "Recovery upside — +6.9% avg in Deflation, AI winners rebound first"},
     ],
 }
 

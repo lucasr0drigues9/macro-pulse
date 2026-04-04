@@ -122,7 +122,7 @@ export const playbookData: Record<RegimeName, {
       { asset: "S&P 500 (SPY)", why: "Core holding. +6.2% avg, 100% win rate. When everything is rising, owning the whole market is the simplest and most reliable strategy." },
       { asset: "Nasdaq 100 (QQQ)", why: "Broad growth exposure. +8.5% avg, 100% win rate across 19 years. The default growth tilt on top of SPY." },
       { asset: "ARK Next Gen Internet (ARKW)", why: "High-growth tilt — +17% avg in Goldilocks. Volatile but powerful when growth runs and rates fall. Limited data." },
-      { asset: "Cloud Computing (WCLD)", why: "SaaS and cloud companies thrive when enterprises invest in growth. +16.5% avg, 100% win rate (limited data)." },
+      { asset: "Fidelity MSCI IT (FTEC)", why: "Broad tech exposure holding AI winners — Nvidia, Microsoft, Apple. +9.9% avg in Goldilocks, benefits from capex expansion." },
       { asset: "Autonomous Tech & Robotics (ARKQ)", why: "AI, robotics, and automation. +15.1% avg in Goldilocks, 100% win rate. Benefits from capex expansion in growth regimes." },
     ],
     underperform: [
@@ -144,7 +144,7 @@ export const playbookData: Record<RegimeName, {
     underperform: [
       { asset: "Long Bonds (TLT)", why: "Rising inflation and growth expectations push long-term yields higher, hammering bond prices. -1.4% avg." },
       { asset: "Gold (GLD)", why: "Gold underperforms during reflation because real rates are positive and growth assets offer better returns. +2.8% avg." },
-      { asset: "Cloud/Growth (WCLD)", why: "High-growth tech gets crushed when rates rise — worst performer at -16.4% avg in Reflation." },
+      { asset: "Cloud SaaS (WCLD)", why: "Cloud-only companies get crushed when rates rise and face AI disruption risk. -16.4% avg in Reflation." },
     ],
     historicalExamples: ["2003–2006 (housing boom)", "2009–2011 (post-GFC recovery)", "2021 (reopening trade)", "2025 Q1 (pre-Hormuz expansion)"],
   },
@@ -154,7 +154,7 @@ export const playbookData: Record<RegimeName, {
     outperform: [
       { asset: "Long Bonds (TLT)", why: "When rates are cut aggressively, existing long-duration bonds surge in price. +4.7% avg, 86% win rate — the most reliable deflation asset." },
       { asset: "Gold (GLD)", why: "Store of value when financial system stress rises. +5.9% avg, 71% win rate." },
-      { asset: "Cloud Computing (WCLD)", why: "Recovery upside — cloud/SaaS companies rebound fast as rate cuts fuel growth expectations. +11.6% avg in Deflation." },
+      { asset: "Fidelity MSCI IT (FTEC)", why: "Recovery upside — AI winners (Nvidia, MSFT, Apple) rebound first as rate cuts fuel growth expectations. +6.9% avg in Deflation, 75% win rate." },
       { asset: "Cash", why: "Purchasing power increases as prices fall. The framework holds higher cash reserves in this regime." },
     ],
     underperform: [
