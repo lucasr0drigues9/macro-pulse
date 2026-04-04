@@ -171,6 +171,8 @@ def get_geopolitical_risks():
         print(f"  ⚠️  Geopolitical fetch failed: {e}")
         if os.path.exists(CACHE_FILE):
             print(f"  Using stale cache as fallback...")
+            # Touch the file to reset TTL — prevents retrying on every request
+            os.utime(CACHE_FILE, None)
             with open(CACHE_FILE) as f:
                 return json.load(f)
         return None
