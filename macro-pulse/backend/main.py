@@ -829,37 +829,54 @@ def get_transition_outlook():
             "signals": [w["message"] for w in transitions.get("warnings", [])],
         }
 
-    # From geo synthesis scenarios
-    # Bull case often points to Goldilocks/Reflation, bear case to Stagflation/Deflation
-    for case, label in [(bull_case, "bull"), (bear_case, "bear")]:
-        beneficiaries = case.get("beneficiaries", []) if label == "bull" else []
-        victims = case.get("victims", []) if label == "bear" else []
-        trigger = case.get("trigger", "")
-        scenario = case.get("scenario", "")
+    # From geo synthesis scenarios — generate all possible transitions from current regime
+    # Stagflation can transition to: Reflation (growth recovers, inflation stays),
+    #   Goldilocks (crisis resolves, inflation falls), Deflation (growth collapses further)
+    if bull_case.get("scenario"):
+        trigger = bull_case.get("trigger", "")
+        scenario = bull_case.get("scenario", "")
 
-        # Determine which regime the scenario points to
-        if label == "bull" and beneficiaries:
-            # Bull scenario usually points away from current crisis
-            growth_assets = {"QQQ", "SPY", "GURU", "IWM", "XLI", "BRK-B"}
-            if set(beneficiaries) & growth_assets:
-                target = "Goldilocks" if regime in ("Stagflation", "Deflation") else "Reflation"
+        if regime == "Stagflation":
+            # Bull case from Stagflation: crisis ends
+            # Could go to Goldilocks (full recovery) or Reflation (growth back but inflation stays)
+            for target, score in [("Goldilocks", 35), ("Reflation", 25)]:
                 if target not in possible_regimes:
-                    possible_regimes[target] = {"score": 25, "source": "", "signals": []}
-                possible_regimes[target]["score"] += 15
+                    possible_regimes[target] = {"score": 0, "source": "", "signals": []}
+                possible_regimes[target]["score"] += score
                 possible_regimes[target]["source"] = f"Geo bull scenario: {scenario[:80]}"
-                possible_regimes[target]["signals"].append(f"Trigger: {trigger}")
+                if trigger:
+                    possible_regimes[target]["signals"].append(f"Trigger: {trigger}")
+        elif regime == "Deflation":
+            for target in ["Goldilocks", "Reflation"]:
+                if target not in possible_regimes:
+                    possible_regimes[target] = {"score": 30, "source": f"Geo bull scenario: {scenario[:80]}", "signals": []}
+                    if trigger:
+                        possible_regimes[target]["signals"].append(f"Trigger: {trigger}")
+        else:
+            target = "Goldilocks" if regime == "Reflation" else "Reflation"
+            if target not in possible_regimes:
+                possible_regimes[target] = {"score": 30, "source": f"Geo bull scenario: {scenario[:80]}", "signals": []}
+                if trigger:
+                    possible_regimes[target]["signals"].append(f"Trigger: {trigger}")
 
-        elif label == "bear" and victims:
-            commodity_assets = {"XLE", "GLD", "DBC"}
-            if set(victims) & commodity_assets:
-                target = "Deflation" if regime in ("Stagflation", "Reflation") else "Stagflation"
-            else:
-                target = "Stagflation" if regime != "Stagflation" else "Deflation"
-            if target not in possible_regimes and target != regime:
-                possible_regimes[target] = {"score": 20, "source": "", "signals": []}
-                if target in possible_regimes:
-                    possible_regimes[target]["score"] += 10
-                    possible_regimes[target]["source"] = f"Geo bear scenario: {scenario[:80]}"
+    if bear_case.get("scenario"):
+        trigger = bear_case.get("trigger", "")
+        scenario = bear_case.get("scenario", "")
+
+        if regime == "Stagflation":
+            # Bear from Stagflation: crisis deepens → Deflation
+            target = "Deflation"
+            if target not in possible_regimes:
+                possible_regimes[target] = {"score": 0, "source": "", "signals": []}
+            possible_regimes[target]["score"] += 25
+            possible_regimes[target]["source"] = f"Geo bear scenario: {scenario[:80]}"
+            if trigger:
+                possible_regimes[target]["signals"].append(f"Trigger: {trigger}")
+        elif regime != "Stagflation":
+            target = "Stagflation"
+            if target not in possible_regimes:
+                possible_regimes[target] = {"score": 25, "source": f"Geo bear scenario: {scenario[:80]}", "signals": []}
+                if trigger:
                     possible_regimes[target]["signals"].append(f"Trigger: {trigger}")
 
     # Also consider the natural cycle — what typically follows this regime
