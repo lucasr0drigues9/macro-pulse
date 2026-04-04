@@ -1578,24 +1578,24 @@ def _refresh_calendar(regime: str, geo: dict) -> bool:
         return False
 
     today = datetime.now()
-    next_week = today + timedelta(days=10)
+    next_week = today + timedelta(days=14)
     geo_summary = geo.get("overall_summary", "")[:200] if geo else ""
 
     prompt = f"""Today is {today.strftime('%A, %B %d, %Y')}.
 Current macro regime: {regime}
 Geopolitical context: {geo_summary}
 
-List the most important upcoming US economic releases and events between now and {next_week.strftime('%B %d, %Y')}.
+List 5-8 of the most important upcoming US economic releases and events between now and {next_week.strftime('%B %d, %Y')}.
 
 For each event, provide:
-- name: the release name
+- name: the release name (do NOT prefix weekly releases with "Weekly")
 - source: who publishes it (e.g. Bureau of Labor Statistics, Federal Reserve)
 - date: exact date in YYYY-MM-DD format
 - day: day of the week
-- impact: High, Medium, or Low
+- impact: High, Medium, or Low (must always be included)
 - implication: one sentence on what it means for the current {regime} regime
 
-Include: CPI, PPI, retail sales, jobless claims, FOMC meetings/minutes, GDP, ISM PMI, NFP jobs report, consumer sentiment — whichever are actually scheduled in this period. Only include real scheduled releases, not made-up ones.
+Include: CPI, PPI, retail sales, initial jobless claims, FOMC meetings/minutes, GDP, ISM PMI, NFP jobs report, consumer sentiment, housing starts — whichever are actually scheduled in this period. Only include real scheduled releases. For weekly releases like jobless claims, only include the next one, not multiple weeks.
 
 Respond as JSON: {{"events": [{{"name": "...", "source": "...", "date": "YYYY-MM-DD", "day": "...", "impact": "High/Medium/Low", "implication": "..."}}], "watchList": ["item1", "item2"]}}"""
 
