@@ -1552,7 +1552,7 @@ def _refresh_calendar(regime: str, geo: dict) -> bool:
         return False
 
     today = datetime.now()
-    next_week = today + timedelta(days=7)
+    next_week = today + timedelta(days=10)
     geo_summary = geo.get("overall_summary", "")[:200] if geo else ""
 
     prompt = f"""Today is {today.strftime('%A, %B %d, %Y')}.

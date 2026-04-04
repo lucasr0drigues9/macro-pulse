@@ -46,8 +46,8 @@ export default function WeeklyCalendar() {
 
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">This Week — What to Watch</h2>
-      <p className="text-xs text-[#555] mb-6">Upcoming economic releases with regime implications</p>
+      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Upcoming — What to Watch</h2>
+      <p className="text-xs text-[#555] mb-6">Next economic releases with regime implications · Updated daily</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {events.map((event) => {
