@@ -472,93 +472,49 @@ def calculate_allocation(body: dict):
 
 @app.get("/api/calendar")
 def get_calendar():
-    """Section 4 — This week's economic releases with regime implications."""
+    """Section 4 — This week's economic releases, AI-generated and cached."""
     import json
+    from datetime import datetime
 
-    # Pull calendar scenarios from AI synthesis cache
+    # Try loading AI-generated calendar from cache
+    cache_path = os.path.join(MACRO, ".macro_cache", "calendar.json")
+    try:
+        if os.path.exists(cache_path):
+            with open(cache_path) as f:
+                cached = json.load(f)
+            # Filter out past events
+            today = datetime.now().strftime("%Y-%m-%d")
+            events = [e for e in cached.get("events", []) if e.get("date", "") >= today]
+            if events:
+                return {"events": events, "watchList": cached.get("watchList", [])}
+    except Exception:
+        pass
+
+    # Fallback: generate from synthesis scenarios
     synthesis = _load_synthesis()
     calendar_scenarios = synthesis.get("calendar_scenarios", {}) if synthesis else {}
     watch_list = synthesis.get("watch_this_week", []) if synthesis else []
 
-    # Build calendar from synthesis + hardcoded FRED release schedule
     events = []
+    if calendar_scenarios.get("cpi"):
+        cpi = calendar_scenarios["cpi"]
+        events.append({
+            "name": "CPI Release", "source": "Bureau of Labor Statistics",
+            "date": "2026-04-10", "day": "Thursday", "impact": "High",
+            "implication": cpi.get("what_to_watch", ""),
+            "scenarios": {"high": cpi.get("high", ""), "low": cpi.get("low", ""), "inline": cpi.get("inline", "")},
+        })
+    if calendar_scenarios.get("fomc"):
+        fomc = calendar_scenarios["fomc"]
+        events.append({
+            "name": "FOMC Meeting", "source": "Federal Reserve",
+            "date": "2026-04-28", "day": "Monday", "impact": "High",
+            "implication": fomc.get("what_to_watch", ""),
+            "scenarios": {"hold": fomc.get("hold", ""), "hike": fomc.get("hike", ""), "cut": fomc.get("cut", "")},
+        })
 
-    # CPI
-    cpi = calendar_scenarios.get("cpi", {})
-    events.append({
-        "name": "CPI (March)",
-        "source": "Bureau of Labor Statistics",
-        "date": "2026-04-10",
-        "day": "Thursday",
-        "impact": "High",
-        "implication": cpi.get("what_to_watch", "Energy component will dominate headline CPI."),
-        "scenarios": {
-            "high": cpi.get("high", ""),
-            "low": cpi.get("low", ""),
-            "inline": cpi.get("inline", ""),
-        } if cpi else None,
-    })
-
-    # FOMC
-    fomc = calendar_scenarios.get("fomc", {})
-    events.append({
-        "name": "FOMC Meeting",
-        "source": "Federal Reserve",
-        "date": "2026-04-28",
-        "day": "Monday",
-        "impact": "High",
-        "implication": fomc.get("what_to_watch", "Watch for language on energy shock vs growth risks."),
-        "scenarios": {
-            "hold": fomc.get("hold", ""),
-            "hike": fomc.get("hike", ""),
-            "cut": fomc.get("cut", ""),
-        } if fomc else None,
-    })
-
-    # 13F filings
-    filings = calendar_scenarios.get("filings", {})
-    events.append({
-        "name": "13F Filing Deadline (Q1)",
-        "source": "SEC EDGAR",
-        "date": "2026-05-15",
-        "day": "Thursday",
-        "impact": "Medium",
-        "implication": filings.get("what_to_watch", "Superinvestor positioning for Q1 2026."),
-        "scenarios": None,
-    })
-
-    # Static releases for this week
-    events.extend([
-        {
-            "name": "ISM Manufacturing PMI",
-            "source": "ISM",
-            "date": "2026-04-01",
-            "day": "Tuesday",
-            "impact": "High",
-            "implication": "Below 50 confirms manufacturing contraction — supports stagflation read.",
-            "scenarios": None,
-        },
-        {
-            "name": "Initial Jobless Claims",
-            "source": "Department of Labor",
-            "date": "2026-04-03",
-            "day": "Thursday",
-            "impact": "Medium",
-            "implication": "Rising claims would confirm growth slowdown leg of stagflation.",
-            "scenarios": None,
-        },
-        {
-            "name": "Retail Sales (March)",
-            "source": "Census Bureau",
-            "date": "2026-04-15",
-            "day": "Tuesday",
-            "impact": "High",
-            "implication": "Consumer spending under pressure from energy costs — key growth signal.",
-            "scenarios": None,
-        },
-    ])
-
-    # Sort by date
+    today = datetime.now().strftime("%Y-%m-%d")
+    events = [e for e in events if e.get("date", "") >= today]
     events.sort(key=lambda e: e["date"])
 
     return {"events": events, "watchList": watch_list}
@@ -1289,6 +1245,9 @@ async def cron_daily(request: Request):
             explanation=geo.get("overall_summary", ""),
         )
 
+    # Refresh weekly calendar via AI
+    calendar_updated = _refresh_calendar(regime, geo)
+
     return {
         "ok": True,
         "regime": regime,
@@ -1296,6 +1255,7 @@ async def cron_daily(request: Request):
         "geoRegime": new_geo_regime,
         "lagWarning": lag_warning,
         "emailsSent": sent,
+        "calendarUpdated": calendar_updated,
     }
 
 
@@ -1503,6 +1463,79 @@ def _count_consecutive_months(regime: str) -> int:
         return max(months, 1)
     except Exception:
         return 1
+
+
+def _refresh_calendar(regime: str, geo: dict) -> bool:
+    """Use AI to generate this week's economic calendar with regime implications."""
+    import json as _json
+    import requests as req
+    from datetime import datetime, timedelta
+
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        return False
+
+    today = datetime.now()
+    next_week = today + timedelta(days=14)
+    geo_summary = geo.get("overall_summary", "")[:200] if geo else ""
+
+    prompt = f"""Today is {today.strftime('%A, %B %d, %Y')}.
+Current macro regime: {regime}
+Geopolitical context: {geo_summary}
+
+List the most important upcoming US economic releases and events between now and {next_week.strftime('%B %d, %Y')}.
+
+For each event, provide:
+- name: the release name
+- source: who publishes it (e.g. Bureau of Labor Statistics, Federal Reserve)
+- date: exact date in YYYY-MM-DD format
+- day: day of the week
+- impact: High, Medium, or Low
+- implication: one sentence on what it means for the current {regime} regime
+
+Include: CPI, PPI, retail sales, jobless claims, FOMC meetings/minutes, GDP, ISM PMI, NFP jobs report, consumer sentiment — whichever are actually scheduled in this period. Only include real scheduled releases, not made-up ones.
+
+Respond as JSON: {{"events": [{{"name": "...", "source": "...", "date": "YYYY-MM-DD", "day": "...", "impact": "High/Medium/Low", "implication": "..."}}], "watchList": ["item1", "item2"]}}"""
+
+    try:
+        r = req.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": anthropic_key,
+                "anthropic-version": "2023-06-01",
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 800,
+                "messages": [{"role": "user", "content": prompt}],
+            },
+            timeout=30,
+        )
+        data = r.json()
+        text = "".join(b.get("text", "") for b in data.get("content", []))
+
+        clean = text.strip()
+        if "```" in clean:
+            clean = clean.split("```")[1]
+            if clean.startswith("json"):
+                clean = clean[4:]
+            clean = clean.strip()
+        if not clean.startswith("{"):
+            start = clean.find("{")
+            end = clean.rfind("}") + 1
+            if start != -1:
+                clean = clean[start:end]
+
+        result = _json.loads(clean)
+
+        cache_path = os.path.join(MACRO, ".macro_cache", "calendar.json")
+        with open(cache_path, "w") as f:
+            _json.dump(result, f)
+        return True
+    except Exception as e:
+        print(f"  [calendar] Failed to refresh: {e}")
+        return False
 
 
 def _build_fred_note(fred_data: dict, quadrant: dict) -> str:
