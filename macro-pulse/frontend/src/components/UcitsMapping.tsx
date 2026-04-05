@@ -3,19 +3,19 @@
 import { useState } from "react";
 
 const mapping = [
-  { us: "SPY", ucits: "SXR8.DE", name: "iShares Core S&P 500 UCITS", exchange: "Xetra", tracking: "Good", regimes: "Reflation, Goldilocks" },
-  { us: "QQQ", ucits: "CNDX.L", name: "iShares Nasdaq 100 UCITS", exchange: "London", tracking: "Excellent", regimes: "Goldilocks" },
-  { us: "XLE", ucits: "IUES.L", name: "iShares S&P 500 Energy Sector UCITS", exchange: "London", tracking: "Good", regimes: "Stagflation, Reflation" },
-  { us: "GLD", ucits: "IGLN.L", name: "iShares Physical Gold ETC", exchange: "London", tracking: "Excellent", regimes: "Stagflation, Deflation" },
-  { us: "TLT", ucits: "DTLA.L", name: "iShares USD Treasury Bond 20+yr UCITS", exchange: "London", tracking: "Excellent", regimes: "Deflation" },
-  { us: "FTEC", ucits: "XDWT.DE", name: "Xtrackers MSCI World IT UCITS", exchange: "Xetra", tracking: "Close match", regimes: "Goldilocks, Deflation" },
-  { us: "ARKW", ucits: "XDWT.DE", name: "Xtrackers MSCI World IT UCITS", exchange: "Xetra", tracking: "Alternative", regimes: "Goldilocks" },
-  { us: "ARKQ", ucits: "XDWT.DE", name: "Xtrackers MSCI World IT UCITS", exchange: "Xetra", tracking: "Alternative", regimes: "Goldilocks" },
-  { us: "XLI", ucits: "IS3N.DE", name: "iShares S&P 500 Industrials UCITS", exchange: "Xetra", tracking: "Good", regimes: "Reflation" },
-  { us: "BRK-B", ucits: "BRK-B", name: "Berkshire Hathaway (buy stock directly)", exchange: "NYSE", tracking: "Same", regimes: "Reflation" },
-  { us: "DBC", ucits: "EXXY.DE", name: "iShares Diversified Commodity Swap UCITS", exchange: "Xetra", tracking: "Good", regimes: "Stagflation" },
-  { us: "XLP", ucits: "IUCS.L", name: "iShares S&P 500 Consumer Staples UCITS", exchange: "London", tracking: "Good", regimes: "Stagflation" },
-  { us: "XLU", ucits: "IUUS.L", name: "iShares S&P 500 Utilities UCITS", exchange: "London", tracking: "Good", regimes: "Stagflation" },
+  { us: "SPY", ucits: "SXR8.DE", name: "iShares Core S&P 500 UCITS", exchange: "Xetra", regimes: "Reflation, Goldilocks" },
+  { us: "QQQ", ucits: "CNDX.L", name: "iShares Nasdaq 100 UCITS", exchange: "London", regimes: "Goldilocks" },
+  { us: "XLE", ucits: "IUES.L", name: "iShares S&P 500 Energy Sector UCITS", exchange: "London", regimes: "Stagflation, Reflation" },
+  { us: "GLD", ucits: "IGLN.L", name: "iShares Physical Gold ETC", exchange: "London", regimes: "Stagflation, Deflation" },
+  { us: "TLT", ucits: "DTLA.L", name: "iShares USD Treasury Bond 20+yr UCITS", exchange: "London", regimes: "Deflation" },
+  { us: "FTEC", ucits: "XDWT.DE", name: "Xtrackers MSCI World IT UCITS", exchange: "Xetra", regimes: "Goldilocks, Deflation" },
+  { us: "ARKW", ucits: "XDWT.DE", name: "Xtrackers MSCI World IT UCITS (alternative)", exchange: "Xetra", regimes: "Goldilocks" },
+  { us: "ARKQ", ucits: "XDWT.DE", name: "Xtrackers MSCI World IT UCITS (alternative)", exchange: "Xetra", regimes: "Goldilocks" },
+  { us: "XLI", ucits: "IS3N.DE", name: "iShares S&P 500 Industrials UCITS", exchange: "Xetra", regimes: "Reflation" },
+  { us: "BRK-B", ucits: "BRK-B", name: "Berkshire Hathaway (buy stock directly)", exchange: "NYSE", regimes: "Reflation" },
+  { us: "DBC", ucits: "EXXY.DE", name: "iShares Diversified Commodity Swap UCITS", exchange: "Xetra", regimes: "Stagflation" },
+  { us: "XLP", ucits: "IUCS.L", name: "iShares S&P 500 Consumer Staples UCITS", exchange: "London", regimes: "Stagflation" },
+  { us: "XLU", ucits: "IUUS.L", name: "iShares S&P 500 Utilities UCITS", exchange: "London", regimes: "Stagflation" },
 ];
 
 export default function UcitsMapping() {
@@ -45,7 +45,6 @@ export default function UcitsMapping() {
                   <th className="text-left py-2 pr-2">US ETF</th>
                   <th className="text-left py-2 pr-2">UCITS</th>
                   <th className="text-left py-2 pr-2 hidden sm:table-cell">Name</th>
-                  <th className="text-left py-2 pr-2 hidden sm:table-cell">Tracking</th>
                   <th className="text-left py-2">Regimes</th>
                 </tr>
               </thead>
@@ -55,11 +54,6 @@ export default function UcitsMapping() {
                     <td className="py-2 pr-2 text-[#e0e0e0] font-bold">{row.us}</td>
                     <td className="py-2 pr-2 text-[#eab308]">{row.ucits}</td>
                     <td className="py-2 pr-2 text-[#888] hidden sm:table-cell">{row.name}</td>
-                    <td className="py-2 pr-2 hidden sm:table-cell">
-                      <span className={row.tracking === "Excellent" ? "text-[#22c55e]" : row.tracking === "Good" || row.tracking === "Same" ? "text-[#888]" : "text-[#eab308]"}>
-                        {row.tracking}
-                      </span>
-                    </td>
                     <td className="py-2 text-[#555]">{row.regimes}</td>
                   </tr>
                 ))}
