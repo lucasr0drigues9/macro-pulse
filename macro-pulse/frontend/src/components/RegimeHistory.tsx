@@ -114,9 +114,8 @@ export default function RegimeHistory() {
                   </span>
                 </div>
                 <div className="text-xs sm:w-56">
-                  <span className="text-[#888]">{period.start} → {period.end}</span>
-                  <span className="text-[#333] ml-1">({period.months}mo)</span>
-                  <div className="text-[#555]">FRED: {period.quarterLabel}</div>
+                  <span className="text-[#e0e0e0]">{period.quarterLabel}</span>
+                  <div className="text-[#555]">FRED confirmed: {period.start} → {period.end}</div>
                 </div>
                 <div className="flex-1 flex items-center gap-4 text-xs">
                   <span>

@@ -628,25 +628,29 @@ def get_backtest():
     # Label by approximate GDP quarter being measured, not when data was available
     from datetime import datetime as _dt
 
+    # Quarter start months for display
+    _Q_STARTS = {"Q1": "Jan", "Q2": "Apr", "Q3": "Jul", "Q4": "Oct"}
+    _Q_ENDS = {"Q1": "Mar", "Q2": "Jun", "Q3": "Sep", "Q4": "Dec"}
+
     def _month_to_gdp_quarter(date_str: str) -> str:
-        """Map a month to which GDP quarter the data is actually measuring.
+        """Map a FRED reporting month to which quarter the economy was actually in.
+        The regime happened DURING the quarter the GDP measures, not when the report came out.
         GDP release schedule:
           Q1 (Jan-Mar) → released late April
           Q2 (Apr-Jun) → released late July
           Q3 (Jul-Sep) → released late October
-          Q4 (Oct-Dec) → released late January
-        So in November, Q3 GDP just came out → measuring Jul-Sep."""
+          Q4 (Oct-Dec) → released late January"""
         y = int(date_str[:4])
         m = int(date_str[5:7])
-        if m <= 1:       # Jan: Q3 prev year just released
+        if m <= 1:       # Jan: Q3 prev year data → economy was in Jul-Sep
             return f"Q3 {y-1}"
-        elif m <= 4:     # Feb-Apr: Q4 prev year just released
+        elif m <= 4:     # Feb-Apr: Q4 prev year data → economy was in Oct-Dec
             return f"Q4 {y-1}"
-        elif m <= 7:     # May-Jul: Q1 current year just released
+        elif m <= 7:     # May-Jul: Q1 data → economy was in Jan-Mar
             return f"Q1 {y}"
-        elif m <= 10:    # Aug-Oct: Q2 current year just released
+        elif m <= 10:    # Aug-Oct: Q2 data → economy was in Apr-Jun
             return f"Q2 {y}"
-        else:            # Nov-Dec: Q3 current year just released
+        else:            # Nov-Dec: Q3 data → economy was in Jul-Sep
             return f"Q3 {y}"
 
     timeline_data = []
@@ -672,17 +676,27 @@ def get_backtest():
         profitable = (picks_ret or 0) > 0 if picks_ret is not None else None
         beat_spy = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
 
-        # Quarter labels
+        # Quarter labels — show when the regime actually occurred
         start_q = _month_to_gdp_quarter(start)
         end_q = _month_to_gdp_quarter(end)
-        quarter_label = start_q if start_q == end_q else f"{start_q} → {end_q}"
+
+        # Build human-readable date range from the measured quarters
+        start_q_name = start_q[:2]  # "Q3"
+        start_q_year = start_q[3:]  # "2025"
+        end_q_name = end_q[:2]
+        end_q_year = end_q[3:]
+
+        if start_q == end_q:
+            actual_range = f"{_Q_STARTS[start_q_name]} – {_Q_ENDS[start_q_name]} {start_q_year}"
+        else:
+            actual_range = f"{_Q_STARTS[start_q_name]} {start_q_year} �� {_Q_ENDS[end_q_name]} {end_q_year}"
 
         timeline_data.append({
             "regime": regime,
             "start": start[:7],
             "end": end[:7],
             "months": months,
-            "quarterLabel": quarter_label,
+            "quarterLabel": actual_range,
             "picksReturn": picks_ret,
             "spyReturn": spy_ret,
             "profitable": profitable,
