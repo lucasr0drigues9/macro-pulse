@@ -6,27 +6,31 @@ export default function HowToUse() {
       <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">How to Get the Best Results</h2>
       <p className="text-xs text-[#555] mb-6">The simplest strategy that works — backed by 5 years of data</p>
 
-      {/* The top 2 per regime */}
+      {/* The top 2 per regime — US + UCITS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="p-3 rounded-lg border border-[#ef444430] bg-[rgba(239,68,68,0.05)]">
           <div className="text-xs text-[#ef4444] font-bold mb-1">Stagflation</div>
           <div className="text-sm text-[#e0e0e0]">XLE + GLD</div>
           <div className="text-xs text-[#555]">Energy + Gold</div>
+          <div className="text-xs text-[#333] mt-1">UCITS: IUES.L + IGLN.L</div>
         </div>
         <div className="p-3 rounded-lg border border-[#22c55e30] bg-[rgba(34,197,94,0.05)]">
           <div className="text-xs text-[#22c55e] font-bold mb-1">Goldilocks</div>
-          <div className="text-sm text-[#e0e0e0]">SPY + QQQ</div>
-          <div className="text-xs text-[#555]">S&amp;P 500 + Nasdaq</div>
+          <div className="text-sm text-[#e0e0e0]">QQQ + FTEC</div>
+          <div className="text-xs text-[#555]">Nasdaq + Tech</div>
+          <div className="text-xs text-[#333] mt-1">UCITS: CNDX.L + XDWT.DE</div>
         </div>
         <div className="p-3 rounded-lg border border-[#eab30830] bg-[rgba(234,179,8,0.05)]">
           <div className="text-xs text-[#eab308] font-bold mb-1">Reflation</div>
           <div className="text-sm text-[#e0e0e0]">SPY + XLE</div>
           <div className="text-xs text-[#555]">S&amp;P 500 + Energy</div>
+          <div className="text-xs text-[#333] mt-1">UCITS: SXR8.DE + IUES.L</div>
         </div>
         <div className="p-3 rounded-lg border border-[#3b82f630] bg-[rgba(59,130,246,0.05)]">
           <div className="text-xs text-[#3b82f6] font-bold mb-1">Deflation</div>
           <div className="text-sm text-[#e0e0e0]">TLT + GLD</div>
           <div className="text-xs text-[#555]">Bonds + Gold</div>
+          <div className="text-xs text-[#333] mt-1">UCITS: DTLA.L + IGLN.L</div>
         </div>
       </div>
 
