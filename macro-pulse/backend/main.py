@@ -680,35 +680,14 @@ def get_backtest():
         profitable = (picks_ret or 0) > 0 if picks_ret is not None else None
         beat_spy = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
 
-        # Quarter labels — show when the regime actually occurred
-        # Use the end month minus 1 for the end quarter, since 'end' is the last month
-        # of THIS period, not the first month of the next
-        start_q = _month_to_gdp_quarter(start)
-        # For end: step back 1 month to get the last month fully inside this period
-        end_y, end_m = int(end[:4]), int(end[5:7])
-        if end_m == 1:
-            prev_end = f"{end_y-1:04d}-12-01"
-        else:
-            prev_end = f"{end_y:04d}-{end_m-1:02d}-01"
-        end_q = _month_to_gdp_quarter(prev_end) if start != end else start_q
-
-        # Build human-readable date range from the measured quarters
-        start_q_name = start_q[:2]  # "Q3"
-        start_q_year = start_q[3:]  # "2025"
-        end_q_name = end_q[:2]
-        end_q_year = end_q[3:]
-
-        if start_q == end_q:
-            actual_range = f"{_Q_STARTS[start_q_name]} - {_Q_ENDS[start_q_name]} {start_q_year}"
-        else:
-            actual_range = f"{_Q_STARTS[start_q_name]} {start_q_year} - {_Q_ENDS[end_q_name]} {end_q_year}"
-
+        # Show FRED confirmation dates directly — no quarter mapping
+        # The explanation at the top of the section already tells users
+        # that FRED is a lagging confirmation signal
         timeline_data.append({
             "regime": regime,
             "start": start[:7],
             "end": end[:7],
             "months": months,
-            "quarterLabel": actual_range,
             "picksReturn": picks_ret,
             "spyReturn": spy_ret,
             "profitable": profitable,
