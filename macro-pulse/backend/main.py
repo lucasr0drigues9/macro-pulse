@@ -886,15 +886,15 @@ def get_value_scanner():
         results.append({
             "ticker": ticker,
             "name": info["name"],
-            "price": timing["price"],
-            "rsi": timing["rsi"],
-            "fiveyrPosition": fiveyr,
-            "fiveyrLabel": timing.get("fiveyr_label", ""),
-            "change3m": change_3m,
-            "dipFromHigh": dip_from_high,
-            "isDip": is_dip,
+            "price": float(timing["price"]),
+            "rsi": float(timing["rsi"]),
+            "fiveyrPosition": int(fiveyr),
+            "fiveyrLabel": str(timing.get("fiveyr_label", "")),
+            "change3m": float(change_3m) if change_3m is not None else None,
+            "dipFromHigh": float(dip_from_high) if dip_from_high is not None else None,
+            "isDip": bool(is_dip),
             "regimes": info["regimes"],
-            "currentRegimePick": regime in info["regimes"],
+            "currentRegimePick": bool(regime in info["regimes"]),
         })
 
     # Sort: dips first, then by 5yr position
