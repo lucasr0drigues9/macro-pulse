@@ -3,6 +3,7 @@ import RegimeIndicator from "@/components/RegimeIndicator";
 import AssetPerformance from "@/components/AssetPerformance";
 import PortfolioAllocation from "@/components/PortfolioAllocation";
 import UcitsMapping from "@/components/UcitsMapping";
+import ValueScanner from "@/components/ValueScanner";
 import HowToUse from "@/components/HowToUse";
 import WeeklyCalendar from "@/components/WeeklyCalendar";
 import RegimeTriggers from "@/components/RegimeTriggers";
@@ -26,6 +27,9 @@ export default function Home() {
       <div className="border-t border-[#181818]" />
       <PortfolioAllocation />
       <UcitsMapping />
+
+      <div className="border-t border-[#181818]" />
+      <ValueScanner />
 
       <div className="border-t border-[#181818]" />
       <WeeklyCalendar />

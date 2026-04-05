@@ -817,6 +817,48 @@ def subscribe(body: dict):
     return {"ok": True, "message": "Subscribed successfully"}
 
 
+@app.get("/api/value-scanner")
+def get_value_scanner():
+    """All ETFs ranked by how cheap they are on a 5-year scale."""
+    from macro_kelly import get_current_regime, REGIME_ETFS, get_etf_timing
+
+    regime, _, _ = get_current_regime()
+
+    # Collect all unique ETFs across all regimes
+    all_etfs = {}
+    for r, etfs in REGIME_ETFS.items():
+        for e in etfs:
+            if e["ticker"] not in all_etfs:
+                all_etfs[e["ticker"]] = {"name": e["name"], "regimes": []}
+            all_etfs[e["ticker"]]["regimes"].append(r)
+
+    results = []
+    for ticker, info in all_etfs.items():
+        timing = get_etf_timing(ticker)
+        if not timing:
+            continue
+
+        fiveyr = timing.get("fiveyr_position")
+        if fiveyr is None:
+            continue
+
+        results.append({
+            "ticker": ticker,
+            "name": info["name"],
+            "price": timing["price"],
+            "rsi": timing["rsi"],
+            "fiveyrPosition": fiveyr,
+            "fiveyrLabel": timing.get("fiveyr_label", ""),
+            "regimes": info["regimes"],
+            "currentRegimePick": regime in info["regimes"],
+        })
+
+    # Sort by 5yr position — cheapest first
+    results.sort(key=lambda x: x["fiveyrPosition"])
+
+    return {"regime": regime, "etfs": results}
+
+
 @app.get("/api/transition")
 def get_transition_outlook():
     """Preparing for Transition — next regime probabilities + cheap ETFs to position early."""
