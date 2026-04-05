@@ -629,22 +629,25 @@ def get_backtest():
     from datetime import datetime as _dt
 
     def _month_to_gdp_quarter(date_str: str) -> str:
-        """Map a month to when the regime conditions actually occurred.
-        GDP data confirms conditions from the PREVIOUS quarter — by the time
-        we see Q3 GDP (Jul-Sep) in October, the regime started in Q2 (Apr-Jun).
-        So we shift back one quarter from what the data measures."""
+        """Map a month to which GDP quarter the data is actually measuring.
+        GDP release schedule:
+          Q1 (Jan-Mar) → released late April
+          Q2 (Apr-Jun) → released late July
+          Q3 (Jul-Sep) → released late October
+          Q4 (Oct-Dec) → released late January
+        So in November, Q3 GDP just came out → measuring Jul-Sep."""
         y = int(date_str[:4])
         m = int(date_str[5:7])
-        if m <= 1:       # Jan: Q3 prev available → regime from Q2 prev
-            return f"Q2 {y-1}"
-        elif m <= 4:     # Feb-Apr: Q4 prev available → regime from Q3 prev
+        if m <= 1:       # Jan: Q3 prev year just released
             return f"Q3 {y-1}"
-        elif m <= 7:     # May-Jul: Q1 current available → regime from Q4 prev
+        elif m <= 4:     # Feb-Apr: Q4 prev year just released
             return f"Q4 {y-1}"
-        elif m <= 10:    # Aug-Oct: Q2 current available → regime from Q1 current
+        elif m <= 7:     # May-Jul: Q1 current year just released
             return f"Q1 {y}"
-        else:            # Nov-Dec: Q3 current available → regime from Q2 current
+        elif m <= 10:    # Aug-Oct: Q2 current year just released
             return f"Q2 {y}"
+        else:            # Nov-Dec: Q3 current year just released
+            return f"Q3 {y}"
 
     timeline_data = []
     for period in periods:
