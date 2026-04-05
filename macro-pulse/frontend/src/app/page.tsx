@@ -2,6 +2,7 @@ import Welcome from "@/components/Welcome";
 import RegimeIndicator from "@/components/RegimeIndicator";
 import AssetPerformance from "@/components/AssetPerformance";
 import PortfolioAllocation from "@/components/PortfolioAllocation";
+import UcitsMapping from "@/components/UcitsMapping";
 import WeeklyCalendar from "@/components/WeeklyCalendar";
 import RegimeTriggers from "@/components/RegimeTriggers";
 import TransitionOutlook from "@/components/TransitionOutlook";
@@ -23,6 +24,7 @@ export default function Home() {
 
       <div className="border-t border-[#181818]" />
       <PortfolioAllocation />
+      <UcitsMapping />
 
       <div className="border-t border-[#181818]" />
       <WeeklyCalendar />
