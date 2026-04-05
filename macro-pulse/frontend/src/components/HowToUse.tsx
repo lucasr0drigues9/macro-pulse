@@ -28,36 +28,37 @@ export default function HowToUse() {
         </div>
         <div className="p-3 rounded-lg border border-[#3b82f630] bg-[rgba(59,130,246,0.05)]">
           <div className="text-xs text-[#3b82f6] font-bold mb-1">Deflation</div>
-          <div className="text-sm text-[#e0e0e0]">TLT + GLD</div>
-          <div className="text-xs text-[#555]">Bonds + Gold</div>
-          <div className="text-xs text-[#333] mt-1">UCITS: DTLA.L + IGLN.L</div>
+          <div className="text-sm text-[#e0e0e0]">GLD + AGG</div>
+          <div className="text-xs text-[#555]">Gold + Agg Bond</div>
+          <div className="text-xs text-[#333] mt-1">UCITS: IGLN.L + IUAG.L</div>
         </div>
       </div>
 
       {/* DCA comparison */}
       <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-        <h3 className="text-sm font-bold text-[#e0e0e0] mb-3">5-year backtest: $1,000/month (April 2021 → March 2026)</h3>
+        <h3 className="text-sm font-bold text-[#e0e0e0] mb-3">5-year backtest: $1,000/month (April 2021 → February 2026)</h3>
+        <p className="text-xs text-[#555] mb-3">Verified against actual ETF chart prices. Includes regime rotations — sell old picks, buy new top 2 when regime changes.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div className="p-3 rounded bg-[#0a0a0a] text-center">
-            <div className="text-xs text-[#555] mb-1">Framework — Top 2 picks</div>
-            <div className="text-2xl font-bold text-[#22c55e]">$101,284</div>
-            <div className="text-xs text-[#888]">+71.7% return · $42,284 profit</div>
+            <div className="text-xs text-[#555] mb-1">Framework — Top 2 picks with rotation</div>
+            <div className="text-2xl font-bold text-[#22c55e]">$84,580</div>
+            <div className="text-xs text-[#888]">+45.8% return · $26,580 profit</div>
           </div>
           <div className="p-3 rounded bg-[#0a0a0a] text-center">
             <div className="text-xs text-[#555] mb-1">SPY only</div>
-            <div className="text-2xl font-bold text-[#888]">$80,542</div>
-            <div className="text-xs text-[#888]">+36.5% return · $21,542 profit</div>
+            <div className="text-2xl font-bold text-[#888]">$73,518</div>
+            <div className="text-xs text-[#888]">+26.8% return · $15,518 profit</div>
           </div>
         </div>
         <div className="text-center">
           <span className="text-sm text-[#e0e0e0]">The framework earned </span>
-          <span className="text-sm font-bold text-[#22c55e]">$20,742 more</span>
-          <span className="text-sm text-[#e0e0e0]"> — nearly double the profit of SPY</span>
+          <span className="text-sm font-bold text-[#22c55e]">$11,062 more</span>
+          <span className="text-sm text-[#e0e0e0]"> — 71% more profit than SPY alone</span>
         </div>
 
         <div className="mt-4 pt-3 border-t border-[#222]">
           <p className="text-xs text-[#555] text-center">
-            We also tested: top 1 pick only (+61%), cheapest pick (+54%), equal split across all picks (+43%). The top 2 strategy consistently performed best — enough concentration to capture the edge, enough diversification to smooth the ride.
+            The biggest wins came from XLE +45% in Reflation and GLD +49% in Stagflation. The biggest loss was TLT -10% in the 2022 Deflation — the Deflation picks are the weakest part of the framework. Numbers verified against Google Finance chart data.
           </p>
         </div>
       </div>

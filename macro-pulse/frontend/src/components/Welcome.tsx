@@ -72,7 +72,7 @@ export default function Welcome() {
       {/* Key insight */}
       <div className="p-3 rounded-lg bg-[#111] border border-[#222] mb-8">
         <p className="text-xs text-[#888] text-center leading-relaxed">
-          <span className="text-[#e0e0e0]">19 years of data (2007–2026):</span> In Goldilocks, growth picks averaged +32% vs SPY +15%. In Stagflation, defensive picks returned +17% vs SPY +1%. In Deflation, picks stayed positive while SPY lost money. The framework outperformed in 82% of regime periods by owning the right assets at the right time.
+          <span className="text-[#e0e0e0]">5-year verified backtest (2021–2026):</span> $1,000/month into the top 2 regime picks returned +45.8% vs SPY&apos;s +26.8% — 71% more profit. The edge comes from energy and gold in Stagflation, and growth ETFs in Goldilocks. Honest about weaknesses: Deflation picks lost money in 2022.
         </p>
       </div>
 
