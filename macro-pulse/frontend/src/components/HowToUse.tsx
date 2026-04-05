@@ -3,35 +3,8 @@
 export default function HowToUse() {
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">How to Use This Tool</h2>
+      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">How to Get the Best Results</h2>
       <p className="text-xs text-[#555] mb-6">The simplest strategy that works — backed by 5 years of data</p>
-
-      {/* The strategy */}
-      <div className="p-4 rounded-lg bg-[#111] border border-[#222] mb-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center mx-auto mb-2">
-              <span className="text-xs text-[#888]">1</span>
-            </div>
-            <div className="text-sm font-bold text-[#e0e0e0]">Check the regime</div>
-            <div className="text-xs text-[#888] mt-1">See which economic season we&apos;re in and what the top 2 picks are</div>
-          </div>
-          <div className="text-center">
-            <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center mx-auto mb-2">
-              <span className="text-xs text-[#888]">2</span>
-            </div>
-            <div className="text-sm font-bold text-[#e0e0e0]">Invest $500 in each</div>
-            <div className="text-xs text-[#888] mt-1">Split your monthly investment equally between the top 2 picks for the current regime</div>
-          </div>
-          <div className="text-center">
-            <div className="w-8 h-8 rounded-full bg-[#222] flex items-center justify-center mx-auto mb-2">
-              <span className="text-xs text-[#888]">3</span>
-            </div>
-            <div className="text-sm font-bold text-[#e0e0e0]">Rotate when it changes</div>
-            <div className="text-xs text-[#888] mt-1">When the regime shifts, start buying the new top 2. Sign up for alerts so you don&apos;t miss it.</div>
-          </div>
-        </div>
-      </div>
 
       {/* The top 2 per regime */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
