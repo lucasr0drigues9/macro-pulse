@@ -861,7 +861,7 @@ def get_value_scanner():
                     recent_prices = [monthly[d] for d in dates[-4:]]
                     high_3m = max(recent_prices)
                     dip_from_high = round((current_price - high_3m) / high_3m * 100, 1)
-                    is_dip = dip_from_high <= -5
+                    is_dip = bool(dip_from_high <= -5)
                     # 3-month change
                     if len(dates) >= 4:
                         price_3m_ago = monthly[dates[-4]]
