@@ -629,18 +629,20 @@ def get_backtest():
     from datetime import datetime as _dt
 
     def _month_to_gdp_quarter(date_str: str) -> str:
-        """Map a month to which GDP quarter was most likely driving the reading."""
+        """Map a month to which GDP quarter was most likely driving the reading.
+        GDP release: Q1→late Apr, Q2→late Jul, Q3→late Oct, Q4→late Jan."""
         y = int(date_str[:4])
         m = int(date_str[5:7])
-        # GDP release schedule: Q1→late Apr, Q2→late Jul, Q3→late Oct, Q4→late Jan
-        if m <= 3:
+        if m <= 1:       # Jan: Q3 prev year (Q4 not out until late Jan)
             return f"Q3 {y-1}"
-        elif m <= 6:
+        elif m <= 4:     # Feb-Apr: Q4 prev year
             return f"Q4 {y-1}"
-        elif m <= 9:
+        elif m <= 7:     # May-Jul: Q1 current year
             return f"Q1 {y}"
-        else:
+        elif m <= 10:    # Aug-Oct: Q2 current year
             return f"Q2 {y}"
+        else:            # Nov-Dec: Q3 current year
+            return f"Q3 {y}"
 
     timeline_data = []
     for period in periods:
