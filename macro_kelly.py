@@ -415,10 +415,32 @@ def get_etf_timing(ticker):
         else:
             signal = "🔴 WAIT"
 
+        # 5-year range position (0% = at 5yr low, 100% = at 5yr high)
+        fiveyr_position = None
+        fiveyr_label = None
+        try:
+            hist_5y = yf.Ticker(ticker).history(period="5y")
+            if len(hist_5y) > 200:
+                low_5y = hist_5y["Close"].min()
+                high_5y = hist_5y["Close"].max()
+                if high_5y > low_5y:
+                    fiveyr_position = round((price - low_5y) / (high_5y - low_5y) * 100)
+                    if fiveyr_position <= 25:
+                        fiveyr_label = "Near 5yr low"
+                    elif fiveyr_position <= 50:
+                        fiveyr_label = "Below midpoint"
+                    elif fiveyr_position <= 75:
+                        fiveyr_label = "Above midpoint"
+                    else:
+                        fiveyr_label = "Near 5yr high"
+        except:
+            pass
+
         return {
             "rsi": rsi, "sma_pct": sma_pct, "pullback": pullback,
             "score": score, "signal": signal, "price": round(price, 2),
             "sma20": round(sma20, 2), "high_50d": round(high_50d, 2),
+            "fiveyr_position": fiveyr_position, "fiveyr_label": fiveyr_label,
         }
     except:
         return None

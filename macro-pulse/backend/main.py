@@ -319,7 +319,11 @@ def get_allocation(mode: str = "active"):
         if timing:
             score = timing["score"]
             assessment = "Still attractive" if score >= 65 else "Fairly valued" if score >= 40 else "Extended"
-            price_info = {"price": timing["price"], "rsi": timing["rsi"], "score": timing["score"]}
+            price_info = {
+                "price": timing["price"], "rsi": timing["rsi"], "score": timing["score"],
+                "fiveyrPosition": timing.get("fiveyr_position"),
+                "fiveyrLabel": timing.get("fiveyr_label"),
+            }
         else:
             assessment = "Fairly valued"
             price_info = None
