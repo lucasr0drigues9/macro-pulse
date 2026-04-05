@@ -891,7 +891,6 @@ def get_value_scanner():
             "fiveyrPosition": fiveyr,
             "fiveyrLabel": timing.get("fiveyr_label", ""),
             "change3m": change_3m,
-            "change1m": change_1m,
             "dipFromHigh": dip_from_high,
             "isDip": is_dip,
             "regimes": info["regimes"],
