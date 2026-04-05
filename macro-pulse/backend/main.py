@@ -687,9 +687,9 @@ def get_backtest():
         end_q_year = end_q[3:]
 
         if start_q == end_q:
-            actual_range = f"{_Q_STARTS[start_q_name]} – {_Q_ENDS[start_q_name]} {start_q_year}"
+            actual_range = f"{_Q_STARTS[start_q_name]} - {_Q_ENDS[start_q_name]} {start_q_year}"
         else:
-            actual_range = f"{_Q_STARTS[start_q_name]} {start_q_year} �� {_Q_ENDS[end_q_name]} {end_q_year}"
+            actual_range = f"{_Q_STARTS[start_q_name]} {start_q_year} - {_Q_ENDS[end_q_name]} {end_q_year}"
 
         timeline_data.append({
             "regime": regime,
