@@ -842,6 +842,35 @@ def get_value_scanner():
         if fiveyr is None:
             continue
 
+        # Get 3-month and 1-month change to detect dips
+        change_3m = None
+        change_1m = None
+        try:
+            import yfinance as yf
+            hist = yf.Ticker(ticker).history(period="6mo")
+            if len(hist) > 60:
+                price_now = hist["Close"].iloc[-1]
+                price_3m = hist["Close"].iloc[-63] if len(hist) > 63 else hist["Close"].iloc[0]
+                price_1m = hist["Close"].iloc[-21] if len(hist) > 21 else hist["Close"].iloc[0]
+                change_3m = round((price_now - price_3m) / price_3m * 100, 1)
+                change_1m = round((price_now - price_1m) / price_1m * 100, 1)
+        except Exception:
+            pass
+
+        # Detect dip: price dropped >5% from 3-month high
+        is_dip = False
+        dip_from_high = None
+        try:
+            import yfinance as yf
+            hist_3m = yf.Ticker(ticker).history(period="3mo")
+            if len(hist_3m) > 10:
+                high_3m = hist_3m["Close"].max()
+                price_now = hist_3m["Close"].iloc[-1]
+                dip_from_high = round((price_now - high_3m) / high_3m * 100, 1)
+                is_dip = dip_from_high <= -5
+        except Exception:
+            pass
+
         results.append({
             "ticker": ticker,
             "name": info["name"],
@@ -849,12 +878,16 @@ def get_value_scanner():
             "rsi": timing["rsi"],
             "fiveyrPosition": fiveyr,
             "fiveyrLabel": timing.get("fiveyr_label", ""),
+            "change3m": change_3m,
+            "change1m": change_1m,
+            "dipFromHigh": dip_from_high,
+            "isDip": is_dip,
             "regimes": info["regimes"],
             "currentRegimePick": regime in info["regimes"],
         })
 
-    # Sort by 5yr position — cheapest first
-    results.sort(key=lambda x: x["fiveyrPosition"])
+    # Sort: dips first, then by 5yr position
+    results.sort(key=lambda x: (not x["isDip"], x["fiveyrPosition"]))
 
     return {"regime": regime, "etfs": results}
 
