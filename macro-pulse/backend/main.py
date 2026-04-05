@@ -842,34 +842,46 @@ def get_value_scanner():
         if fiveyr is None:
             continue
 
-        # Get 3-month and 1-month change to detect dips
+        # Detect dip using cached monthly data (reliable) + live data if available
+        import json as _json
         change_3m = None
-        change_1m = None
+        dip_from_high = None
+        is_dip = False
+
+        # Try cached monthly data first — always available
+        cache_file = os.path.join(MACRO, ".macro_cache", f"backtest_etf_{ticker}.json")
         try:
-            import yfinance as yf
-            hist = yf.Ticker(ticker).history(period="6mo")
-            if len(hist) > 60:
-                price_now = hist["Close"].iloc[-1]
-                price_3m = hist["Close"].iloc[-63] if len(hist) > 63 else hist["Close"].iloc[0]
-                price_1m = hist["Close"].iloc[-21] if len(hist) > 21 else hist["Close"].iloc[0]
-                change_3m = round((price_now - price_3m) / price_3m * 100, 1)
-                change_1m = round((price_now - price_1m) / price_1m * 100, 1)
+            if os.path.exists(cache_file):
+                with open(cache_file) as f:
+                    monthly = _json.load(f)
+                dates = sorted(monthly.keys())
+                if len(dates) >= 3:
+                    current_price = monthly[dates[-1]]
+                    # 3-month high from cached data
+                    recent_prices = [monthly[d] for d in dates[-4:]]
+                    high_3m = max(recent_prices)
+                    dip_from_high = round((current_price - high_3m) / high_3m * 100, 1)
+                    is_dip = dip_from_high <= -5
+                    # 3-month change
+                    if len(dates) >= 4:
+                        price_3m_ago = monthly[dates[-4]]
+                        change_3m = round((current_price - price_3m_ago) / price_3m_ago * 100, 1)
         except Exception:
             pass
 
-        # Detect dip: price dropped >5% from 3-month high
-        is_dip = False
-        dip_from_high = None
+        # Try live daily data for more precision (overrides if available)
         try:
             import yfinance as yf
             hist_3m = yf.Ticker(ticker).history(period="3mo")
             if len(hist_3m) > 10:
-                high_3m = hist_3m["Close"].max()
+                high_3m_live = hist_3m["Close"].max()
                 price_now = hist_3m["Close"].iloc[-1]
-                dip_from_high = round((price_now - high_3m) / high_3m * 100, 1)
+                dip_from_high = round((price_now - high_3m_live) / high_3m_live * 100, 1)
                 is_dip = dip_from_high <= -5
+                price_3m_ago = hist_3m["Close"].iloc[0]
+                change_3m = round((price_now - price_3m_ago) / price_3m_ago * 100, 1)
         except Exception:
-            pass
+            pass  # Keep cached values
 
         results.append({
             "ticker": ticker,
