@@ -681,8 +681,16 @@ def get_backtest():
         beat_spy = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
 
         # Quarter labels — show when the regime actually occurred
+        # Use the end month minus 1 for the end quarter, since 'end' is the last month
+        # of THIS period, not the first month of the next
         start_q = _month_to_gdp_quarter(start)
-        end_q = _month_to_gdp_quarter(end)
+        # For end: step back 1 month to get the last month fully inside this period
+        end_y, end_m = int(end[:4]), int(end[5:7])
+        if end_m == 1:
+            prev_end = f"{end_y-1:04d}-12-01"
+        else:
+            prev_end = f"{end_y:04d}-{end_m-1:02d}-01"
+        end_q = _month_to_gdp_quarter(prev_end) if start != end else start_q
 
         # Build human-readable date range from the measured quarters
         start_q_name = start_q[:2]  # "Q3"
