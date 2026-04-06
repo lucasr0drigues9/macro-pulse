@@ -386,27 +386,27 @@ export default function EuropePage() {
           <p className="text-xs text-[#555] mb-3">The structural catalyst date for European strategic autonomy</p>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">VanEck Defense ETF (defence)</span>
+              <span className="text-[#888]">DFNS.L — VanEck Defense ETF</span>
               <span className="text-[#22c55e] font-bold">+146.1%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">Safran (defence + tech)</span>
+              <span className="text-[#888]">SAF.PA — Safran</span>
               <span className="text-[#22c55e] font-bold">+103.1%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">SPY (US benchmark)</span>
+              <span className="text-[#888]">SPY — S&amp;P 500 (US benchmark)</span>
               <span className="text-[#22c55e] font-bold">+27.0%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">IOGP (energy)</span>
+              <span className="text-[#888]">IOGP.L — iShares Oil &amp; Gas</span>
               <span className="text-[#22c55e] font-bold">+9.3%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">ASML (technology)</span>
+              <span className="text-[#888]">ASML.AS — ASML</span>
               <span className="text-[#ef4444] font-bold">-2.7%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">NHY (materials)</span>
+              <span className="text-[#888]">NHY.OL — Norsk Hydro</span>
               <span className="text-[#ef4444] font-bold">-34.7%</span>
             </div>
           </div>
