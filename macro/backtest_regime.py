@@ -24,11 +24,14 @@ RESULTS_CACHE = f"{CACHE_DIR}/backtest_results.json"
 
 # Same ETF baskets as macro_kelly.py REGIME_ETFS
 REGIME_ETFS = {
-    # Must match macro_kelly.py REGIME_ETFS (SPY excluded — it's the benchmark)
-    "Stagflation": ["XLE", "GLD", "DBC", "XLP", "XLU"],
-    "Reflation":   ["XLE", "XLI", "BRK-B"],  # SPY excluded
-    "Goldilocks":  ["QQQ", "ARKW", "FTEC", "ARKQ"],  # SPY excluded
-    "Deflation":   ["GLD", "AGG", "FTEC"],
+    # Matches simplified site strategy:
+    # Growth regimes → SPY (can't beat it)
+    # Stagflation → XLE + GLD (verified outperformance)
+    # Deflation → GLD + AGG (defensive)
+    "Stagflation": ["XLE", "GLD"],
+    "Reflation":   ["SPY"],  # Hold SPY in growth
+    "Goldilocks":  ["SPY"],  # Hold SPY in growth
+    "Deflation":   ["GLD", "AGG"],
 }
 
 # ETFs the framework says to AVOID per regime
