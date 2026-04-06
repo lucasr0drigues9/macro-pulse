@@ -25,9 +25,9 @@ export default function Welcome() {
           <p className="text-xs text-[#555] mt-2">UCITS: SXR8.DE (iShares Core S&amp;P 500)</p>
         </div>
         <div className="p-4 rounded-lg border border-[#ef444430] bg-[rgba(239,68,68,0.03)]">
-          <div className="text-xs text-[#ef4444] font-bold uppercase tracking-wider mb-2">Defend — Confirmed Stagflation</div>
+          <div className="text-xs text-[#ef4444] font-bold uppercase tracking-wider mb-2">Defend — Stagflation</div>
           <p className="text-xs text-[#888] leading-relaxed">
-            When Stagflation is confirmed 4+ months, rotate to XLE + GLD. Back to SPY when it ends.
+            When the tool signals Stagflation and the geopolitical situation confirms it, consider XLE + GLD. Short signals can be false — use your judgement.
           </p>
           <p className="text-xs text-[#555] mt-2">UCITS: IUES.L + IGLN.L</p>
         </div>

@@ -70,15 +70,9 @@ export default function RegimeIndicator() {
         </div>
         {(confirmed === "Stagflation" || confirmed === "Deflation") && (
           <div className="mt-2">
-            {consecutiveMonths >= 4 ? (
-              <span className="text-xs px-3 py-1 rounded-full bg-[rgba(239,68,68,0.15)] text-[#ef4444] font-bold">
-                CONFIRMED — Defend mode active
-              </span>
-            ) : (
-              <span className="text-xs px-3 py-1 rounded-full bg-[rgba(234,179,8,0.15)] text-[#eab308]">
-                Waiting for confirmation — {4 - consecutiveMonths} months to go
-              </span>
-            )}
+            <span className="text-xs px-3 py-1 rounded-full bg-[rgba(239,68,68,0.15)] text-[#ef4444] font-bold">
+              Crisis regime — Consider defending with XLE + GLD
+            </span>
           </div>
         )}
         {(confirmed === "Goldilocks" || confirmed === "Reflation") && (

@@ -10,8 +10,8 @@ export default function HowToUse() {
         <h3 className="text-sm font-bold text-[#e0e0e0] mb-3">The one edge that&apos;s real</h3>
         <p className="text-xs text-[#888] leading-relaxed mb-3">
           We tested every regime&apos;s recommended picks against SPY using real chart prices.
-          Most of the time, SPY does as well or better. But in <span className="text-[#ef4444]">confirmed Stagflation</span> —
-          when the regime has lasted 4+ months — XLE and GLD consistently outperform.
+          Most of the time, SPY does as well or better. But in <span className="text-[#ef4444]">Stagflation</span> —
+          when the geopolitical situation confirms falling growth and rising inflation — XLE and GLD consistently outperform.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -27,7 +27,7 @@ export default function HowToUse() {
             <div className="space-y-1 text-xs text-[#888]">
               <p>• Deflation picks (GLD+AGG) underperform SPY 2 out of 3 times</p>
               <p>• Goldilocks picks barely match SPY (+13.7% vs +14.3%)</p>
-              <p>• Short regime calls (&lt;4 months) lose money half the time</p>
+              <p>• Short regime calls can be false signals — use judgement</p>
             </div>
           </div>
         </div>
@@ -41,8 +41,8 @@ export default function HowToUse() {
             <span>Buy SPY every month. Growth regimes are hard to beat with sector picks.</span>
           </div>
           <div className="flex gap-3">
-            <span className="text-[#ef4444] font-bold shrink-0">When Stagflation confirmed:</span>
-            <span>After 4+ months, rotate to XLE + GLD. These are the only picks that consistently outperform SPY in verified data.</span>
+            <span className="text-[#ef4444] font-bold shrink-0">When Stagflation signals:</span>
+            <span>If the geopolitical situation confirms it, consider rotating to XLE + GLD. These are the only picks that consistently outperform SPY in verified data. Short signals can be false — use your judgement.</span>
           </div>
           <div className="flex gap-3">
             <span className="text-[#888] font-bold shrink-0">When it ends:</span>
