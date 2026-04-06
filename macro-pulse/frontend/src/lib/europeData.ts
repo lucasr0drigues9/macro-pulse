@@ -82,6 +82,16 @@ export const COMPANIES: Record<string, Company[]> = {
       riskLevel: "Conservative-Moderate",
       regimeFit: { stagflation: "neutral", goldilocks: "strong", reflation: "strong", deflation: "neutral" },
     },
+    {
+      name: "Safran", ticker: "SAF.PA", exchange: "Paris",
+      thesis: "Engines for Airbus, Rafale, Ariane 6 — also in Technology",
+      whyNow: "Makes the engines powering every Airbus A320neo and Boeing 737 MAX via CFM International JV with GE. Boeing's quality crisis shifts orders to Airbus — every additional Airbus order is an additional Safran engine order. European defence spending surge accelerates demand for military engines, space propulsion, and optronics.",
+      bullCase: "Boeing crisis continues shifting orders to Airbus through 2027-2028, driving CFM engine demand above consensus. European defence budgets reach 3-4% GDP, accelerating military engine and space contracts.",
+      bearCase: "Global recession grounds aircraft and airlines cut maintenance, hitting aftermarket revenue. GE exercises CFM JV influence unfavourably. Commercial aviation recovery slower than expected.",
+      riskLevel: "Conservative-Moderate",
+      regimeFit: { stagflation: "positive", goldilocks: "strong", reflation: "strong", deflation: "neutral" },
+      note: "Also tracked in Technology sector — unique dual sovereign capability in aerospace propulsion and space.",
+    },
   ],
   energy: [
     {
@@ -140,6 +150,16 @@ export const COMPANIES: Record<string, Company[]> = {
       bearCase: "China export restrictions reduce addressable market by 15-20%. Semiconductor cycle downturn delays orders.",
       riskLevel: "Conservative-Moderate",
       regimeFit: { stagflation: "neutral", goldilocks: "strong", reflation: "positive", deflation: "neutral" },
+    },
+    {
+      name: "Safran", ticker: "SAF.PA", exchange: "Paris",
+      thesis: "European aerospace propulsion sovereignty — also in Defence",
+      whyNow: "European aerospace technology sovereignty made physical. Three sovereign capabilities: (1) CFM engines powering every A320neo — without Safran no independent European commercial aviation. (2) M88 engines powering the Rafale and France's nuclear deterrent aircraft. (3) Ariane 6 rocket propulsion — without Safran no independent European space access. Uniquely irreplaceable.",
+      bullCase: "EU mandates European engine content for future military aircraft programmes, giving Safran preferred status across all 27 member states. New Space economy accelerates satellite propulsion demand.",
+      bearCase: "GE uses CFM JV influence to capture more value, compressing Safran margins. US export controls on engine technology limit market access.",
+      riskLevel: "Conservative-Moderate",
+      regimeFit: { stagflation: "positive", goldilocks: "strong", reflation: "strong", deflation: "neutral" },
+      note: "Also tracked in Defence sector. Dual-use aerospace and defence technology — may be subject to export controls. Three sovereign capabilities: commercial aviation (CFM), military propulsion (M88/Rafale), space (Ariane 6).",
     },
     {
       name: "SAP", ticker: "SAP.DE", exchange: "Frankfurt",

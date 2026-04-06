@@ -10,7 +10,7 @@ import {
 const SCORECARD = [
   { sector: "Defence", progress: 80, note: "Spending committed, contracts flowing", color: SECTORS.defence.color },
   { sector: "Energy", progress: 60, note: "LNG built, renewables scaling", color: SECTORS.energy.color },
-  { sector: "Technology", progress: 40, note: "Early stage, ASML is the anchor", color: SECTORS.technology.color },
+  { sector: "Technology", progress: 50, note: "ASML + Safran — two world-class monopolies", color: SECTORS.technology.color },
   { sector: "Finance", progress: 30, note: "CMU stalling, joint bonds growing", color: SECTORS.finance.color },
   { sector: "Materials", progress: 20, note: "Most work to do, China still dominant", color: SECTORS.materials.color },
 ];
@@ -359,6 +359,17 @@ export default function EuropePage() {
             <p className="text-xs text-[#a855f7] mt-1">Norwegian investors: NOK denominated, Nordnet accessible, government partial owner</p>
             <a href="https://www.nordnet.no/market/search?query=NHY" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Nordnet</a>
           </div>
+        </div>
+
+        {/* Notable addition */}
+        <div className="p-3 rounded-lg border border-[#eab30830] bg-[rgba(234,179,8,0.03)] mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-bold text-[#eab308]">Worth knowing: Safran (SAF.PA)</span>
+          </div>
+          <p className="text-xs text-[#888] leading-relaxed">
+            The only European company with sovereign capabilities in commercial aviation, military propulsion, AND space simultaneously. Tracked in both Defence and Technology sectors below.
+          </p>
+          <a href="https://www.nordnet.no/market/search?query=SAF" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-1 inline-block">View on Nordnet</a>
         </div>
 
         {/* Coverage summary */}
