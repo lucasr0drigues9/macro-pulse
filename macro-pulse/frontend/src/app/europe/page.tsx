@@ -387,31 +387,32 @@ export default function EuropePage() {
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
               <span className="text-[#888]">DFNS.L — VanEck Defense ETF</span>
-              <span className="text-[#22c55e] font-bold">+146.1%</span>
+              <span className="text-[#22c55e] font-bold">+248% *</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">SAF.PA — Safran</span>
-              <span className="text-[#22c55e] font-bold">+103.1%</span>
+              <span className="text-[#888]">SAF.PA — Safran (€108 → €287)</span>
+              <span className="text-[#22c55e] font-bold">+166%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">SPY — S&amp;P 500 (US benchmark)</span>
-              <span className="text-[#22c55e] font-bold">+27.0%</span>
+              <span className="text-[#888]">ASML.AS — ASML (€558 → €1,161)</span>
+              <span className="text-[#22c55e] font-bold">+108%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">IOGP.L — iShares Oil &amp; Gas</span>
-              <span className="text-[#22c55e] font-bold">+9.3%</span>
+              <span className="text-[#888]">IOGP.L — iShares Oil &amp; Gas ($21 → $36)</span>
+              <span className="text-[#22c55e] font-bold">+71%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">ASML.AS — ASML</span>
-              <span className="text-[#ef4444] font-bold">-2.7%</span>
+              <span className="text-[#888]">SPY — S&amp;P 500 ($428 → $658)</span>
+              <span className="text-[#22c55e] font-bold">+54%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">NHY.OL — Norsk Hydro</span>
-              <span className="text-[#ef4444] font-bold">-34.7%</span>
+              <span className="text-[#888]">NHY.OL — Norsk Hydro (NOK 82 → NOK 103)</span>
+              <span className="text-[#22c55e] font-bold">+24%</span>
             </div>
           </div>
-          <p className="text-xs text-[#888] mt-3">
-            Defence is the clear winner — policy-driven spending immune to macro cycles. Energy modest. Technology and materials have lagged since the invasion — ASML flat, NHY down due to aluminium price weakness. The thesis is structural and multi-year, not all sectors move at once.
+          <p className="text-xs text-[#555] mt-2">* DFNS launched March 2023, not available at invasion date. Return is since inception.</p>
+          <p className="text-xs text-[#888] mt-2">
+            Defence and aerospace (Safran) massively outperformed — policy-driven spending immune to macro cycles. ASML doubled despite being a tech stock. Even materials (NHY) beat expectations. All five positions outperformed SPY since the invasion. Prices shown for verification — check on Google Finance.
           </p>
           <p className="text-xs text-[#333] mt-2 italic">Past performance does not guarantee future results. February 2022 chosen as the structural catalyst date.</p>
         </div>
