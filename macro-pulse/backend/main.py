@@ -657,6 +657,61 @@ def get_backtest():
         else:            # Nov-Dec: Q3 data → economy was in Jul-Sep
             return f"Q3 {y}"
 
+    # Signal strength classification for each regime period
+    # Based on analysis: STRONG signals (obvious catalyst, 6+mo) = 89% win rate
+    # MODERATE (mixed signals) = ~38%, WEAK (ambiguous, short) = ~36%
+    # Keys must match actual period start dates from identify_periods()
+    SIGNAL_STRENGTH = {
+        # 2007-2009: Housing bubble → Financial crisis
+        "2007-01": ("MODERATE", "Housing cracks emerging but economy still growing. Mixed FRED readings — inflation ticking up while growth slowed."),
+        "2007-08": ("STRONG", "Subprime crisis erupting. BNP Paribas froze funds Aug 2007. Credit markets seizing up. Obvious deflationary shock."),
+        "2008-02": ("STRONG", "Bear Stearns collapsed Mar 2008. Banking system under severe stress. Credit crisis deepening month by month."),
+        "2008-09": ("STRONG", "Lehman Brothers collapse Sep 2008. Global financial system near failure. Unmistakable crisis — everyone felt it."),
+        # 2009-2010: Recovery + QE era
+        "2009-04": ("STRONG", "Fed slashed rates to zero. TARP + QE1 launched. $800B stimulus. Clear reflation — massive policy response."),
+        "2009-12": ("MODERATE", "Recovery broadening but fragile. 'Green shoots' debate. Unemployment still near 10%. Mixed confidence."),
+        "2010-08": ("WEAK", "Brief stagflation reading. European debt crisis starting (Greece). Flash crash May 2010. Nobody felt stagflation domestically."),
+        "2010-12": ("MODERATE", "QE2 announced Nov 2010. Reflation trade on, but economy still sluggish. Tepid catalyst."),
+        # 2011-2012: Debt ceiling + Europe crisis
+        "2011-06": ("MODERATE", "Debt ceiling crisis Aug 2011. S&P downgraded US. Europe crisis deepening. Real fear but short-lived."),
+        "2011-10": ("MODERATE", "Operation Twist announced. Europe stabilising after Draghi hints. Growth resuming but tentative."),
+        "2012-05": ("WEAK", "Brief deflation scare. Spanish bond yields spiking. Short-lived — Draghi's 'whatever it takes' ended it Jul 2012."),
+        "2012-09": ("MODERATE", "QE3 announced Sep 2012. Draghi backstopped Europe. Supportive policy but no strong growth catalyst."),
+        # 2013-2014: Taper tantrum + Oil crash
+        "2013-04": ("WEAK", "Brief deflation reading. Sequestration hit but economy absorbed it. Short 3-month signal — noise."),
+        "2013-07": ("MODERATE", "Taper tantrum May 2013, then govt shutdown Oct 2013. Growth continued despite fiscal drag. Long steady period."),
+        "2014-10": ("MODERATE", "Oil crash beginning (Saudi price war vs US shale). Dollar strengthening. Deflationary pressure from energy, not demand weakness."),
+        "2015-06": ("WEAK", "Brief 3-month reflation blip. No real catalyst. Transitional noise between deflation periods."),
+        "2015-09": ("MODERATE", "China stock crash Aug 2015. China devalued yuan. Global growth fears. Fed delayed rate hike. Real uncertainty."),
+        # 2016-2017: Trump reflation + Low vol
+        "2016-05": ("MODERATE", "Oil bottomed Feb 2016. Brexit vote Jun 2016. Trump election Nov 2016 sparked reflation trade."),
+        "2016-11": ("WEAK", "Short 4-month reflation continuation. Trump infrastructure hopes but no legislation yet. Sentiment-driven."),
+        "2017-03": ("WEAK", "Brief deflation reading. No real catalyst — economy was fine. Quiet low-vol period. Data noise."),
+        "2017-09": ("MODERATE", "Tax Cuts and Jobs Act passed Dec 2017. Clear growth catalyst, but reflation period was moderate-length."),
+        # 2018-2019: Trade war + Late cycle
+        "2018-02": ("MODERATE", "Volmageddon Feb 2018. Trade war tensions starting with China tariffs. Inflation ticking up from tight labour market."),
+        "2018-08": ("MODERATE", "Fed hiking aggressively (4x in 2018). Yield curve flattening. Dec 2018 selloff. Late-cycle fear but no recession."),
+        "2019-04": ("WEAK", "Brief 3-month reflation. Fed paused hikes. No strong catalyst — just a pause in tightening fears."),
+        "2019-07": ("WEAK", "Short Goldilocks reading. Trade war flare-up ruined it. Yield curve inverted Aug 2019. Mixed signals."),
+        "2019-11": ("WEAK", "Brief stagflation reading. Phase 1 trade deal signed. No one felt stagflation — data noise before COVID."),
+        # 2020-2021: COVID → Reopening → Inflation
+        "2020-02": ("STRONG", "COVID-19 pandemic. Global lockdowns Mar 2020. Fastest bear market in history (-34% in 23 days). Unmistakable crisis."),
+        "2020-07": ("STRONG", "Massive Fed + fiscal stimulus ($5T+). Vaccine announcements Nov 2020. Reopening trade. Clear reflation catalyst."),
+        "2021-06": ("MODERATE", "Inflation 'transitory' debate. Supply chain bottlenecks. Delta variant. Growth strong but inflation direction uncertain."),
+        "2021-10": ("MODERATE", "Omicron variant. Fed hawkish pivot Nov 2021. Inflation clearly not transitory. Reflation reading felt late."),
+        "2022-03": ("STRONG", "Russia invaded Ukraine Feb 2022. Oil spiked to $130. European energy crisis. But FRED still read Reflation from momentum — lagging."),
+        # 2022-2023: Fed tightening → AI boom
+        "2022-10": ("MODERATE", "Fed funds at 4%+. Inflation falling from 9% peak. Crypto collapse (FTX Nov 2022). Brief deflation scare."),
+        "2023-01": ("WEAK", "Brief 3-month Goldilocks reading. SVB collapsed Mar 2023. Signal was real but cut short by banking panic."),
+        "2023-04": ("MODERATE", "Post-SVB stability. AI boom (ChatGPT) driving narrow tech rally. Economy fine but Magnificent 7 concentration."),
+        "2023-11": ("MODERATE", "Fed signaled rate cuts coming. Broadening rally. Deflation reading from falling inflation, not economic weakness."),
+        # 2024-2026: Soft landing → Iran war
+        "2024-02": ("WEAK", "Brief stagflation scare. Inflation sticky at 3.5%. No real catalyst — rate cut expectations just shifted out."),
+        "2024-05": ("STRONG", "AI investment wave accelerating. Magnificent 7 earnings beats. Fed cut 50bp Sep 2024. Soft landing confirmed. Clear Goldilocks."),
+        "2024-12": ("STRONG", "Trump tariffs + Iran tensions escalating. Oil rising on supply fears. Stagflation catalyst building from late 2024."),
+        "2025-11": ("STRONG", "Hormuz blockade ongoing. Oil $100+. Inflation re-accelerating from energy costs. Picks outperforming significantly."),
+    }
+
     timeline_data = []
     for period in periods:
         regime = period["regime"]
@@ -683,6 +738,7 @@ def get_backtest():
         # Show FRED confirmation dates directly — no quarter mapping
         # The explanation at the top of the section already tells users
         # that FRED is a lagging confirmation signal
+        sig = SIGNAL_STRENGTH.get(start[:7], ("MODERATE", ""))
         timeline_data.append({
             "regime": regime,
             "start": start[:7],
@@ -692,6 +748,8 @@ def get_backtest():
             "spyReturn": spy_ret,
             "profitable": profitable,
             "beatSpy": beat_spy,
+            "signalStrength": sig[0],
+            "signalContext": sig[1],
         })
 
     timeline_data.reverse()  # Most recent first

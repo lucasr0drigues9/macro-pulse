@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import { REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
 
+type SignalStrength = "STRONG" | "MODERATE" | "WEAK";
 type TimelineEntry = {
   regime: RegimeName; start: string; end: string; months: number;
   quarterLabel: string;
   picksReturn: number | null; spyReturn: number | null;
   profitable: boolean | null; beatSpy: boolean | null;
+  signalStrength?: SignalStrength; signalContext?: string;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
@@ -21,9 +23,16 @@ type BacktestData = {
   timeline: TimelineEntry[];
 };
 
+const STRENGTH_COLORS: Record<SignalStrength, { bg: string; text: string; border: string }> = {
+  STRONG: { bg: "rgba(34,197,94,0.15)", text: "#22c55e", border: "rgba(34,197,94,0.3)" },
+  MODERATE: { bg: "rgba(234,179,8,0.15)", text: "#eab308", border: "rgba(234,179,8,0.3)" },
+  WEAK: { bg: "rgba(107,114,128,0.15)", text: "#6b7280", border: "rgba(107,114,128,0.3)" },
+};
+
 export default function RegimeHistory() {
   const [data, setData] = useState<BacktestData | null>(null);
   const [filter, setFilter] = useState<string>("All");
+  const [expanded, setExpanded] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(apiUrl("/api/backtest"))
@@ -47,10 +56,31 @@ export default function RegimeHistory() {
       <p className="text-xs text-[#555] mb-3">
         How the framework performed across every economic season from 2007 to 2026.
       </p>
-      <div className="p-3 rounded bg-[#111] border border-[#222] mb-6">
+      <div className="p-3 rounded bg-[#111] border border-[#222] mb-4">
         <p className="text-xs text-[#888] leading-relaxed">
-          <span className="text-[#e0e0e0] font-bold">How to read this data:</span> Regime labels are based on FRED economic data, which is a <span className="text-[#eab308]">confirmation signal</span> — it reflects conditions from the recent past, not the present. GDP is reported as a single number per quarter with no monthly breakdown, so the regime label for any given month is partly based on GDP data that&apos;s 1-3 months old. The quarter shown indicates which GDP data was driving the reading.
+          <span className="text-[#e0e0e0] font-bold">How to read this data:</span> Regime labels are based on FRED economic data, which is a <span className="text-[#eab308]">confirmation signal</span> — it reflects conditions from the recent past, not the present. GDP is reported as a single number per quarter with no monthly breakdown, so the regime label for any given month is partly based on GDP data that&apos;s 1-3 months old.
         </p>
+      </div>
+
+      <div className="p-3 rounded bg-[#111] border border-[#222] mb-6">
+        <p className="text-xs text-[#e0e0e0] font-bold mb-2">Signal strength — the key insight</p>
+        <p className="text-xs text-[#888] leading-relaxed mb-3">
+          Not all regime signals are equal. When the regime has an <span className="text-[#22c55e]">obvious real-world catalyst</span> (war, pandemic, massive stimulus), picks outperform <span className="text-[#22c55e] font-bold">89% of the time</span>. When the signal is ambiguous, picks only beat SPY 36% of the time. Click any period to see what was happening.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>STRONG</span>
+            <span className="text-[10px] text-[#888]">Obvious catalyst, 6+mo — 89% win rate</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(234,179,8,0.15)", color: "#eab308", border: "1px solid rgba(234,179,8,0.3)" }}>MODERATE</span>
+            <span className="text-[10px] text-[#888]">Mixed signals — ~38% win rate</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(107,114,128,0.15)", color: "#6b7280", border: "1px solid rgba(107,114,128,0.3)" }}>WEAK</span>
+            <span className="text-[10px] text-[#888]">Ambiguous, short — ~36% win rate</span>
+          </div>
+        </div>
       </div>
 
       {/* Regime breakdown cards */}
@@ -99,58 +129,94 @@ export default function RegimeHistory() {
         <div className="space-y-2">
           {filteredTimeline.map((period, i) => {
             const colors = REGIME_COLORS[period.regime];
+            const strength = period.signalStrength as SignalStrength | undefined;
+            const sc = strength ? STRENGTH_COLORS[strength] : null;
+            const isExpanded = expanded === i;
             return (
-              <div
-                key={i}
-                className="p-3 rounded-lg bg-[#111] border border-[#222] flex flex-col sm:flex-row sm:items-center gap-2"
-              >
-                <div className="flex items-center gap-2 sm:w-36">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: colors.color }}
-                  />
-                  <span className="text-sm font-bold" style={{ color: colors.color }}>
-                    {period.regime}
-                  </span>
+              <div key={i}>
+                <div
+                  className="p-3 rounded-lg bg-[#111] border border-[#222] flex flex-col sm:flex-row sm:items-center gap-2 cursor-pointer hover:bg-[#151515] transition-colors"
+                  onClick={() => setExpanded(isExpanded ? null : i)}
+                >
+                  <div className="flex items-center gap-2 sm:w-36">
+                    <span
+                      className="w-2 h-2 rounded-full shrink-0"
+                      style={{ backgroundColor: colors.color }}
+                    />
+                    <span className="text-sm font-bold" style={{ color: colors.color }}>
+                      {period.regime}
+                    </span>
+                  </div>
+                  <div className="text-xs text-[#888] sm:w-40">
+                    {period.start} → {period.end} ({period.months}mo)
+                  </div>
+                  {sc && strength && (
+                    <span
+                      className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                      style={{ backgroundColor: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }}
+                    >
+                      {strength}
+                    </span>
+                  )}
+                  <div className="flex-1 flex items-center gap-4 text-xs">
+                    <span>
+                      Picks:{" "}
+                      {period.picksReturn !== null ? (
+                        <span
+                          style={{ color: period.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}
+                          className="font-bold"
+                        >
+                          {period.picksReturn >= 0 ? "+" : ""}
+                          {period.picksReturn.toFixed(1)}%
+                        </span>
+                      ) : (
+                        <span className="text-[#333]">N/A</span>
+                      )}
+                    </span>
+                    <span>
+                      SPY:{" "}
+                      {period.spyReturn !== null ? (
+                        <span
+                          style={{ color: period.spyReturn >= 0 ? "#22c55e" : "#ef4444" }}
+                          className="font-bold"
+                        >
+                          {period.spyReturn >= 0 ? "+" : ""}
+                          {period.spyReturn.toFixed(1)}%
+                        </span>
+                      ) : (
+                        <span className="text-[#333]">N/A</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs sm:text-right">
+                    {period.profitable === true && <span className="text-[#22c55e]">✓ Profit</span>}
+                    {period.profitable === false && <span className="text-[#ef4444]">✗ Loss</span>}
+                    {period.profitable === null && <span className="text-[#333]">—</span>}
+                    <span className="text-[#333] text-[10px]">{isExpanded ? "▲" : "▼"}</span>
+                  </div>
                 </div>
-                <div className="text-xs text-[#888] sm:w-40">
-                  {period.start} → {period.end} ({period.months}mo)
-                </div>
-                <div className="flex-1 flex items-center gap-4 text-xs">
-                  <span>
-                    Picks:{" "}
-                    {period.picksReturn !== null ? (
-                      <span
-                        style={{ color: period.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}
-                        className="font-bold"
-                      >
-                        {period.picksReturn >= 0 ? "+" : ""}
-                        {period.picksReturn.toFixed(1)}%
+                {isExpanded && (
+                  <div
+                    className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] text-xs text-[#888] leading-relaxed"
+                    style={{ backgroundColor: sc ? sc.bg : "#0a0a0a" }}
+                  >
+                    {period.signalContext || (
+                      <span className="text-[#555]">
+                        {strength === "STRONG" ? "Strong catalyst with clear market impact." : strength === "WEAK" ? "Ambiguous signal — no obvious catalyst at the time." : "Mixed signals — some indicators pointed this way but conviction was moderate."}
                       </span>
-                    ) : (
-                      <span className="text-[#333]">N/A</span>
                     )}
-                  </span>
-                  <span>
-                    SPY:{" "}
-                    {period.spyReturn !== null ? (
-                      <span
-                        style={{ color: period.spyReturn >= 0 ? "#22c55e" : "#ef4444" }}
-                        className="font-bold"
-                      >
-                        {period.spyReturn >= 0 ? "+" : ""}
-                        {period.spyReturn.toFixed(1)}%
+                    {period.beatSpy === true && period.picksReturn !== null && period.spyReturn !== null && (
+                      <span className="text-[#22c55e] ml-2">
+                        Picks beat SPY by {(period.picksReturn - period.spyReturn).toFixed(1)}pp
                       </span>
-                    ) : (
-                      <span className="text-[#333]">N/A</span>
                     )}
-                  </span>
-                </div>
-                <div className="text-xs sm:text-right">
-                  {period.profitable === true && <span className="text-[#22c55e]">✓ Profit</span>}
-                  {period.profitable === false && <span className="text-[#ef4444]">✗ Loss</span>}
-                  {period.profitable === null && <span className="text-[#333]">—</span>}
-                </div>
+                    {period.beatSpy === false && period.picksReturn !== null && period.spyReturn !== null && (
+                      <span className="text-[#ef4444] ml-2">
+                        SPY beat picks by {(period.spyReturn - period.picksReturn).toFixed(1)}pp
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -182,6 +248,18 @@ export default function RegimeHistory() {
               {s.beatSpyCount}/{s.totalRegimes} ({s.beatSpyPct}%)
             </span>
           </div>
+          {(() => {
+            const strong = s.timeline.filter((t) => t.signalStrength === "STRONG" && t.beatSpy !== null);
+            const strongWins = strong.filter((t) => t.beatSpy);
+            return strong.length > 0 ? (
+              <div className="flex justify-between">
+                <span className="text-[#555]">STRONG signals beat SPY</span>
+                <span className="text-[#22c55e] font-bold">
+                  {strongWins.length}/{strong.length} ({Math.round(strongWins.length / strong.length * 100)}%)
+                </span>
+              </div>
+            ) : null;
+          })()}
           {s.bestCall && (
             <div className="flex justify-between">
               <span className="text-[#555]">Best call</span>
