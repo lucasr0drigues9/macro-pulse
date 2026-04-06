@@ -128,6 +128,35 @@ function CompanyRow({ company, sectorColor }: { company: Company; sectorColor: s
   );
 }
 
+function NordnetGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
+      <button onClick={() => setOpen(!open)} className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-[#1a1a1a] transition-colors">
+        <span className="text-sm font-bold text-[#e0e0e0]">Buying these through Nordnet</span>
+        <span className="text-[#555] text-sm">{open ? "−" : "+"}</span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 border-t border-[#222] text-xs text-[#888] leading-relaxed space-y-3">
+          <div className="pt-3">
+            <span className="text-[#6b8e5a] font-bold">NATO/EUAD</span> — Search &apos;VanEck Defense&apos; or &apos;NATO&apos; on Nordnet. Listed on Euronext Amsterdam. Requires foreign markets agreement on Nordnet profile.
+          </div>
+          <div>
+            <span className="text-[#e09030] font-bold">IOGP</span> — Search &apos;iShares Oil Gas&apos; on Nordnet. Listed on London Stock Exchange. Currency: USD. Requires foreign markets agreement.
+          </div>
+          <div>
+            <span className="text-[#3b82f6] font-bold">ASML</span> — Search &apos;ASML&apos; on Nordnet. Available on both Euronext Amsterdam (EUR) and NASDAQ (USD). Amsterdam listing preferred for Norwegian investors to avoid USD conversion.
+          </div>
+          <div>
+            <span className="text-[#a855f7] font-bold">NHY (Norsk Hydro)</span> — Directly on Oslo Børs. No foreign markets agreement needed. NOK denominated. Simplest to buy.
+          </div>
+          <p className="text-[#555] italic">Check current Nordnet availability as product access can change. Some UCITS ETFs require PRIIPs KID documentation before purchase.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SectorCard({ sector, companies, catalysts }: {
   sector: { color: string; label: string; bg: string };
   companies: Company[];
@@ -242,6 +271,133 @@ export default function EuropePage() {
           )}
         </div>
       </section>
+
+      {/* Simple Version */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Simple Version</h2>
+        <p className="text-xs text-[#555] mb-6">Four positions that capture the entire European strategic autonomy theme without managing 25 individual stocks.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          {/* Defence */}
+          <div className="p-4 rounded-lg border border-[#6b8e5a30] bg-[rgba(107,142,90,0.05)]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="text-lg font-bold text-[#6b8e5a]">NATO</span>
+                <span className="text-xs text-[#555] ml-2">VanEck Defense UCITS ETF</span>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(107,142,90,0.15)] text-[#6b8e5a]">Defence</span>
+            </div>
+            <p className="text-xs text-[#555] mb-2">Euronext Amsterdam</p>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              Holds Rheinmetall, BAE, Leonardo, Saab, Thales. Captures the entire European defence rearmament theme in one ticker. Policy-driven spending means this works across all macro regimes.
+            </p>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#22c55e]">✅ All regimes</span>
+              <span className="text-[#86c55e]">Conservative-Moderate</span>
+            </div>
+            <a href="https://www.nordnet.no/market/search?query=NATO" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Nordnet</a>
+          </div>
+
+          {/* Energy */}
+          <div className="p-4 rounded-lg border border-[#e0903030] bg-[rgba(224,144,48,0.05)]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="text-lg font-bold text-[#e09030]">IOGP</span>
+                <span className="text-xs text-[#555] ml-2">iShares Oil &amp; Gas Exploration UCITS</span>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(224,144,48,0.15)] text-[#e09030]">Energy</span>
+            </div>
+            <p className="text-xs text-[#555] mb-2">London Stock Exchange</p>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              Holds Equinor, TotalEnergies, Shell and other European energy majors. Captures both the energy independence theme and the current Stagflation tailwind simultaneously.
+            </p>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#ef4444]">✅✅ Stagflation (current)</span>
+              <span className="text-[#86c55e]">Conservative-Moderate</span>
+            </div>
+            <a href="https://www.nordnet.no/market/search?query=IOGP" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Nordnet</a>
+          </div>
+
+          {/* Technology */}
+          <div className="p-4 rounded-lg border border-[#3b82f630] bg-[rgba(59,130,246,0.05)]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="text-lg font-bold text-[#3b82f6]">ASML</span>
+                <span className="text-xs text-[#555] ml-2">ASML Holding NV</span>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(59,130,246,0.15)] text-[#3b82f6]">Technology</span>
+            </div>
+            <p className="text-xs text-[#555] mb-2">Euronext Amsterdam / NASDAQ</p>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              No ETF captures European technology sovereignty as cleanly as owning ASML directly. Global monopoly on EUV lithography — every advanced chip requires their equipment. ASML IS the European tech thesis.
+            </p>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#eab308]">➖ Neutral (Goldilocks preferred)</span>
+              <span className="text-[#eab308]">Moderate</span>
+            </div>
+            <p className="text-xs text-[#eab308] mt-1">⚠ Single stock — higher concentration risk but no adequate ETF alternative exists</p>
+            <a href="https://www.nordnet.no/market/search?query=ASML" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Nordnet</a>
+          </div>
+
+          {/* Materials */}
+          <div className="p-4 rounded-lg border border-[#a855f730] bg-[rgba(168,85,247,0.05)]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <span className="text-lg font-bold text-[#a855f7]">NHY</span>
+                <span className="text-xs text-[#555] ml-2">Norsk Hydro ASA</span>
+              </div>
+              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(168,85,247,0.15)] text-[#a855f7]">Materials</span>
+            </div>
+            <p className="text-xs text-[#555] mb-2">Oslo Børs (Nordnet — NOK)</p>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              Norwegian aluminium and renewable energy company. Lowest-carbon aluminium globally via hydropower. Aluminium is critical for defence, aerospace, and EV manufacturing.
+            </p>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-[#22c55e]">✅ Stagflation / ✅✅ Reflation</span>
+              <span className="text-[#86c55e]">Conservative-Moderate</span>
+            </div>
+            <p className="text-xs text-[#a855f7] mt-1">Norwegian investors: NOK denominated, Nordnet accessible, government partial owner</p>
+            <a href="https://www.nordnet.no/market/search?query=NHY" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Nordnet</a>
+          </div>
+        </div>
+
+        {/* Coverage summary */}
+        <div className="p-3 rounded-lg bg-[#111] border border-[#222] text-center text-xs text-[#888] mb-4">
+          Combined: Defence ✅ | Energy ✅ | Technology ✅ | Materials ✅ | Finance ➖
+        </div>
+        <p className="text-xs text-[#555] text-center mb-6">
+          Financial infrastructure has no clean ETF — consider Euronext (ENX) directly for this exposure, or accept the gap.
+        </p>
+
+        {/* Performance since Feb 2022 */}
+        <div className="p-4 rounded-lg bg-[#111] border border-[#222] mb-6">
+          <h3 className="text-sm font-bold text-[#e0e0e0] mb-2">Since Russia&apos;s invasion of Ukraine (February 2022)</h3>
+          <p className="text-xs text-[#555] mb-3">The structural catalyst date for European strategic autonomy</p>
+          <div className="space-y-1 text-xs">
+            <div className="flex justify-between"><span className="text-[#888]">NATO ETF (defence)</span><span className="text-[#888]">[Verify on Yahoo Finance — search NATO.AS]</span></div>
+            <div className="flex justify-between"><span className="text-[#888]">IOGP (energy)</span><span className="text-[#888]">[Verify on Yahoo Finance — search IOGP.L]</span></div>
+            <div className="flex justify-between"><span className="text-[#888]">ASML (technology)</span><span className="text-[#888]">[Verify on Yahoo Finance — search ASML.AS]</span></div>
+            <div className="flex justify-between"><span className="text-[#888]">NHY (materials)</span><span className="text-[#888]">[Verify on Yahoo Finance — search NHY.OL]</span></div>
+            <div className="flex justify-between"><span className="text-[#888]">SPY (US benchmark)</span><span className="text-[#888]">[Verify on Yahoo Finance — search SPY]</span></div>
+          </div>
+          <p className="text-xs text-[#333] mt-2 italic">Past performance does not guarantee future results. February 2022 chosen as the structural catalyst date.</p>
+        </div>
+
+        {/* Nordnet guide */}
+        <NordnetGuide />
+
+        {/* Disclaimer */}
+        <p className="text-xs text-[#333] text-center italic mt-4">
+          ETF and stock selection for educational purposes only. Not a recommendation to buy or sell. Always verify current availability on your broker. Currency risk applies to non-NOK positions. Not personalised financial advice.
+        </p>
+      </section>
+
+      {/* Divider */}
+      <div className="px-4 py-6 max-w-5xl mx-auto text-center">
+        <div className="border-t border-[#222] pt-6">
+          <span className="text-xs text-[#555]">Want to go deeper? Explore all 25+ companies across five sectors below ↓</span>
+        </div>
+      </div>
 
       {/* Sector Trackers */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
