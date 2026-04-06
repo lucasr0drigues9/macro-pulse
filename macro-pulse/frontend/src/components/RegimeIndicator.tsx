@@ -68,20 +68,9 @@ export default function RegimeIndicator() {
         <div className="mt-3 text-lg text-[#888]">
           {ordinal(consecutiveMonths)} consecutive month
         </div>
-        {(confirmed === "Stagflation" || confirmed === "Deflation") && (
-          <div className="mt-2">
-            <span className="text-xs px-3 py-1 rounded-full bg-[rgba(239,68,68,0.15)] text-[#ef4444] font-bold">
-              Crisis regime — Consider defending with XLE + GLD
-            </span>
-          </div>
-        )}
-        {(confirmed === "Goldilocks" || confirmed === "Reflation") && (
-          <div className="mt-2">
-            <span className="text-xs px-3 py-1 rounded-full bg-[rgba(34,197,94,0.15)] text-[#22c55e]">
-              Growth regime — Hold SPY
-            </span>
-          </div>
-        )}
+        <div className="mt-2">
+          <span className="text-xs text-[#555]">See picks and allocation below</span>
+        </div>
       </div>
 
       {/* Signal cards */}
