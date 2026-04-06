@@ -217,10 +217,26 @@ def identify_periods(timeline):
     return merged
 
 
-def compute_return(prices, start_date, end_date):
-    """Compute return between two months from monthly price dict."""
+def _next_month(date_str):
+    """Get the first day of the next month."""
+    y = int(date_str[:4])
+    m = int(date_str[5:7])
+    m += 1
+    if m > 12:
+        m = 1
+        y += 1
+    return f"{y:04d}-{m:02d}-01"
+
+
+def compute_return(prices, start_date, end_date, use_next_month_end=False):
+    """Compute return between two months from monthly price dict.
+    If use_next_month_end=True, uses the next month's price as the end
+    to capture the full last month of the period."""
     p_start = prices.get(start_date)
-    p_end   = prices.get(end_date)
+    actual_end = _next_month(end_date) if use_next_month_end else end_date
+    p_end = prices.get(actual_end)
+    if p_end is None and use_next_month_end:
+        p_end = prices.get(end_date)  # fallback to original end if next month missing
     if p_start and p_end and p_start > 0:
         return round((p_end - p_start) / p_start * 100, 2)
     return None
@@ -235,14 +251,14 @@ def compute_6040_return(prices, start_date, end_date):
     return spy_ret  # fallback to SPY if AGG not available
 
 
-def compute_portfolio_return(prices, tickers, start_date, end_date):
+def compute_portfolio_return(prices, tickers, start_date, end_date, use_next_month_end=False):
     """Compute equal-weight portfolio return for a list of tickers."""
     rets = []
     for ticker in tickers:
         inception = ETF_INCEPTION.get(ticker, "1990-01-01")
         if start_date < inception:
             continue
-        r = compute_return(prices.get(ticker, {}), start_date, end_date)
+        r = compute_return(prices.get(ticker, {}), start_date, end_date, use_next_month_end)
         if r is not None:
             rets.append(r)
     if rets:

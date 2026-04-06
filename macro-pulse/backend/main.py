@@ -672,9 +672,9 @@ def get_backtest():
         except Exception:
             months = 1
 
-        spy_ret = compute_return(prices.get("SPY", {}), start, end)
+        spy_ret = compute_return(prices.get("SPY", {}), start, end, use_next_month_end=True)
         picks_ret = compute_portfolio_return(
-            prices, BT_REGIME_ETFS.get(regime, []), start, end
+            prices, BT_REGIME_ETFS.get(regime, []), start, end, use_next_month_end=True
         )
 
         profitable = (picks_ret or 0) > 0 if picks_ret is not None else None
