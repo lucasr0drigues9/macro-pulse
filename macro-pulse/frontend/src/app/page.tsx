@@ -30,11 +30,11 @@ const tools = [
     category: "DECLINING POWER",
     title: "US Overextension Tracker",
     description: "Military commitments, debt trajectory, and reserve currency decline — tracking the indicators Dalio identifies as signs of imperial overextension.",
-    statusLabel: "Coming soon",
+    statusLabel: "Debt $36.2T · 125% GDP · 3 active theaters",
     cta: "Open tracker",
     href: "/us-overextension",
     accent: "#f97316",
-    enabled: false,
+    enabled: true,
   },
   {
     category: "EUROPEAN REBUILD",
