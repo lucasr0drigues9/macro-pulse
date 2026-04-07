@@ -38,11 +38,13 @@ def _seed_cache_on_startup():
         os.path.join(MACRO, ".macro_cache"),
         "/home/lucas_r0drigues9/finance-projects/macro/.macro_cache",
     ]
+    # Files that should always be overwritten from seed (e.g. updated format)
+    ALWAYS_OVERWRITE = {"geo_synthesis.json"}
     for cache_dir in cache_dirs:
         os.makedirs(cache_dir, exist_ok=True)
         for filename, content in SEED_DATA.items():
             fpath = os.path.join(cache_dir, filename)
-            if not os.path.exists(fpath):
+            if not os.path.exists(fpath) or filename in ALWAYS_OVERWRITE:
                 with open(fpath, "w") as f:
                     json.dump(content, f)
 
