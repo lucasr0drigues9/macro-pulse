@@ -348,16 +348,26 @@ def _get_regime_start_date():
 
 
 def get_current_regime():
-    """Get regime — geopolitical overrides FRED if data lag warning active."""
+    """Get regime — uses backtest timeline for FRED (consistent with history),
+    geopolitical overrides if it disagrees."""
     try:
         from geopolitical import get_geopolitical_risks
-        from fred import get_all
-        from quadrant import get_quadrant
 
-        # Get FRED regime
-        us_data  = get_all()
-        result   = get_quadrant(us_data)
-        fred_regime = result["quadrant"]["name"]
+        # Get FRED regime from the backtest timeline (same logic as regime history)
+        # This ensures the regime indicator and the backtest timeline always agree
+        try:
+            from backtest_regime import build_regime_timeline
+            import contextlib, io
+            with contextlib.redirect_stdout(io.StringIO()):
+                tl = build_regime_timeline()
+            fred_regime = tl[-1]["regime"] if tl else "Reflation"
+        except Exception:
+            # Fallback to snapshot if backtest fails
+            from fred import get_all
+            from quadrant import get_quadrant
+            us_data = get_all()
+            result = get_quadrant(us_data)
+            fred_regime = result["quadrant"]["name"]
 
         # Get geopolitical regime
         geo_data    = get_geopolitical_risks()
