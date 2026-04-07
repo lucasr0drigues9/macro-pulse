@@ -18,7 +18,7 @@ export default function Welcome() {
       <div className="text-center mb-10">
         <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">Macro Pulse</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          Know which assets to own<br className="hidden sm:block" /> in every economic season.
+          Markets rotate. Your portfolio should too.
         </p>
         <p className="text-sm text-[#555] max-w-md mx-auto">
           Four regimes. Different winners each time. Click to explore.
