@@ -20,10 +20,8 @@ export default function Welcome() {
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
           Know which assets to own<br className="hidden sm:block" /> in every economic season.
         </p>
-        <p className="text-sm text-[#888] max-w-lg mx-auto leading-relaxed">
-          The economy cycles through four regimes. Each one rewards different assets.
-          This free tool detects the current regime using AI geopolitical analysis and economic data,
-          then shows you which ETFs historically outperform — in growth and in crisis.
+        <p className="text-sm text-[#555] max-w-md mx-auto">
+          Four regimes. Different winners each time. Click to explore.
         </p>
       </div>
 
