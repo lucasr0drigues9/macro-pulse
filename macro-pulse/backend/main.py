@@ -223,7 +223,7 @@ def get_performance():
         "XLU": "Utilities Select SPDR", "SPY": "S&P 500 ETF",
         "QQQ": "Nasdaq 100 ETF", "TLT": "20+ Year Treasury",
         "IWM": "Russell 2000 ETF", "GURU": "Global Guru ETF",
-        "BRK-B": "Berkshire Hathaway", "XLI": "Industrials SPDR",
+        "XLI": "Industrials SPDR",
         "TIP": "TIPS Bond ETF", "VGK": "Europe ETF", "AGG": "US Agg Bond",
     }
 
@@ -232,7 +232,7 @@ def get_performance():
 
     # Regime-specific avoid tickers (same as allocation endpoint)
     _AVOID_TICKERS = {
-        "Stagflation": {"QQQ", "TLT", "IWM", "SPY", "BRK-B", "XLI", "AGG"},
+        "Stagflation": {"QQQ", "TLT", "IWM", "SPY", "XLI", "AGG"},
         "Reflation":   {"TLT", "AGG", "XLP", "XLU", "GLD"},
         "Goldilocks":  {"XLE", "DBC", "TLT", "XLP", "XLU"},
         "Deflation":   {"XLE", "DBC", "QQQ", "IWM", "SPY"},
@@ -407,7 +407,6 @@ def get_allocation(mode: str = "active"):
             "TLT": ("20+ Year Treasury", "Long bonds lose value as inflation expectations stay elevated."),
             "IWM": ("Russell 2000 ETF", "Small caps most exposed to slowdown and tightening credit."),
             "SPY": ("S&P 500 ETF", "Growth-heavy composition drags in stagflation."),
-            "BRK-B": ("Berkshire Hathaway", "Quality value underperforms when commodity scarcity dominates."),
             "XLI": ("Industrials SPDR", "Manufacturing contracts as input costs rise and demand falls."),
             "AGG": ("US Agg Bond", "Fixed income suffers when inflation is rising."),
         },

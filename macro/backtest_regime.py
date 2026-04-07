@@ -26,7 +26,7 @@ RESULTS_CACHE = f"{CACHE_DIR}/backtest_results.json"
 REGIME_ETFS = {
     # SPY excluded from Reflation/Goldilocks — it's the benchmark
     "Stagflation": ["GLD", "XLE", "DBC", "XLU"],
-    "Reflation":   ["XLE", "XLI", "BRK-B"],
+    "Reflation":   ["XLE", "XLI"],
     "Goldilocks":  ["QQQ", "ARKW", "FTEC", "ARKQ"],
     "Deflation":   ["GLD", "AGG", "FTEC"],
 }

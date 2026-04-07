@@ -238,7 +238,6 @@ REGIME_ETFS = {
         {"ticker": "SPY",  "name": "S&P 500",             "conviction": 0.90, "note": "Core holding — +7.5% avg in Reflation, hard to beat"},
         {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.75, "note": "Top Reflation performer — +10.7% avg, commodity inflation play"},
         {"ticker": "XLI",  "name": "Industrials",         "conviction": 0.70, "note": "Cyclical tilt — +9.6% avg, benefits from capex expansion"},
-        {"ticker": "BRK-B","name": "Berkshire Hathaway",   "conviction": 0.55, "note": "Quality compounder — +8.9% avg, insurance float benefits from rising rates"},
     ],
     "Goldilocks": [
         # Best environment for growth — SPY core + high-growth tilts
