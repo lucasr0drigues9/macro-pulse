@@ -48,7 +48,7 @@ export default function AssetPerformance() {
             </tr>
           </thead>
           <tbody>
-            {assets.map((asset) => (
+            {assets.filter((a) => (a.category as string) !== "neutral").map((asset) => (
               <tr key={asset.ticker} className="border-b border-[#181818] hover:bg-[#111]">
                 <td className="py-3 pr-4">
                   <span className="text-[#e0e0e0] font-bold">{asset.ticker}</span>
