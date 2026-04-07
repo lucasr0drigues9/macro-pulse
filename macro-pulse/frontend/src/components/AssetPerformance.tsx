@@ -65,6 +65,7 @@ export default function AssetPerformance() {
                   {asset.category === "pick" && <span className="text-[#22c55e]">✓ Pick</span>}
                   {asset.category === "avoid" && <span className="text-[#ef4444]">✗ Avoid</span>}
                   {asset.category === "benchmark" && <span className="text-[#555]">— Benchmark</span>}
+                  {asset.category === "neutral" && <span className="text-[#555]">— Neutral</span>}
                 </td>
               </tr>
             ))}

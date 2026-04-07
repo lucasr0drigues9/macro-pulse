@@ -230,6 +230,15 @@ def get_performance():
     # Get regime start date
     regime_start = _get_regime_start()
 
+    # Regime-specific avoid tickers (same as allocation endpoint)
+    _AVOID_TICKERS = {
+        "Stagflation": {"QQQ", "TLT", "IWM", "SPY", "BRK-B", "XLI", "AGG"},
+        "Reflation":   {"TLT", "AGG", "XLP", "XLU", "GLD"},
+        "Goldilocks":  {"XLE", "DBC", "TLT", "XLP", "XLU"},
+        "Deflation":   {"XLE", "DBC", "QQQ", "IWM", "SPY"},
+    }
+    avoid_tickers = _AVOID_TICKERS.get(regime, set())
+
     assets = []
     for ticker, name in all_etfs.items():
         ret = get_etf_return(ticker, regime_start)
@@ -240,8 +249,10 @@ def get_performance():
             category = "benchmark"
         elif ticker in pick_tickers:
             category = "pick"
-        else:
+        elif ticker in avoid_tickers:
             category = "avoid"
+        else:
+            category = "neutral"
 
         assets.append({
             "ticker": ticker,
@@ -250,8 +261,8 @@ def get_performance():
             "category": category,
         })
 
-    # Sort: picks first, then benchmark, then avoids
-    order = {"pick": 0, "benchmark": 1, "avoid": 2}
+    # Sort: picks first, then benchmark, then neutral, then avoids
+    order = {"pick": 0, "benchmark": 1, "neutral": 2, "avoid": 3}
     assets.sort(key=lambda a: (order.get(a["category"], 3), -a["returnPct"]))
 
     return {
