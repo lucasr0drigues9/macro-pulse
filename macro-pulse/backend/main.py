@@ -1668,11 +1668,11 @@ async def cron_weekly(request: Request):
 
 
 def _get_conviction(ticker: str, static_conviction: float, dyn_convictions: dict | None) -> float:
-    """Get conviction for an ETF — dynamic override can increase but never decrease below static."""
-    if not dyn_convictions:
-        return static_conviction
-    dynamic = dyn_convictions.get(ticker, static_conviction)
-    return max(dynamic, static_conviction)
+    """Use static conviction from historical backtest data.
+    AI synthesis convictions were overriding historical rankings (e.g. XLP 0.40 → 0.80),
+    distorting the template. Static convictions are derived from actual performance
+    across all regime periods and should be the source of truth."""
+    return static_conviction
 
 
 # ── Helpers ──────────────────────────────────────────────
