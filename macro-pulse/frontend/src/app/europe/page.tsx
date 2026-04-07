@@ -139,7 +139,7 @@ function NordnetGuide() {
       {open && (
         <div className="px-4 pb-4 border-t border-[#222] text-xs text-[#888] leading-relaxed space-y-3">
           <div className="pt-3">
-            <span className="text-[#6b8e5a] font-bold">NATO/EUAD</span> — Search &apos;VanEck Defense&apos; or &apos;NATO&apos; on Nordnet. Listed on Euronext Amsterdam. Requires foreign markets agreement on Nordnet profile.
+            <span className="text-[#6b8e5a] font-bold">EUAD</span> — Search &apos;iShares European Defence&apos; on Nordnet. Listed on London Stock Exchange and Euronext. Requires foreign markets agreement on Nordnet profile. EUR or GBP denominated depending on listing.
           </div>
           <div>
             <span className="text-[#e09030] font-bold">IOGP</span> — Search &apos;iShares Oil Gas&apos; on Nordnet. Listed on London Stock Exchange. Currency: USD. Requires foreign markets agreement.
@@ -282,20 +282,20 @@ export default function EuropePage() {
           <div className="p-4 rounded-lg border border-[#6b8e5a30] bg-[rgba(107,142,90,0.05)]">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <span className="text-lg font-bold text-[#6b8e5a]">NATO</span>
-                <span className="text-xs text-[#555] ml-2">VanEck Defense UCITS ETF</span>
+                <span className="text-lg font-bold text-[#6b8e5a]">EUAD</span>
+                <span className="text-xs text-[#555] ml-2">iShares European Defence UCITS ETF</span>
               </div>
               <span className="text-xs px-2 py-0.5 rounded bg-[rgba(107,142,90,0.15)] text-[#6b8e5a]">Defence</span>
             </div>
-            <p className="text-xs text-[#555] mb-2">Euronext Amsterdam</p>
+            <p className="text-xs text-[#555] mb-2">London Stock Exchange / Euronext</p>
             <p className="text-xs text-[#888] leading-relaxed mb-2">
-              Holds Rheinmetall, BAE, Leonardo, Saab, Thales. Captures the entire European defence rearmament theme in one ticker. Policy-driven spending means this works across all macro regimes.
+              Holds only European defence companies — Rheinmetall, BAE Systems, Leonardo, Saab, Thales. Pure-play European rearmament with no US exposure. Policy-driven spending means this works across all macro regimes.
             </p>
             <div className="flex items-center justify-between text-xs">
               <span className="text-[#22c55e]">✅ All regimes</span>
               <span className="text-[#86c55e]">Conservative-Moderate</span>
             </div>
-            <a href="https://www.nordnet.no/market/search?query=NATO" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Nordnet</a>
+            <a href="https://finance.yahoo.com/quote/EUAD.L/" target="_blank" rel="noopener noreferrer" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 mt-2 inline-block">View on Yahoo Finance</a>
           </div>
 
           {/* Energy */}
@@ -386,8 +386,12 @@ export default function EuropePage() {
           <p className="text-xs text-[#555] mb-3">The structural catalyst date for European strategic autonomy</p>
           <div className="space-y-2 text-xs">
             <div className="flex justify-between items-center">
-              <span className="text-[#888]">DFNS.L — VanEck Defense ETF</span>
-              <span className="text-[#22c55e] font-bold">+248% *</span>
+              <span className="text-[#888]">RHM.DE — Rheinmetall (held inside EUAD)</span>
+              <span className="text-[#22c55e] font-bold">+820%</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-[#888]">EUAD.L — iShares European Defence ETF</span>
+              <span className="text-[#22c55e] font-bold">since inception *</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-[#888]">SAF.PA — Safran (€108 → €287)</span>
@@ -410,9 +414,9 @@ export default function EuropePage() {
               <span className="text-[#22c55e] font-bold">+24%</span>
             </div>
           </div>
-          <p className="text-xs text-[#555] mt-2">* DFNS launched March 2023, not available at invasion date. Return is since inception.</p>
+          <p className="text-xs text-[#555] mt-2">* EUAD launched after February 2022 — return shown since inception. Rheinmetall shown as individual stock to demonstrate underlying European defence performance.</p>
           <p className="text-xs text-[#888] mt-2">
-            Defence and aerospace (Safran) massively outperformed — policy-driven spending immune to macro cycles. ASML doubled despite being a tech stock. Even materials (NHY) beat expectations. All five positions outperformed SPY since the invasion. Prices shown for verification — check on Google Finance.
+            European defence (Rheinmetall +820%) massively outperformed everything — policy-driven spending immune to macro cycles. EUAD captures this in one ETF with zero US exposure. ASML doubled despite being a tech stock. All positions outperformed SPY since the invasion.
           </p>
           <p className="text-xs text-[#333] mt-2 italic">Past performance does not guarantee future results. February 2022 chosen as the structural catalyst date.</p>
         </div>
