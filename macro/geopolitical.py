@@ -210,6 +210,11 @@ For the CURRENT regime ETFs, score each from 0.5 (low conviction) to 1.0 (highes
 based on the CURRENT geopolitical and macro conditions. Use the full range: 0.5 = weak/hold,
 0.7 = moderate, 0.9+ = high conviction. Scores should reflect THIS specific situation.
 
+For each ETF reason: reference a specific past event where this ETF performed well or poorly
+in similar conditions, so the user can judge the probability. Example format:
+"Hormuz blockade mirrors 2007 oil shock where XLE gained +20%. Current setup is stronger due to zero spare capacity."
+or "Energy-driven Stagflation hurts staples margins — in 2018 Stagflation XLP only gained +0.7%. Would need a food supply crisis to outperform."
+
 Respond ONLY with valid JSON, no markdown:
 {
   "headline": "one punchy sentence summarising the situation",
