@@ -227,12 +227,12 @@ ETF_INSIGHTS = {
 # Each regime uses whatever historically outperforms a 60/40 portfolio
 REGIME_ETFS = {
     "Stagflation": [
-        # Regime picks dominate here — backtest avg +3.1% vs SPY +2.2%, GURU +1.4%
-        {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.95, "note": "Oil shock direct play — 47% win, +2.4% avg"},
-        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.80, "note": "Safe haven + inflation hedge"},
-        {"ticker": "DBC",  "name": "Commodities",         "conviction": 0.60, "note": "Broad commodity exposure"},
-        {"ticker": "XLP",  "name": "Consumer staples",    "conviction": 0.45, "note": "Defensive — pricing power"},
-        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.40, "note": "50% win rate + AI energy demand"},
+        # Ranked by historical Stagflation performance (8 periods, 2007-2026)
+        {"ticker": "GLD",  "name": "Gold",                "conviction": 0.95, "note": "Best avg +12.3%, positive 75% — safe haven + inflation hedge"},
+        {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.90, "note": "Avg +9.4%, beats SPY 62% — direct oil/energy play"},
+        {"ticker": "DBC",  "name": "Commodities",         "conviction": 0.85, "note": "Most consistent: positive 88%, avg +6.4% — broad commodity exposure"},
+        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.60, "note": "Avg +4.5%, beats SPY 62% — defensive + energy demand"},
+        {"ticker": "XLP",  "name": "Consumer staples",    "conviction": 0.40, "note": "Avg +2.0%, rarely beats SPY (12%) — weakest Stagflation pick"},
     ],
     "Reflation": [
         # Growth regime — SPY core + cyclical tilts
