@@ -102,10 +102,10 @@ export const playbookData: Record<RegimeName, {
     description: "Falling growth + Rising inflation",
     whatHappens: "The economy slows while prices keep rising. Central banks are trapped — raising rates kills growth further, cutting rates fuels inflation. Corporate margins compress as input costs rise but pricing power fades. This is the most destructive regime for traditional portfolios.",
     outperform: [
+      { asset: "Gold (GLD)", why: "Best historical avg +12.3%. Gold holds value when currencies lose purchasing power and real rates are negative." },
       { asset: "Energy (XLE)", why: "Energy companies earn more as oil/gas prices spike. Their revenues are directly tied to the commodity driving inflation." },
-      { asset: "Gold (GLD)", why: "Gold is the classic stagflation hedge — it holds value when currencies lose purchasing power and real rates are negative." },
-      { asset: "Commodities (DBC)", why: "Physical commodities are the inflation itself. Holding them is a direct bet on the input costs that are causing the problem." },
-      { asset: "Consumer Staples (XLP)", why: "People still buy food and toothpaste. These companies have pricing power and stable demand regardless of the cycle." },
+      { asset: "Commodities (DBC)", why: "Most consistent pick (88% positive). Physical commodities are the inflation itself — a direct bet on the input costs causing the problem." },
+      { asset: "Utilities (XLU)", why: "Defensive with 62% SPY beat rate. People pay electricity bills in any economy. Benefits from energy demand." },
     ],
     underperform: [
       { asset: "Nasdaq/Growth (QQQ)", why: "High-growth companies depend on cheap capital and expanding multiples. Both vanish when rates rise and growth slows." },

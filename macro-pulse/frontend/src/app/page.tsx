@@ -7,7 +7,6 @@ import HowToUse from "@/components/HowToUse";
 import WeeklyCalendar from "@/components/WeeklyCalendar";
 import RegimeTriggers from "@/components/RegimeTriggers";
 import TransitionOutlook from "@/components/TransitionOutlook";
-import RegimePlaybook from "@/components/RegimePlaybook";
 import RegimeHistory from "@/components/RegimeHistory";
 
 export default function Home() {
@@ -33,9 +32,6 @@ export default function Home() {
 
       <div className="border-t border-[#181818]" />
       <TransitionOutlook />
-
-      <div className="border-t border-[#181818]" />
-      <RegimePlaybook />
 
       <div className="border-t border-[#181818]" />
       <HowToUse />
