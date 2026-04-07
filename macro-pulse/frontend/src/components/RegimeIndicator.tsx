@@ -71,6 +71,14 @@ export default function RegimeIndicator() {
         <div className="mt-2">
           <span className="text-xs text-[#555]">See picks and allocation below</span>
         </div>
+        {confirmed === "Stagflation" && (
+          <div className="mt-6 max-w-lg mx-auto">
+            <p className="text-xs text-[#555] italic leading-relaxed">
+              &ldquo;Sell out of all debt and buy gold because wars are financed by borrowing and printing money, which devalues debt and money.&rdquo;
+            </p>
+            <p className="text-xs text-[#333] mt-1">— Ray Dalio</p>
+          </div>
+        )}
       </div>
 
       {/* Signal cards */}
