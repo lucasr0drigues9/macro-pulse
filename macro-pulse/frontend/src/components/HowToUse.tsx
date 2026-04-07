@@ -21,7 +21,7 @@ export default function HowToUse() {
             <div className="text-xs text-[#ef4444] font-bold mb-2">Honest limitations</div>
             <div className="space-y-1 text-xs text-[#888]">
               <p>• Short regime signals (&lt;4 months) can be false — use judgement</p>
-              <p>• Deflation picks underperform SPY in some periods (2023)</p>
+              <p>• Deflation picks protect capital but miss rallies when SPY recovers fast (e.g. 2023 AI boom)</p>
               <p>• Growth regime picks don&apos;t always beat just holding SPY</p>
               <p>• Backtest returns use close prices which may differ slightly from your broker</p>
               <p>• Past performance does not guarantee future results</p>
