@@ -25,6 +25,13 @@ export default function Welcome() {
         </p>
       </div>
 
+      <div className="max-w-lg mx-auto mb-10 text-center">
+        <p className="text-xs text-[#555] italic leading-relaxed">
+          &ldquo;Sell out of all debt and buy gold because wars are financed by borrowing and printing money, which devalues debt and money.&rdquo;
+        </p>
+        <p className="text-xs text-[#333] mt-1">— Ray Dalio</p>
+      </div>
+
       <div className="space-y-3 mb-8">
         {seasons.map((s) => {
           const colors = REGIME_COLORS[s.name];
