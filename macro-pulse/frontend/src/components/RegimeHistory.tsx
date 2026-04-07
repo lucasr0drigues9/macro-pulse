@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import { REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
 
-type SignalStrength = "STRONG" | "MODERATE" | "WEAK";
 type TimelineEntry = {
   regime: RegimeName; start: string; end: string; months: number;
   quarterLabel: string;
   picksReturn: number | null; spyReturn: number | null;
   profitable: boolean | null; beatSpy: boolean | null;
-  signalStrength?: SignalStrength; signalContext?: string;
+  signalContext?: string;
   geoRegime?: RegimeName; geoPicksReturn?: number | null;
 };
 type BacktestData = {
@@ -22,12 +21,6 @@ type BacktestData = {
   worstCall: { start: string; regime: RegimeName; picksReturn: number; spyReturn: number } | null;
   regimeBreakdown: Record<string, { count: number; winRate: number; kellyHalf: number; observations: number }>;
   timeline: TimelineEntry[];
-};
-
-const STRENGTH_COLORS: Record<SignalStrength, { bg: string; text: string; border: string }> = {
-  STRONG: { bg: "rgba(34,197,94,0.15)", text: "#22c55e", border: "rgba(34,197,94,0.3)" },
-  MODERATE: { bg: "rgba(234,179,8,0.15)", text: "#eab308", border: "rgba(234,179,8,0.3)" },
-  WEAK: { bg: "rgba(107,114,128,0.15)", text: "#6b7280", border: "rgba(107,114,128,0.3)" },
 };
 
 export default function RegimeHistory() {
@@ -64,24 +57,10 @@ export default function RegimeHistory() {
       </div>
 
       <div className="p-3 rounded bg-[#111] border border-[#222] mb-6">
-        <p className="text-xs text-[#e0e0e0] font-bold mb-2">Signal strength — the key insight</p>
-        <p className="text-xs text-[#888] leading-relaxed mb-3">
-          Not all regime signals are equal. When the regime has an <span className="text-[#22c55e]">obvious real-world catalyst</span> (war, pandemic, massive stimulus), picks outperform <span className="text-[#22c55e] font-bold">89% of the time</span>. When the signal is ambiguous, picks only beat SPY 36% of the time. Click any period to see what was happening — and what an <span className="text-[#3b82f6]">AI geopolitical layer</span> would have flagged instead of FRED.
+        <p className="text-xs text-[#e0e0e0] font-bold mb-2">FRED vs AI — why context matters</p>
+        <p className="text-xs text-[#888] leading-relaxed">
+          FRED data can lag reality by months. When a major event happens (war, pandemic, policy shift), the <span className="text-[#3b82f6]">AI geopolitical layer</span> detects the real regime before FRED catches up. Click any period to see the narrative at the time — and where the AI would have overridden FRED with a better call.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.3)" }}>STRONG</span>
-            <span className="text-[10px] text-[#888]">Obvious catalyst, 6+mo — 89% win rate</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(234,179,8,0.15)", color: "#eab308", border: "1px solid rgba(234,179,8,0.3)" }}>MODERATE</span>
-            <span className="text-[10px] text-[#888]">Mixed signals — ~38% win rate</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ backgroundColor: "rgba(107,114,128,0.15)", color: "#6b7280", border: "1px solid rgba(107,114,128,0.3)" }}>WEAK</span>
-            <span className="text-[10px] text-[#888]">Ambiguous, short — ~36% win rate</span>
-          </div>
-        </div>
       </div>
 
       {/* Regime breakdown cards */}
@@ -130,9 +109,8 @@ export default function RegimeHistory() {
         <div className="space-y-2">
           {filteredTimeline.map((period, i) => {
             const colors = REGIME_COLORS[period.regime];
-            const strength = period.signalStrength as SignalStrength | undefined;
-            const sc = strength ? STRENGTH_COLORS[strength] : null;
             const isExpanded = expanded === i;
+            const hasGeoOverride = !!period.geoRegime;
             return (
               <div key={i}>
                 <div
@@ -151,12 +129,12 @@ export default function RegimeHistory() {
                   <div className="text-xs text-[#888] sm:w-40">
                     {period.start} → {period.end} ({period.months}mo)
                   </div>
-                  {sc && strength && (
+                  {hasGeoOverride && (
                     <span
                       className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
-                      style={{ backgroundColor: sc.bg, color: sc.text, border: `1px solid ${sc.border}` }}
+                      style={{ backgroundColor: "rgba(59,130,246,0.15)", color: "#3b82f6", border: "1px solid rgba(59,130,246,0.3)" }}
                     >
-                      {strength}
+                      AI: {period.geoRegime}
                     </span>
                   )}
                   <div className="flex-1 flex items-center gap-4 text-xs">
@@ -197,16 +175,9 @@ export default function RegimeHistory() {
                   </div>
                 </div>
                 {isExpanded && (
-                  <div
-                    className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] text-xs leading-relaxed"
-                    style={{ backgroundColor: sc ? sc.bg : "#0a0a0a" }}
-                  >
+                  <div className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] text-xs leading-relaxed bg-[#0a0a0a]">
                     <p className="text-[#888]">
-                      {period.signalContext || (
-                        <span className="text-[#555]">
-                          {strength === "STRONG" ? "Strong catalyst with clear market impact." : strength === "WEAK" ? "Ambiguous signal — no obvious catalyst at the time." : "Mixed signals — some indicators pointed this way but conviction was moderate."}
-                        </span>
-                      )}
+                      {period.signalContext || "No additional context available for this period."}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                       <span className="text-[#555]">
@@ -227,8 +198,8 @@ export default function RegimeHistory() {
                       </span>
                     </div>
                     {period.geoRegime && (
-                      <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#222]">
-                        <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">AI/Geopolitical layer would have flagged</div>
+                      <div className="mt-2 p-2 rounded bg-[#111] border border-[#222]">
+                        <div className="text-[10px] text-[#3b82f6] uppercase tracking-wider mb-1">AI geopolitical layer would have flagged</div>
                         <div className="flex flex-wrap gap-x-4 gap-y-1 items-center">
                           <span style={{ color: REGIME_COLORS[period.geoRegime]?.color }} className="font-bold">
                             {period.geoRegime}
@@ -244,7 +215,7 @@ export default function RegimeHistory() {
                           {period.geoPicksReturn !== null && period.geoPicksReturn !== undefined && period.picksReturn !== null && (
                             <span className={period.geoPicksReturn > period.picksReturn ? "text-[#22c55e]" : "text-[#ef4444]"}>
                               {period.geoPicksReturn > period.picksReturn
-                                ? `AI would have gained +${(period.geoPicksReturn - period.picksReturn).toFixed(1)}pp more`
+                                ? `AI picks would have gained +${(period.geoPicksReturn - period.picksReturn).toFixed(1)}pp more`
                                 : `FRED picks were better by +${(period.picksReturn - period.geoPicksReturn).toFixed(1)}pp`}
                             </span>
                           )}
@@ -290,13 +261,13 @@ export default function RegimeHistory() {
             </span>
           </div>
           {(() => {
-            const strong = s.timeline.filter((t) => t.signalStrength === "STRONG" && t.beatSpy !== null);
-            const strongWins = strong.filter((t) => t.beatSpy);
-            return strong.length > 0 ? (
+            const withOverride = s.timeline.filter((t) => t.geoRegime && t.geoPicksReturn !== null && t.geoPicksReturn !== undefined && t.picksReturn !== null);
+            const aiBetter = withOverride.filter((t) => (t.geoPicksReturn ?? 0) > (t.picksReturn ?? 0));
+            return withOverride.length > 0 ? (
               <div className="flex justify-between">
-                <span className="text-[#555]">STRONG signals beat SPY</span>
-                <span className="text-[#22c55e] font-bold">
-                  {strongWins.length}/{strong.length} ({Math.round(strongWins.length / strong.length * 100)}%)
+                <span className="text-[#555]">AI override beat FRED</span>
+                <span className="text-[#3b82f6] font-bold">
+                  {aiBetter.length}/{withOverride.length} ({Math.round(aiBetter.length / withOverride.length * 100)}%)
                 </span>
               </div>
             ) : null;
