@@ -18,14 +18,6 @@ export default function Home() {
       <div className="border-t border-[#181818]" />
       <RegimeIndicator />
 
-      {/* European autonomy link */}
-      <div className="px-4 max-w-5xl mx-auto">
-        <a href="/europe" className="block p-3 rounded-lg bg-[#111] border border-[#222] hover:border-[#333] transition-colors text-center">
-          <span className="text-xs text-[#888]">Beyond the short-term regime: </span>
-          <span className="text-xs text-[#3b82f6] underline underline-offset-2">Track Europe&apos;s structural shift →</span>
-        </a>
-      </div>
-
       <div className="border-t border-[#181818]" />
       <AssetPerformance />
 
