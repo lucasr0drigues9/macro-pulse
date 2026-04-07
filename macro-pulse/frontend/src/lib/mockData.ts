@@ -54,11 +54,10 @@ export const assetPerformance = {
 export const allocationData = {
   regime: "Stagflation" as RegimeName,
   overweight: [
-    { ticker: "XLE", name: "Energy Select SPDR", weight: 30, conviction: 0.95, priceAssessment: "Still attractive" as const, rationale: "Hormuz blockade sustains energy scarcity premium. Supply disruption far from resolved." },
-    { ticker: "GLD", name: "SPDR Gold Shares", weight: 20, conviction: 0.85, priceAssessment: "Fairly valued" as const, rationale: "Portfolio insurance against both stagflation and geopolitical escalation." },
-    { ticker: "DBC", name: "Invesco DB Commodity", weight: 20, conviction: 0.90, priceAssessment: "Still attractive" as const, rationale: "Broad commodity exposure benefits from supply-side inflation pressures." },
-    { ticker: "XLP", name: "Consumer Staples SPDR", weight: 15, conviction: 0.75, priceAssessment: "Fairly valued" as const, rationale: "Defensive positioning with pricing power during inflationary periods." },
-    { ticker: "XLU", name: "Utilities Select SPDR", weight: 15, conviction: 0.70, priceAssessment: "Still attractive" as const, rationale: "Defensive yield play. Outperforms when growth slows and rates plateau." },
+    { ticker: "GLD", name: "SPDR Gold Shares", weight: 25, conviction: 0.95, priceAssessment: "Fairly valued" as const, rationale: "Best avg +12.3%, positive 75% — safe haven + inflation hedge" },
+    { ticker: "XLE", name: "Energy Select SPDR", weight: 24, conviction: 0.90, priceAssessment: "Still attractive" as const, rationale: "Avg +9.4%, beats SPY 62% — direct oil/energy play" },
+    { ticker: "DBC", name: "Invesco DB Commodity", weight: 22, conviction: 0.85, priceAssessment: "Still attractive" as const, rationale: "Most consistent: positive 88%, avg +6.4% — broad commodity exposure" },
+    { ticker: "XLU", name: "Utilities Select SPDR", weight: 14, conviction: 0.55, priceAssessment: "Still attractive" as const, rationale: "Avg +4.5%, beats SPY 62% — defensive + energy demand" },
   ],
   underweight: [
     { ticker: "QQQ", name: "Nasdaq 100 ETF", rationale: "Growth stocks suffer from rising rates and declining consumer spending power." },
