@@ -231,8 +231,7 @@ REGIME_ETFS = {
         {"ticker": "GLD",  "name": "Gold",                "conviction": 0.95, "note": "Best avg +12.3%, positive 75% — safe haven + inflation hedge"},
         {"ticker": "XLE",  "name": "Energy stocks",       "conviction": 0.90, "note": "Avg +9.4%, beats SPY 62% — direct oil/energy play"},
         {"ticker": "DBC",  "name": "Commodities",         "conviction": 0.85, "note": "Most consistent: positive 88%, avg +6.4% — broad commodity exposure"},
-        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.60, "note": "Avg +4.5%, beats SPY 62% — defensive + energy demand"},
-        {"ticker": "XLP",  "name": "Consumer staples",    "conviction": 0.40, "note": "Avg +2.0%, rarely beats SPY (12%) — weakest Stagflation pick"},
+        {"ticker": "XLU",  "name": "Utilities",           "conviction": 0.55, "note": "Avg +4.5%, beats SPY 62% — defensive + energy demand"},
     ],
     "Reflation": [
         # Growth regime — SPY core + cyclical tilts

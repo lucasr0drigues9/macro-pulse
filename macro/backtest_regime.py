@@ -25,7 +25,7 @@ RESULTS_CACHE = f"{CACHE_DIR}/backtest_results.json"
 # Same ETF baskets as macro_kelly.py REGIME_ETFS
 REGIME_ETFS = {
     # SPY excluded from Reflation/Goldilocks — it's the benchmark
-    "Stagflation": ["XLE", "GLD", "DBC", "XLP", "XLU"],
+    "Stagflation": ["GLD", "XLE", "DBC", "XLU"],
     "Reflation":   ["XLE", "XLI", "BRK-B"],
     "Goldilocks":  ["QQQ", "ARKW", "FTEC", "ARKQ"],
     "Deflation":   ["GLD", "AGG", "FTEC"],
