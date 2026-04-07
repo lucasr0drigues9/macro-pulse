@@ -11,6 +11,7 @@ type TimelineEntry = {
   picksReturn: number | null; spyReturn: number | null;
   profitable: boolean | null; beatSpy: boolean | null;
   signalStrength?: SignalStrength; signalContext?: string;
+  geoRegime?: RegimeName; geoPicksReturn?: number | null;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
@@ -65,7 +66,7 @@ export default function RegimeHistory() {
       <div className="p-3 rounded bg-[#111] border border-[#222] mb-6">
         <p className="text-xs text-[#e0e0e0] font-bold mb-2">Signal strength — the key insight</p>
         <p className="text-xs text-[#888] leading-relaxed mb-3">
-          Not all regime signals are equal. When the regime has an <span className="text-[#22c55e]">obvious real-world catalyst</span> (war, pandemic, massive stimulus), picks outperform <span className="text-[#22c55e] font-bold">89% of the time</span>. When the signal is ambiguous, picks only beat SPY 36% of the time. Click any period to see what was happening.
+          Not all regime signals are equal. When the regime has an <span className="text-[#22c55e]">obvious real-world catalyst</span> (war, pandemic, massive stimulus), picks outperform <span className="text-[#22c55e] font-bold">89% of the time</span>. When the signal is ambiguous, picks only beat SPY 36% of the time. Click any period to see what was happening — and what an <span className="text-[#3b82f6]">AI geopolitical layer</span> would have flagged instead of FRED.
         </p>
         <div className="flex flex-wrap gap-3">
           <div className="flex items-center gap-1.5">
@@ -197,23 +198,63 @@ export default function RegimeHistory() {
                 </div>
                 {isExpanded && (
                   <div
-                    className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] text-xs text-[#888] leading-relaxed"
+                    className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] text-xs leading-relaxed"
                     style={{ backgroundColor: sc ? sc.bg : "#0a0a0a" }}
                   >
-                    {period.signalContext || (
+                    <p className="text-[#888]">
+                      {period.signalContext || (
+                        <span className="text-[#555]">
+                          {strength === "STRONG" ? "Strong catalyst with clear market impact." : strength === "WEAK" ? "Ambiguous signal — no obvious catalyst at the time." : "Mixed signals — some indicators pointed this way but conviction was moderate."}
+                        </span>
+                      )}
+                    </p>
+                    <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
                       <span className="text-[#555]">
-                        {strength === "STRONG" ? "Strong catalyst with clear market impact." : strength === "WEAK" ? "Ambiguous signal — no obvious catalyst at the time." : "Mixed signals — some indicators pointed this way but conviction was moderate."}
+                        FRED regime: <span style={{ color: colors.color }} className="font-bold">{period.regime}</span> picks{" "}
+                        {period.picksReturn !== null ? (
+                          <span style={{ color: period.picksReturn >= 0 ? "#22c55e" : "#ef4444" }} className="font-bold">
+                            {period.picksReturn >= 0 ? "+" : ""}{period.picksReturn.toFixed(1)}%
+                          </span>
+                        ) : "N/A"}
                       </span>
+                      <span className="text-[#555]">
+                        SPY:{" "}
+                        {period.spyReturn !== null ? (
+                          <span style={{ color: period.spyReturn >= 0 ? "#22c55e" : "#ef4444" }} className="font-bold">
+                            {period.spyReturn >= 0 ? "+" : ""}{period.spyReturn.toFixed(1)}%
+                          </span>
+                        ) : "N/A"}
+                      </span>
+                    </div>
+                    {period.geoRegime && (
+                      <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#222]">
+                        <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">AI/Geopolitical layer would have flagged</div>
+                        <div className="flex flex-wrap gap-x-4 gap-y-1 items-center">
+                          <span style={{ color: REGIME_COLORS[period.geoRegime]?.color }} className="font-bold">
+                            {period.geoRegime}
+                          </span>
+                          {period.geoPicksReturn !== null && period.geoPicksReturn !== undefined && (
+                            <span className="text-[#555]">
+                              picks:{" "}
+                              <span style={{ color: period.geoPicksReturn >= 0 ? "#22c55e" : "#ef4444" }} className="font-bold">
+                                {period.geoPicksReturn >= 0 ? "+" : ""}{period.geoPicksReturn.toFixed(1)}%
+                              </span>
+                            </span>
+                          )}
+                          {period.geoPicksReturn !== null && period.geoPicksReturn !== undefined && period.picksReturn !== null && (
+                            <span className={period.geoPicksReturn > period.picksReturn ? "text-[#22c55e]" : "text-[#ef4444]"}>
+                              {period.geoPicksReturn > period.picksReturn
+                                ? `AI would have gained +${(period.geoPicksReturn - period.picksReturn).toFixed(1)}pp more`
+                                : `FRED picks were better by +${(period.picksReturn - period.geoPicksReturn).toFixed(1)}pp`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     )}
-                    {period.beatSpy === true && period.picksReturn !== null && period.spyReturn !== null && (
-                      <span className="text-[#22c55e] ml-2">
-                        Picks beat SPY by {(period.picksReturn - period.spyReturn).toFixed(1)}pp
-                      </span>
-                    )}
-                    {period.beatSpy === false && period.picksReturn !== null && period.spyReturn !== null && (
-                      <span className="text-[#ef4444] ml-2">
-                        SPY beat picks by {(period.spyReturn - period.picksReturn).toFixed(1)}pp
-                      </span>
+                    {!period.geoRegime && (
+                      <div className="mt-1 text-[10px] text-[#333]">
+                        AI would have agreed with FRED — no override needed
+                      </div>
                     )}
                   </div>
                 )}
