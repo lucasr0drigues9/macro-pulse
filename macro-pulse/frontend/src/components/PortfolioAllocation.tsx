@@ -65,9 +65,9 @@ export default function PortfolioAllocation() {
 
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Current Allocation Recommendation</h2>
+      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Regime Allocation Template</h2>
       <p className="text-xs text-[#555] mb-6">
-        Based on confirmed {regime} regime
+        Historical allocation for {regime} regime — not personalised advice
         {data?.kellyFraction !== undefined && (
           <span className="ml-2 text-[#888]">· Half-Kelly: {(data.kellyFraction * 100).toFixed(1)}%</span>
         )}
