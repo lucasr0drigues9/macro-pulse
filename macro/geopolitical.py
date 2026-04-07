@@ -236,12 +236,11 @@ Respond ONLY with valid JSON, no markdown:
   },
   "watch_this_week": ["specific data release or event to monitor"],
   "etf_convictions": {
-    "XLE": 0.95,
-    "GLD": 0.90,
-    "DBC": 0.85,
-    "XLP": 0.75,
-    "TIP": 0.65,
-    "XLU": 0.60
+    "XLE": {"score": 0.95, "reason": "1 sentence — why this score given CURRENT events"},
+    "GLD": {"score": 0.90, "reason": "1 sentence — why this score given CURRENT events"},
+    "DBC": {"score": 0.85, "reason": "1 sentence — why this score given CURRENT events"},
+    "XLP": {"score": 0.75, "reason": "1 sentence — why this score given CURRENT events"},
+    "XLU": {"score": 0.60, "reason": "1 sentence — why this score given CURRENT events"}
   },
   "regime_start_date": "YYYY-MM-DD — the start date of the LAST period in the FRED regime history that matches the current regime. Use the exact start date from the history. Do NOT merge separate periods — if there was a different regime in between, use the start of the most recent matching period, not an earlier one.",
   "calendar_scenarios": {

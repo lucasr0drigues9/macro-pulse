@@ -6,8 +6,8 @@ import { apiUrl } from "@/lib/api";
 
 type Overweight = {
   ticker: string; name: string; weight: number; conviction: number;
-  priceAssessment: string; rationale: string;
-  timing?: { price: number; rsi: number; score: number; fiveyrPosition?: number | null; fiveyrLabel?: string | null } | null;
+  priceAssessment: string; rationale: string; aiReason?: string;
+  timing?: { price: number; rsi: number; score: number } | null;
 };
 type Underweight = { ticker: string; name: string; rationale: string };
 type AllocData = {
@@ -59,7 +59,7 @@ export default function PortfolioAllocation() {
   }, []);
 
   const regime = (data?.regime || fallback.regime) as RegimeName;
-  const overweight = data?.overweight || fallback.overweight;
+  const overweight = (data?.overweight || fallback.overweight) as Overweight[];
   const underweight = data?.underweight || fallback.underweight;
   const regimeColor = REGIME_COLORS[regime].color;
 
@@ -97,17 +97,13 @@ export default function PortfolioAllocation() {
                   <AssessmentBadge assessment={etf.priceAssessment} />
                   <span className="text-xs text-[#555]">Conviction: {(etf.conviction * 100).toFixed(0)}%</span>
                   {"timing" in etf && etf.timing && (
-                    <>
-                      <span className="text-xs text-[#333]">RSI: {etf.timing.rsi}</span>
-                      {etf.timing.fiveyrPosition != null && (
-                        <span className={`text-xs ${etf.timing.fiveyrPosition <= 25 ? "text-[#22c55e]" : etf.timing.fiveyrPosition >= 75 ? "text-[#ef4444]" : "text-[#888]"}`}>
-                          5yr: {etf.timing.fiveyrPosition}% {etf.timing.fiveyrLabel}
-                        </span>
-                      )}
-                    </>
+                    <span className="text-xs text-[#333]">RSI: {etf.timing.rsi}</span>
                   )}
                 </div>
                 <p className="text-xs text-[#888]">{etf.rationale}</p>
+                {etf.aiReason && (
+                  <p className="text-xs text-[#3b82f6] mt-1">AI: {etf.aiReason}</p>
+                )}
               </div>
             ))}
           </div>

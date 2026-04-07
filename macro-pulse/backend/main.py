@@ -277,8 +277,20 @@ def get_allocation(mode: str = "active"):
     picks = REGIME_ETFS.get(regime, [])
     pick_tickers = {e["ticker"] for e in picks}
 
-    # Dynamic conviction overrides from AI synthesis
+    # AI synthesis data for reasoning
     dyn_convictions, cash_pct = get_dynamic_convictions()
+    ai_reasons = {}
+    try:
+        import json as _json
+        _synth_path = os.path.join(MACRO, ".macro_cache", "geo_synthesis.json")
+        if os.path.exists(_synth_path):
+            with open(_synth_path) as _sf:
+                _synth = _json.load(_sf)
+            for _tk, _val in _synth.get("etf_convictions", {}).items():
+                if isinstance(_val, dict):
+                    ai_reasons[_tk] = _val.get("reason", "")
+    except Exception:
+        pass
 
     # Kelly fraction — mode adjusts aggressiveness
     kelly = kelly_fraction(regime)
@@ -326,14 +338,12 @@ def get_allocation(mode: str = "active"):
             assessment = "Still attractive" if score >= 65 else "Fairly valued" if score >= 40 else "Extended"
             price_info = {
                 "price": timing["price"], "rsi": timing["rsi"], "score": timing["score"],
-                "fiveyrPosition": timing.get("fiveyr_position"),
-                "fiveyrLabel": timing.get("fiveyr_label"),
             }
         else:
             assessment = "Fairly valued"
             price_info = None
 
-        overweight.append({
+        entry = {
             "ticker": ticker,
             "name": etf["name"],
             "weight": weight,
@@ -341,7 +351,10 @@ def get_allocation(mode: str = "active"):
             "priceAssessment": assessment,
             "rationale": etf["note"],
             "timing": price_info,
-        })
+        }
+        if ai_reasons.get(ticker):
+            entry["aiReason"] = ai_reasons[ticker]
+        overweight.append(entry)
 
     # ── Early rotation — Active and Aggressive add incoming regime positions ──
     early_rotation = None
