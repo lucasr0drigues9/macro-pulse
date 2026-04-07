@@ -704,7 +704,7 @@ def get_backtest():
         "2020-07": ("STRONG", "Massive Fed + fiscal stimulus ($5T+). Vaccine announcements Nov 2020. Reopening trade. Clear reflation catalyst."),
         "2021-06": ("MODERATE", "Inflation 'transitory' debate. Supply chain bottlenecks. Delta variant. Growth strong but inflation direction uncertain."),
         "2021-10": ("MODERATE", "Omicron variant. Fed hawkish pivot Nov 2021. Inflation clearly not transitory. Reflation reading felt late."),
-        "2022-03": ("STRONG", "Russia invaded Ukraine Feb 2022. Oil spiked to $130. European energy crisis. But FRED still read Reflation from momentum — lagging."),
+        "2022-03": ("STRONG", "Russia invaded Ukraine Feb 2022. FRED still read Reflation from prior GDP momentum, but the real regime was Stagflation — Stagflation picks (XLE, GLD, DBC) outperformed significantly. A key example of why geopolitical signals override FRED during obvious events."),
         # 2022-2023: Fed tightening → AI boom
         "2022-10": ("MODERATE", "Fed funds at 4%+. Inflation falling from 9% peak. Crypto collapse (FTX Nov 2022). Brief deflation scare."),
         "2023-01": ("WEAK", "Brief 3-month Goldilocks reading. SVB collapsed Mar 2023. Signal was real but cut short by banking panic."),
