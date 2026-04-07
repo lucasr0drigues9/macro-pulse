@@ -51,7 +51,12 @@ _seed_cache_on_startup()
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="Macro Pulse API", version="0.2.0")
+app = FastAPI(title="Macro Pulse API", version="0.3.0")
+
+
+@app.get("/api/version")
+def get_version():
+    return {"version": "0.3.0", "feature": "signal_strength"}
 
 
 @app.get("/api/health")
