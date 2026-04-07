@@ -702,7 +702,7 @@ def get_backtest():
         # 2020-2021: COVID → Reopening → Inflation
         "2020-02": ("STRONG", "COVID-19 pandemic. Global lockdowns Mar 2020. Fastest bear market in history (-34% in 23 days). Unmistakable crisis.", None),
         "2020-07": ("STRONG", "Massive Fed + fiscal stimulus ($5T+). Vaccine announcements Nov 2020. Reopening trade. Clear reflation catalyst.", None),
-        "2021-06": ("MODERATE", "Inflation 'transitory' debate. Supply chain bottlenecks. Delta variant. Growth strong but inflation direction uncertain.", "Stagflation"),
+        "2021-06": ("MODERATE", "Inflation 'transitory' debate. Supply chain bottlenecks. Delta variant. Growth strong but inflation direction uncertain.", None),
         "2021-10": ("MODERATE", "Omicron variant. Fed hawkish pivot Nov 2021. Inflation clearly not transitory. Reflation reading felt late.", "Stagflation"),
         "2022-03": ("STRONG", "Russia invaded Ukraine Feb 2022. FRED still read Reflation from prior GDP momentum, but the real regime was Stagflation. A key example of why geopolitical signals override FRED during obvious events.", "Stagflation"),
         # 2022-2023: Fed tightening → AI boom
