@@ -84,14 +84,14 @@ export default function RegimeIndicator() {
           <div className="text-xs text-[#333] mt-2">Updated daily · {geoSignal.lastUpdated}</div>
         </div>
         <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-          <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — FRED (Q4 2025 data)</div>
+          <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — FRED Economic Data</div>
           <div className="text-xl font-bold" style={{ color: fredColor.color }}>
             {fredSignal.regime}
           </div>
           <div className="text-xs text-[#555] mt-1">{fredSignal.note}</div>
           {lagWarning && (
             <div className="text-xs text-[#eab308] mt-2">
-              FRED indicated Reflation from Q4 2025 data but the signal was barely positive (growth score 0.33). The geopolitical layer overrides this as not relevant given current conditions. FRED confirmation of Q1 2026 is expected in May 2026. Until then, we rely on the AI geopolitical analysis to determine the current regime.
+              FRED and the geopolitical layer currently disagree. The geopolitical layer overrides FRED when a clear real-world catalyst exists. FRED data lags by 1-3 months and will likely confirm the geopolitical signal once newer data is released.
             </div>
           )}
           <div className="text-xs text-[#333] mt-2">Latest data: {fredSignal.lastUpdated}</div>
@@ -101,11 +101,11 @@ export default function RegimeIndicator() {
       {/* FRED confirmation explanation */}
       <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
         <div className="text-xs text-[#888] leading-relaxed">
-          <span className="text-[#e0e0e0] font-bold">How to read these signals:</span> The geopolitical AI layer detects regime changes in real time by analysing current events daily. FRED economic data is a <span className="text-[#eab308]">confirmation signal</span>, not a detection tool — it tells you the regime has been confirmed, not that it&apos;s starting. FRED is structurally slow: GDP is reported as a single number per quarter (no monthly breakdown), unemployment is a lagging indicator, and even monthly data like CPI reflects conditions 1-2 months ago.
+          <span className="text-[#e0e0e0] font-bold">How to read these signals:</span> The geopolitical AI layer detects regime changes in real time by analysing current events daily. FRED economic data is a <span className="text-[#eab308]">confirmation signal</span> — it tells you the regime has been confirmed by hard data, not that it&apos;s starting. When both signals agree, conviction is highest.
         </div>
         {lagWarning && (
           <div className="text-xs text-[#eab308] mt-2 pt-2 border-t border-[#222]">
-            FRED currently reads {fredSignal.regime} because its latest GDP data (Q4 2025) still shows pre-crisis growth. When Q1 2026 GDP is released in late April, it will likely confirm what the geopolitical layer has been signalling since the war started. By then, investors who waited for FRED confirmation will have missed months of positioning opportunity.
+            FRED and the AI geopolitical layer currently disagree. When there is a clear real-world catalyst (war, pandemic, policy shift), the geopolitical signal tends to lead FRED by months. FRED will likely catch up once newer economic data is released.
           </div>
         )}
       </div>
