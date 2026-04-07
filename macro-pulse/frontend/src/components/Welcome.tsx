@@ -21,7 +21,7 @@ export default function Welcome() {
           Markets rotate. Your portfolio should too.
         </p>
         <p className="text-sm text-[#555] max-w-md mx-auto">
-          Four regimes. Different winners each time. Click to explore.
+          Four seasons. Four strategies. One framework.
         </p>
       </div>
 
