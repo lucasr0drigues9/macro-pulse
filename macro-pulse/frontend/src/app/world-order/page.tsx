@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Nav from "@/components/Nav";
 import {
   countries, DETERMINANT_LABELS, DETERMINANT_KEYS, CAMP_COLORS, CAMP_LABELS,
   SIGNAL_COLORS, getOverallScore, getStrongestDeterminant, getWeakestDeterminant,
@@ -190,6 +191,7 @@ export default function WorldOrderPage() {
 
   return (
     <main className="min-h-screen">
+      <Nav />
       {/* Header */}
       <section className="px-4 pt-16 pb-8 max-w-5xl mx-auto text-center">
         <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The World Order Monitor</h1>

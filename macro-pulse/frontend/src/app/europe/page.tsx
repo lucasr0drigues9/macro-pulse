@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { apiUrl } from "@/lib/api";
+import Nav from "@/components/Nav";
 import {
   SECTORS, COMPANIES, CATALYSTS, REGIME_FIT_EMOJI, RISK_COLORS,
   type Company,
@@ -239,9 +240,9 @@ export default function EuropePage() {
 
   return (
     <main className="min-h-screen">
+      <Nav />
       {/* Header */}
-      <section className="px-4 pt-16 pb-8 max-w-5xl mx-auto">
-        <a href="/" className="text-xs text-[#555] hover:text-[#888]">← Back to Macro Pulse</a>
+      <section className="px-4 pt-8 pb-8 max-w-5xl mx-auto">
         <div className="text-center mt-8 mb-6">
           <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">Macro Pulse</h1>
           <p className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold mb-3">European Strategic Autonomy</p>
