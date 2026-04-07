@@ -389,24 +389,40 @@ def get_allocation(mode: str = "active"):
             "positions": rotation_positions,
         }
 
-    # ── Underweight list ──
-    all_avoid_etfs = {
-        "QQQ": ("Nasdaq 100 ETF", "Growth stocks suffer from rising rates and declining consumer spending power."),
-        "TLT": ("20+ Year Treasury", "Long duration bonds lose value as inflation expectations remain elevated."),
-        "IWM": ("Russell 2000 ETF", "Small caps most exposed to economic slowdown and tightening credit."),
-        "GURU": ("Global Guru ETF", "Superinvestor picks lag during stagflation — typically overweight growth."),
-        "SPY": ("S&P 500 ETF", "Broad market drag from growth-heavy composition."),
-        "BRK-B": ("Berkshire Hathaway", "Quality value underperforms when commodity scarcity dominates."),
-        "XLI": ("Industrials SPDR", "Manufacturing contracts as input costs rise and demand falls."),
-        "VGK": ("Europe ETF", "European economy more exposed to energy supply disruption."),
-        "AGG": ("US Agg Bond", "Fixed income suffers when inflation is rising."),
-        "TIP": ("TIPS Bond ETF", "TIPS provide some protection but less upside than commodities."),
-        "XLE": ("Energy Select SPDR", "Energy underperforms without specific supply disruption."),
-        "GLD": ("SPDR Gold Shares", "No inflation to hedge against."),
-        "DBC": ("Invesco DB Commodity", "Commodity demand collapses with economic activity."),
-        "XLP": ("Consumer Staples SPDR", "Defensive play unnecessary in growth regimes."),
-        "XLU": ("Utilities Select SPDR", "Yield play loses appeal when growth is abundant."),
+    # ── Underweight list — regime-specific rationales ──
+    _AVOID = {
+        "Stagflation": {
+            "QQQ": ("Nasdaq 100 ETF", "Growth stocks suffer from rising rates and declining consumer spending."),
+            "TLT": ("20+ Year Treasury", "Long bonds lose value as inflation expectations stay elevated."),
+            "IWM": ("Russell 2000 ETF", "Small caps most exposed to slowdown and tightening credit."),
+            "SPY": ("S&P 500 ETF", "Growth-heavy composition drags in stagflation."),
+            "BRK-B": ("Berkshire Hathaway", "Quality value underperforms when commodity scarcity dominates."),
+            "XLI": ("Industrials SPDR", "Manufacturing contracts as input costs rise and demand falls."),
+            "AGG": ("US Agg Bond", "Fixed income suffers when inflation is rising."),
+        },
+        "Reflation": {
+            "TLT": ("20+ Year Treasury", "Long bonds lose value as growth and inflation rise."),
+            "AGG": ("US Agg Bond", "Fixed income underperforms in rising rate environment."),
+            "XLP": ("Consumer Staples SPDR", "Defensive play unnecessary when growth is strong."),
+            "XLU": ("Utilities Select SPDR", "Yield play loses appeal when growth is abundant."),
+            "GLD": ("SPDR Gold Shares", "Gold underperforms when risk appetite is high."),
+        },
+        "Goldilocks": {
+            "XLE": ("Energy Select SPDR", "Energy underperforms without supply disruption."),
+            "DBC": ("Invesco DB Commodity", "Commodity demand is steady, no scarcity premium."),
+            "TLT": ("20+ Year Treasury", "Bonds underperform equities in growth regimes."),
+            "XLP": ("Consumer Staples SPDR", "Defensive play unnecessary in best growth environment."),
+            "XLU": ("Utilities Select SPDR", "Yield play loses appeal when growth is abundant."),
+        },
+        "Deflation": {
+            "XLE": ("Energy Select SPDR", "Energy demand collapses with economic activity."),
+            "DBC": ("Invesco DB Commodity", "Commodity demand collapses with economic activity."),
+            "QQQ": ("Nasdaq 100 ETF", "Growth stocks face earnings downgrades in deflation."),
+            "IWM": ("Russell 2000 ETF", "Small caps most vulnerable to economic contraction."),
+            "SPY": ("S&P 500 ETF", "Broad market declines in deflationary environment."),
+        },
     }
+    all_avoid_etfs = _AVOID.get(regime, _AVOID.get("Stagflation", {}))
 
     # Early rotation tickers shouldn't appear in avoid list
     rotation_tickers = {p["ticker"] for p in (early_rotation["positions"] if early_rotation else [])}
