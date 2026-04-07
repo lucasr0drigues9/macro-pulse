@@ -102,7 +102,7 @@ export default function PortfolioAllocation() {
                 </div>
                 <p className="text-xs text-[#888]">{etf.rationale}</p>
                 {etf.aiReason && (
-                  <p className="text-xs text-[#3b82f6] mt-1">AI: {etf.aiReason}</p>
+                  <p className="text-xs text-[#555] mt-1 italic">{etf.aiReason}</p>
                 )}
               </div>
             ))}
