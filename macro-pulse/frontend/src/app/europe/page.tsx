@@ -501,6 +501,72 @@ export default function EuropePage() {
         </p>
       </section>
 
+      {/* European Autonomy Beyond Europe */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European Autonomy Creates Demand Beyond Europe</h2>
+        <p className="text-xs text-[#555] mb-4">The countries supplying Europe&apos;s independence are themselves investment opportunities.</p>
+
+        <p className="text-xs text-[#888] leading-relaxed mb-6">
+          Europe&apos;s structural shift toward independence requires raw materials, energy, and manufacturing capacity that Europe cannot fully supply itself. The emerging economies enabling this shift — providing LNG, critical metals, solar capacity, and manufacturing alternatives to China — benefit directly from European spending regardless of which power wins the world order transition.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#f97316" }}>
+            <div className="text-xs font-bold text-[#f97316] mb-2">Energy Supply</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              Europe replacing Russian gas creates long-term LNG contracts with Gulf states and North Africa.
+            </p>
+            <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Saudi Arabia, UAE, Morocco, Algeria</div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#888]">KSA — iShares MSCI Saudi Arabia</span>
+              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#22c55e" }}>
+            <div className="text-xs font-bold text-[#22c55e] mb-2">Critical Materials</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              European defence and green energy transition requires copper, cobalt, lithium, and rare earths at scale.
+            </p>
+            <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Indonesia (nickel), Brazil (iron ore), Morocco (phosphates)</div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#888]">EIDO — iShares MSCI Indonesia</span>
+              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#3b82f6" }}>
+            <div className="text-xs font-bold text-[#3b82f6] mb-2">Manufacturing Relocation</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              European companies moving supply chains away from China are choosing Morocco, Turkey, and India — close, competitive, and politically safe.
+            </p>
+            <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Morocco, Turkey, India</div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#888]">INDA — iShares MSCI India</span>
+              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#ef4444" }}>
+            <div className="text-xs font-bold text-[#ef4444] mb-2">Defence Customers</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              European defence companies need customers. Gulf states and Eastern European nations questioning US reliability are buying European weapons and equipment.
+            </p>
+            <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Saudi Arabia, UAE, Poland, Turkey</div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#888]">TUR — iShares MSCI Turkey</span>
+              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <a href="/emerging-markets" className="inline-block px-6 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+            Explore emerging markets →
+          </a>
+        </div>
+      </section>
+
       {/* Email */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <div className="p-4 rounded-lg bg-[#111] border border-[#222] text-center">
