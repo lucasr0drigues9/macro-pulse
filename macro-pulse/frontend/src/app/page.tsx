@@ -132,6 +132,10 @@ export default function LobbyPage() {
   const [regimeStatus, setRegimeStatus] = useState<string | null>(null);
   const [usData, setUsData] = useState<PanelData | null>(null);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
+  const [capitalFlow, setCapitalFlow] = useState<{
+    out_of: { ticker: string; name: string; reason: string }[];
+    into: { ticker: string; name: string; reason: string }[];
+  } | null>(null);
   const [euData] = useState<PanelData>({
     regime: "Stagflation", months: 3, picks: [
       { ticker: "EUAD", name: "European Defence", ret: 62.0 },
@@ -172,9 +176,10 @@ export default function LobbyPage() {
           });
         }
 
-        // Build AI interpretation
+        // Build AI interpretation + capital flow
         if (interp) {
           setAiInterpretation(interp.interpretation || interp.situation || null);
+          if (interp.capitalFlow) setCapitalFlow(interp.capitalFlow);
         }
       })
       .catch(() => {});
@@ -260,6 +265,57 @@ export default function LobbyPage() {
             <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
             <p className="text-[10px] text-[#333] mt-2">
               AI-generated interpretation. ETF mentions for educational purposes only. Not personalised financial advice.
+            </p>
+          </div>
+        )}
+
+        {/* Capital Flow */}
+        {capitalFlow && (capitalFlow.into.length > 0 || capitalFlow.out_of.length > 0) && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-lg font-bold text-[#e0e0e0]">Where Is Capital Flowing?</h3>
+                <p className="text-xs text-[#555]">Based on US Stagflation + EU Stagflation + China Deflation</p>
+              </div>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI</span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Into */}
+              <div className="rounded-lg bg-[#111] border-l-2 border border-[#222] p-4" style={{ borderLeftColor: "#22c55e" }}>
+                <div className="text-xs font-bold text-[#22c55e] uppercase tracking-wider mb-3">Capital flowing into</div>
+                <div className="space-y-3">
+                  {capitalFlow.into.map((item) => (
+                    <div key={item.ticker}>
+                      <div className="text-sm">
+                        <span className="font-bold text-[#e0e0e0]">{item.ticker}</span>
+                        <span className="text-[#555] ml-2">{item.name}</span>
+                      </div>
+                      <p className="text-[10px] text-[#555] italic mt-0.5">{item.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Out of */}
+              <div className="rounded-lg bg-[#111] border-l-2 border border-[#222] p-4" style={{ borderLeftColor: "#ef4444" }}>
+                <div className="text-xs font-bold text-[#ef4444] uppercase tracking-wider mb-3">Capital flowing out of</div>
+                <div className="space-y-3">
+                  {capitalFlow.out_of.map((item) => (
+                    <div key={item.ticker}>
+                      <div className="text-sm">
+                        <span className="font-bold text-[#e0e0e0]">{item.ticker}</span>
+                        <span className="text-[#555] ml-2">{item.name}</span>
+                      </div>
+                      <p className="text-[10px] text-[#555] italic mt-0.5">{item.reason}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-[#333] mt-3 text-center">
+              AI-generated capital flow analysis based on current regime combination. ETFs shown for educational purposes only. Not personalised financial advice.
             </p>
           </div>
         )}

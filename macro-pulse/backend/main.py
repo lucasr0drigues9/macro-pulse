@@ -210,15 +210,16 @@ def trigger_oil_alert():
 
 @app.get("/api/interpretation")
 def get_interpretation():
-    """Return the AI regime interpretation for the lobby page."""
+    """Return the AI regime interpretation and capital flow for the lobby page."""
     synthesis = _load_synthesis()
     if not synthesis:
-        return {"interpretation": None}
+        return {"interpretation": None, "capitalFlow": None}
     return {
         "interpretation": synthesis.get("regime_interpretation"),
         "situation": synthesis.get("situation"),
         "headline": synthesis.get("headline"),
         "keyTension": synthesis.get("key_tension"),
+        "capitalFlow": synthesis.get("capital_flow"),
     }
 
 

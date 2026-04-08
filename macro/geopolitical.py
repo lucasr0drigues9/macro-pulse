@@ -268,7 +268,15 @@ Respond ONLY with valid JSON, no markdown:
       "bearish_signal": "what filing pattern would contradict it"
     }
   },
-  "regime_interpretation": "2-3 sentences: what the US+Europe+China regime combination means for capital flows, which specific ETFs benefit, and one ETF to watch as leading indicator for next regime change. Use real tickers only."
+  "regime_interpretation": "2-3 sentences: what the US+Europe+China regime combination means for capital flows, which specific ETFs benefit, and one ETF to watch as leading indicator for next regime change. Use real tickers only.",
+  "capital_flow": {
+    "out_of": [
+      {"ticker": "TICKER", "name": "ETF Name", "reason": "One sentence — why capital is leaving this asset given the specific regime combination"}
+    ],
+    "into": [
+      {"ticker": "TICKER", "name": "ETF Name", "reason": "One sentence — why capital is flowing into this asset given the specific regime combination"}
+    ]
+  }
 }"""
 
 def get_synthesis(geo_data, quadrant, transition_warning=None, performance_data=None):
@@ -425,7 +433,16 @@ Rules for regime_interpretation:
 - Plain English not jargon
 - Frame as historical pattern observation not personalised advice
 - Maximum 3 sentences
-- End with one specific ETF as the leading indicator"""
+- End with one specific ETF as the leading indicator
+
+Also add "capital_flow" to your JSON with "out_of" and "into" arrays.
+Each item: {{"ticker": "XYZ", "name": "Full ETF Name", "reason": "one sentence mechanism"}}
+Rules for capital_flow:
+- Only include ETFs where you can state a clear mechanistic reason tied to THIS specific regime combination
+- Only liquid retail-accessible ETFs (>$50M daily volume)
+- Include UCITS equivalents where relevant for European investors
+- out_of = assets capital is leaving, into = assets capital is flowing toward
+- No minimum or maximum — include as many as the logic genuinely justifies"""
 
     try:
         response = requests.post(
