@@ -147,13 +147,13 @@ export default function LobbyPage() {
   });
 
   useEffect(() => {
-    // Fetch US regime + performance + calendar (for AI synthesis)
+    // Fetch US regime + performance + AI interpretation
     Promise.all([
       fetch(apiUrl("/api/regime?mode=active")).then((r) => r.json()),
       fetch(apiUrl("/api/performance")).then((r) => r.json()),
-      fetch(apiUrl("/api/calendar")).then((r) => r.json()).catch(() => null),
+      fetch(apiUrl("/api/interpretation")).then((r) => r.json()).catch(() => null),
     ])
-      .then(([regime, perf, calendar]) => {
+      .then(([regime, perf, interp]) => {
         if (regime.confirmed) {
           const emoji = regime.confirmed === "Stagflation" ? "\uD83D\uDD34" : regime.confirmed === "Goldilocks" ? "\uD83D\uDFE2" : regime.confirmed === "Reflation" ? "\uD83D\uDFE1" : "\uD83D\uDD35";
           setRegimeStatus(`${emoji} ${regime.confirmed} — Month ${regime.consecutiveMonths}`);
@@ -172,10 +172,9 @@ export default function LobbyPage() {
           });
         }
 
-        // Build AI interpretation from synthesis
-        if (calendar?.synthesis) {
-          const s = calendar.synthesis;
-          setAiInterpretation(s.regime_interpretation || s.situation || null);
+        // Build AI interpretation
+        if (interp) {
+          setAiInterpretation(interp.interpretation || interp.situation || null);
         }
       })
       .catch(() => {});

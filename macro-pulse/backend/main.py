@@ -208,6 +208,20 @@ def trigger_oil_alert():
     return {"ok": True, "oil": round(oil, 1), "emailsSent": sent, "analysis": analysis[:200]}
 
 
+@app.get("/api/interpretation")
+def get_interpretation():
+    """Return the AI regime interpretation for the lobby page."""
+    synthesis = _load_synthesis()
+    if not synthesis:
+        return {"interpretation": None}
+    return {
+        "interpretation": synthesis.get("regime_interpretation"),
+        "situation": synthesis.get("situation"),
+        "headline": synthesis.get("headline"),
+        "keyTension": synthesis.get("key_tension"),
+    }
+
+
 @app.post("/api/create-audience")
 def create_audience():
     """One-time: create Resend Audience and return the ID."""
