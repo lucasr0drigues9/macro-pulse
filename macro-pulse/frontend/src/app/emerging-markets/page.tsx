@@ -246,9 +246,10 @@ export default function EmergingMarketsPage() {
         </div>
 
         <div className="p-3 rounded bg-[#111] border border-[#222]">
-          <p className="text-xs text-[#888]">
-            Current regime is <span className="text-[#ef4444] font-bold">Stagflation</span>. Brazil and Saudi Arabia are the best-aligned emerging market positions right now.{" "}
-            <Link href="/regimetracker" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: ACCENT }}>See regime tracker →</Link>
+          <p className="text-xs text-[#888] leading-relaxed">
+            Current US regime is <span className="text-[#ef4444] font-bold">Stagflation</span> while China is in <span className="text-[#3b82f6] font-bold">Deflation</span>. This creates a split: Saudi Arabia benefits from the energy supply shock, India is resilient due to domestic demand, but commodity exporters to China (Brazil iron ore, Indonesia nickel) face mixed signals — energy prices up but Chinese demand down.{" "}
+            <Link href="/regimetracker" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: ACCENT }}>US regime →</Link>{" "}
+            <Link href="/china" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: "#3b82f6" }}>China tracker →</Link>
           </p>
         </div>
       </section>

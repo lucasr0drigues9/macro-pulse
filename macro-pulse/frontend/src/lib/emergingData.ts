@@ -248,8 +248,8 @@ export const regimeAlignment = [
     regime: "Stagflation",
     emoji: "\uD83D\uDD34",
     current: true,
-    performance: "Brazil and Saudi Arabia outperform — commodity exporters benefit from inflation and supply disruption",
-    bestETFs: "EWZ, KSA",
+    performance: "Saudi Arabia benefits most — oil windfall from supply disruption. Brazil mixed: energy-driven inflation helps oil (Petrobras) but China Deflation hurts iron ore demand. India resilient as domestic consumption-driven. Indonesia and Turkey face headwinds from China's weak demand for commodities.",
+    bestETFs: "KSA, INDA",
   },
   {
     regime: "Reflation",
