@@ -131,6 +131,7 @@ function RegimePanel({ label, flag, source, data, href, linkText, divergesFrom }
 export default function LobbyPage() {
   const [regimeStatus, setRegimeStatus] = useState<string | null>(null);
   const [usData, setUsData] = useState<PanelData | null>(null);
+  const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
   const [euData] = useState<PanelData>({
     regime: "Stagflation", months: 3, picks: [
       { ticker: "EUAD", name: "European Defence", ret: 62.0 },
@@ -146,12 +147,13 @@ export default function LobbyPage() {
   });
 
   useEffect(() => {
-    // Fetch US regime + performance
+    // Fetch US regime + performance + calendar (for AI synthesis)
     Promise.all([
       fetch(apiUrl("/api/regime?mode=active")).then((r) => r.json()),
       fetch(apiUrl("/api/performance")).then((r) => r.json()),
+      fetch(apiUrl("/api/calendar")).then((r) => r.json()).catch(() => null),
     ])
-      .then(([regime, perf]) => {
+      .then(([regime, perf, calendar]) => {
         if (regime.confirmed) {
           const emoji = regime.confirmed === "Stagflation" ? "\uD83D\uDD34" : regime.confirmed === "Goldilocks" ? "\uD83D\uDFE2" : regime.confirmed === "Reflation" ? "\uD83D\uDFE1" : "\uD83D\uDD35";
           setRegimeStatus(`${emoji} ${regime.confirmed} — Month ${regime.consecutiveMonths}`);
@@ -168,6 +170,12 @@ export default function LobbyPage() {
             months: regime.consecutiveMonths,
             picks,
           });
+        }
+
+        // Build AI interpretation from synthesis
+        if (calendar?.synthesis) {
+          const s = calendar.synthesis;
+          setAiInterpretation(s.situation || s.key_tension || null);
         }
       })
       .catch(() => {});
@@ -242,6 +250,20 @@ export default function LobbyPage() {
             );
           }
         })()}
+
+        {/* AI interpretation */}
+        {aiInterpretation && (
+          <div className="mt-4 p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[#555]">What this means right now</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+            </div>
+            <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
+            <p className="text-[10px] text-[#333] mt-2">
+              AI-generated interpretation. ETF mentions for educational purposes only. Not personalised financial advice.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* Six Tools */}
