@@ -50,11 +50,11 @@ const tools = [
     category: "RISING CHALLENGER",
     title: "China Tracker",
     description: "Official Chinese data is unreliable. This tracker uses proxy indicators — electricity consumption, port throughput, Caixin PMI, copper imports — to read China's actual economic regime.",
-    statusLabel: "Coming soon",
+    statusLabel: "\uD83D\uDD35 Deflation — Month 18",
     cta: "Open tracker",
     href: "/china",
     accent: "#dc2626",
-    enabled: false,
+    enabled: true,
   },
   {
     category: "MULTIPOLAR BENEFICIARIES",
