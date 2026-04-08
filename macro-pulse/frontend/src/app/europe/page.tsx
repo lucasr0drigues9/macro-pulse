@@ -256,6 +256,98 @@ export default function EuropePage() {
         </div>
       </section>
 
+      {/* European Economic Regime */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-xl font-bold text-[#e0e0e0]">European Economic Regime</h2>
+            <p className="text-[10px] text-[#555]">Eurostat + ECB data · Updated on release dates</p>
+          </div>
+        </div>
+
+        {/* Regime display */}
+        <div className="text-center py-8 rounded-lg border mb-4" style={{ borderColor: "#ef444440", backgroundColor: "#ef444410" }}>
+          <div className="text-4xl sm:text-6xl font-bold tracking-tight text-[#ef4444]">
+            Stagflation
+          </div>
+          <div className="mt-2 text-sm text-[#888]">3rd consecutive month</div>
+          <div className="mt-2 text-xs text-[#555]">Growth: <span className="text-[#ef4444]">falling</span> · Inflation: <span className="text-[#ef4444]">rising</span></div>
+        </div>
+
+        {/* Two signal cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
+            <div className="text-xs text-[#555] uppercase tracking-wider mb-3">Eurostat Growth Indicators</div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#888]">EU GDP (Q4 2025)</span>
+                <span className="text-[#ef4444]">+0.1% QoQ</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#888]">Industrial Production</span>
+                <span className="text-[#ef4444]">-1.8% YoY</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#888]">EU Retail Sales</span>
+                <span className="text-[#ef4444]">-0.3% MoM</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#888]">EU Unemployment</span>
+                <span className="text-[#22c55e]">6.0% (stable)</span>
+              </div>
+            </div>
+            <div className="mt-3 text-xs">
+              Direction: <span className="text-[#ef4444] font-bold">Falling</span>
+              <span className="text-[#333] ml-2">3 of 4 indicators negative</span>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
+            <div className="text-xs text-[#555] uppercase tracking-wider mb-3">ECB Inflation Indicators</div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[#888]">HICP Inflation</span>
+                <span className="text-[#ef4444]">2.6% YoY (rising)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#888]">EU PPI</span>
+                <span className="text-[#ef4444]">+1.8% YoY (turning positive)</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[#888]">ECB Deposit Rate</span>
+                <span className="text-[#888]">2.50% (held)</span>
+              </div>
+            </div>
+            <div className="mt-3 text-xs">
+              Direction: <span className="text-[#ef4444] font-bold">Rising</span>
+              <span className="text-[#333] ml-2">Energy costs driving re-acceleration</span>
+            </div>
+          </div>
+        </div>
+
+        {/* US-EU divergence/alignment banner */}
+        <div className="p-3 rounded-lg bg-[#111] border border-[#222] mb-4">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs text-[#22c55e] font-bold">Regimes aligned</span>
+          </div>
+          <p className="text-xs text-[#888]">
+            Both the US and Europe are in <span className="text-[#ef4444] font-bold">Stagflation</span> — driven by the same energy supply shock from the Hormuz blockade. European energy dependence makes the continent more vulnerable to this specific crisis.
+          </p>
+        </div>
+
+        {/* Regime implications for thesis */}
+        <div className="p-4 rounded-lg border border-[#222]" style={{ backgroundColor: "#3b82f610", borderColor: "#3b82f630" }}>
+          <div className="text-xs font-bold text-[#3b82f6] mb-2">What this means for European Autonomy investments</div>
+          <p className="text-xs text-[#888] leading-relaxed">
+            Europe is in Stagflation — falling growth and rising inflation from the Hormuz energy shock. Energy companies (Equinor, TotalEnergies) benefit directly from elevated prices. Defence spending is counter-cyclical and continues regardless — governments rearm in any regime. The {"\u20AC"}800B ReArm Europe fund is policy-committed, not cycle-dependent. Technology companies like ASML face near-term headwinds from high rates but maintain their structural monopoly. <span className="text-[#e0e0e0] font-bold">Prioritise: Energy and Defence. Monitor: Technology and Materials.</span>
+          </p>
+        </div>
+
+        <p className="text-xs text-[#555] mt-6 text-center">
+          The companies below are positioned for European strategic autonomy regardless of the current regime — but the signal above shows which sectors are most favoured right now.
+        </p>
+      </section>
+
       {/* Thesis */}
       <section className="px-4 pb-8 max-w-5xl mx-auto">
         <div className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
