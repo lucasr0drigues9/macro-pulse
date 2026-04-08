@@ -160,6 +160,54 @@ def get_returns(tickers: str = "", start: str = ""):
     return {"returns": results}
 
 
+@app.post("/api/trigger-oil-alert")
+def trigger_oil_alert():
+    """One-time endpoint to manually trigger oil level alert."""
+    import json as _json
+    from macro_kelly import get_current_regime, get_etf_price
+    import emails
+
+    regime, _, _ = get_current_regime()
+    oil = get_etf_price("CL=F")
+    if not oil:
+        return {"error": "Could not fetch oil price"}
+
+    # Get AI analysis
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    analysis = f"Oil at ${round(oil, 1)}/barrel — below the key $100 level."
+
+    if anthropic_key:
+        try:
+            import requests as req
+            synthesis = {}
+            synth_path = os.path.join(MACRO, ".macro_cache", "geo_synthesis.json")
+            if os.path.exists(synth_path):
+                with open(synth_path) as f:
+                    synthesis = _json.load(f)
+            r = req.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"Content-Type": "application/json", "x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
+                json={"model": "claude-sonnet-4-20250514", "max_tokens": 300,
+                    "messages": [{"role": "user", "content": f"Oil broke below $100 to ${round(oil, 1)}/barrel. Current regime is {regime}. Context: {synthesis.get('situation', '')[:300]}. In 4 sentences: 1) Why $100 matters, 2) What it signals for Stagflation thesis, 3) Which ETFs to watch (GLD, XLE, DBC), 4) What action to consider. Direct and actionable."}]},
+                timeout=25,
+            )
+            text = "".join(b.get("text", "") for b in r.json().get("content", []))
+            if text:
+                analysis = text.strip()
+        except Exception:
+            pass
+
+    sent = emails.send_trigger_movement(
+        trigger_name="Oil Below $100 — Key Level Break",
+        previous_value="$103/bbl",
+        current_value=f"${round(oil, 1)}/bbl",
+        threshold="Stagflation energy thesis under pressure — supply disruption may be easing or demand destruction setting in",
+        regime=regime,
+        analysis=analysis,
+    )
+    return {"ok": True, "oil": round(oil, 1), "emailsSent": sent, "analysis": analysis[:200]}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
