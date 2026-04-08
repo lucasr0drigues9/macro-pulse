@@ -1,6 +1,7 @@
 """
 Macro Pulse — Email system
 Sends alerts and weekly newsletter via Resend.
+Uses Resend Audiences for persistent subscriber storage.
 """
 
 import os
@@ -10,8 +11,9 @@ import resend
 RESEND_KEY = os.getenv("RESEND_API_KEY", "")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "Macro Pulse <onboarding@resend.dev>")
 SITE_URL = os.getenv("SITE_URL", "https://macro-pulse.vercel.app")
+AUDIENCE_ID = os.getenv("RESEND_AUDIENCE_ID", "")
 
-SUBSCRIBERS_FILE = None  # Set by main.py
+SUBSCRIBERS_FILE = None  # Legacy fallback — set by main.py
 
 DISCLAIMER = (
     "This is a systematic framework output for educational purposes only. "
@@ -28,8 +30,67 @@ REGIME_COLORS = {
 }
 
 
+def add_subscriber(email: str, features: list[str] = None) -> bool:
+    """Add a subscriber to Resend Audience. Falls back to file if no audience configured."""
+    if RESEND_KEY and AUDIENCE_ID:
+        try:
+            resend.api_key = RESEND_KEY
+            resend.Contacts.create({
+                "audience_id": AUDIENCE_ID,
+                "email": email,
+                "first_name": "",
+                "last_name": "",
+                "unsubscribed": False,
+            })
+            return True
+        except Exception as e:
+            print(f"  [email] Failed to add contact to Resend: {e}")
+            # Fall through to file backup
+
+    # Legacy file fallback
+    if SUBSCRIBERS_FILE:
+        try:
+            subs = []
+            if os.path.exists(SUBSCRIBERS_FILE):
+                with open(SUBSCRIBERS_FILE) as f:
+                    subs = json.load(f)
+            if not any(s.get("email") == email for s in subs):
+                subs.append({
+                    "email": email,
+                    "regimeAlerts": True,
+                    "eventAlerts": True,
+                    "weeklyPulse": True,
+                    "waitlistFeatures": features or [],
+                })
+                with open(SUBSCRIBERS_FILE, "w") as f:
+                    json.dump(subs, f)
+            return True
+        except Exception:
+            pass
+    return False
+
+
 def _load_subscribers(filter_field: str = None) -> list[dict]:
-    """Load subscribers, optionally filtered by a boolean field."""
+    """Load subscribers from Resend Audience. Falls back to file."""
+    # Try Resend Audience first
+    if RESEND_KEY and AUDIENCE_ID:
+        try:
+            resend.api_key = RESEND_KEY
+            contacts = resend.Contacts.list(audience_id=AUDIENCE_ID)
+            subs = []
+            for c in contacts.get("data", []):
+                if not c.get("unsubscribed", False):
+                    subs.append({
+                        "email": c["email"],
+                        "regimeAlerts": True,
+                        "eventAlerts": True,
+                        "weeklyPulse": True,
+                    })
+            return subs
+        except Exception as e:
+            print(f"  [email] Failed to load from Resend Audience: {e}")
+
+    # Legacy file fallback
     if not SUBSCRIBERS_FILE or not os.path.exists(SUBSCRIBERS_FILE):
         return []
     try:

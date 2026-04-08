@@ -208,6 +208,20 @@ def trigger_oil_alert():
     return {"ok": True, "oil": round(oil, 1), "emailsSent": sent, "analysis": analysis[:200]}
 
 
+@app.post("/api/create-audience")
+def create_audience():
+    """One-time: create Resend Audience and return the ID."""
+    import resend as _resend
+    _resend.api_key = os.getenv("RESEND_API_KEY", "")
+    if not _resend.api_key:
+        return {"error": "No RESEND_API_KEY"}
+    try:
+        audience = _resend.Audiences.create({"name": "Macro Pulse Subscribers"})
+        return {"ok": True, "audience": audience}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
@@ -1018,52 +1032,17 @@ _emails_mod.SUBSCRIBERS_FILE = SUBSCRIBERS_FILE
 
 @app.post("/api/subscribe")
 def subscribe(body: dict):
-    """Email capture — stores subscribers locally (Supabase in production)."""
-    import json
-    from datetime import datetime
+    """Email capture — stores in Resend Audience (persistent) + file backup."""
+    import emails as _em
 
     email = body.get("email", "").strip().lower()
     if not email or "@" not in email:
         return {"error": "Invalid email", "ok": False}
 
-    event_alerts = body.get("eventAlerts", True)
-    regime_alerts = body.get("regimeAlerts", True)
-    weekly_pulse = body.get("weeklyPulse", False)
     waitlist_features = body.get("waitlistFeatures", [])
+    ok = _em.add_subscriber(email, waitlist_features)
 
-    # Load existing subscribers
-    subscribers = []
-    try:
-        if os.path.exists(SUBSCRIBERS_FILE):
-            with open(SUBSCRIBERS_FILE) as f:
-                subscribers = json.load(f)
-    except Exception:
-        subscribers = []
-
-    # Check for duplicate
-    existing = next((s for s in subscribers if s["email"] == email), None)
-    if existing:
-        existing["eventAlerts"] = event_alerts
-        existing["regimeAlerts"] = regime_alerts
-        existing["weeklyPulse"] = weekly_pulse
-        if waitlist_features:
-            existing["waitlistFeatures"] = list(set(existing.get("waitlistFeatures", []) + waitlist_features))
-        existing["updatedAt"] = datetime.now().isoformat()
-    else:
-        subscribers.append({
-            "email": email,
-            "eventAlerts": event_alerts,
-            "regimeAlerts": regime_alerts,
-            "weeklyPulse": weekly_pulse,
-            "waitlistFeatures": waitlist_features,
-            "createdAt": datetime.now().isoformat(),
-            "updatedAt": datetime.now().isoformat(),
-        })
-
-    with open(SUBSCRIBERS_FILE, "w") as f:
-        json.dump(subscribers, f, indent=2)
-
-    return {"ok": True, "message": "Subscribed successfully"}
+    return {"ok": ok, "message": "Subscribed successfully" if ok else "Failed to subscribe"}
 
 
 @app.get("/api/value-scanner")
