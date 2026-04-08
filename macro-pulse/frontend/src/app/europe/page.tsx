@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiUrl } from "@/lib/api";
 import Nav from "@/components/Nav";
 import {
@@ -220,10 +220,28 @@ function SectorCard({ sector, companies, catalysts }: {
   );
 }
 
+const EU_TICKERS = ["EUAD.L", "IOGP.L", "ASML.AS", "NHY.OL"];
+type ReturnData = Record<string, { return1y: number; price: number }>;
+
+function ReturnBadge({ ticker, returns }: { ticker: string; returns: ReturnData }) {
+  const data = returns[ticker];
+  if (!data) return <span className="text-[10px] text-[#333]">loading...</span>;
+  const color = data.return1y >= 0 ? "#22c55e" : "#ef4444";
+  return <span className="text-xs font-bold" style={{ color }}>{data.return1y >= 0 ? "+" : ""}{data.return1y}% 1Y</span>;
+}
+
 export default function EuropePage() {
   const [thesisOpen, setThesisOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [returns, setReturns] = useState<ReturnData>({});
+
+  useEffect(() => {
+    fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
+      .then((r) => r.json())
+      .then((d) => setReturns(d.returns || {}))
+      .catch(() => {});
+  }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -379,7 +397,7 @@ export default function EuropePage() {
                 <span className="text-xs text-[#555] ml-2">iShares European Defence UCITS ETF</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#22c55e]">+62% 1Y</span>
+                <ReturnBadge ticker="EUAD.L" returns={returns} />
                 <span className="text-xs px-2 py-0.5 rounded bg-[rgba(107,142,90,0.15)] text-[#6b8e5a]">Defence</span>
               </div>
             </div>
@@ -402,7 +420,7 @@ export default function EuropePage() {
                 <span className="text-xs text-[#555] ml-2">iShares Oil &amp; Gas Exploration UCITS</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#22c55e]">+38% 1Y</span>
+                <ReturnBadge ticker="IOGP.L" returns={returns} />
                 <span className="text-xs px-2 py-0.5 rounded bg-[rgba(224,144,48,0.15)] text-[#e09030]">Energy</span>
               </div>
             </div>
@@ -425,7 +443,7 @@ export default function EuropePage() {
                 <span className="text-xs text-[#555] ml-2">ASML Holding NV</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#ef4444]">-18% 1Y</span>
+                <ReturnBadge ticker="ASML.AS" returns={returns} />
                 <span className="text-xs px-2 py-0.5 rounded bg-[rgba(59,130,246,0.15)] text-[#3b82f6]">Technology</span>
               </div>
             </div>
@@ -449,7 +467,7 @@ export default function EuropePage() {
                 <span className="text-xs text-[#555] ml-2">Norsk Hydro ASA</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-[#22c55e]">+12% 1Y</span>
+                <ReturnBadge ticker="NHY.OL" returns={returns} />
                 <span className="text-xs px-2 py-0.5 rounded bg-[rgba(168,85,247,0.15)] text-[#a855f7]">Materials</span>
               </div>
             </div>

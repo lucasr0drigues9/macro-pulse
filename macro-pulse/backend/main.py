@@ -59,6 +59,33 @@ def get_version():
     return {"version": "0.3.0", "feature": "signal_strength"}
 
 
+@app.get("/api/returns")
+def get_returns(tickers: str = ""):
+    """Return 1Y price returns for a comma-separated list of tickers."""
+    import yfinance as yf
+    from datetime import datetime, timedelta
+
+    if not tickers:
+        return {"returns": {}}
+
+    ticker_list = [t.strip() for t in tickers.split(",") if t.strip()]
+    one_year_ago = (datetime.now() - timedelta(days=365)).strftime("%Y-%m-%d")
+    results = {}
+
+    for ticker in ticker_list[:10]:  # max 10 tickers per request
+        try:
+            hist = yf.Ticker(ticker).history(start=one_year_ago)
+            if len(hist) >= 2:
+                start_price = float(hist["Close"].iloc[0])
+                end_price = float(hist["Close"].iloc[-1])
+                ret = round((end_price - start_price) / start_price * 100, 1)
+                results[ticker] = {"return1y": ret, "price": round(end_price, 2)}
+        except Exception:
+            continue
+
+    return {"returns": results}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
