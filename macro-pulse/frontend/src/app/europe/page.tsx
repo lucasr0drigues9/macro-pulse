@@ -519,7 +519,6 @@ export default function EuropePage() {
             <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Saudi Arabia, UAE, Morocco, Algeria</div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#888]">KSA — iShares MSCI Saudi Arabia</span>
-              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
             </div>
           </div>
 
@@ -531,7 +530,6 @@ export default function EuropePage() {
             <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Indonesia (nickel), Brazil (iron ore), Morocco (phosphates)</div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#888]">EIDO — iShares MSCI Indonesia</span>
-              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
             </div>
           </div>
 
@@ -543,7 +541,6 @@ export default function EuropePage() {
             <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Morocco, Turkey, India</div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#888]">INDA — iShares MSCI India</span>
-              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
             </div>
           </div>
 
@@ -555,7 +552,6 @@ export default function EuropePage() {
             <div className="text-[10px] text-[#555] mb-2">Key beneficiaries: Saudi Arabia, UAE, Poland, Turkey</div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-[#888]">TUR — iShares MSCI Turkey</span>
-              <a href="/emerging-markets" className="text-[10px] text-[#3b82f6] hover:text-[#e0e0e0]">Full analysis →</a>
             </div>
           </div>
         </div>
