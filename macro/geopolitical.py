@@ -441,9 +441,12 @@ Rules for regime_interpretation:
                 "system":   SYNTHESIS_PROMPT,
                 "messages": [{"role": "user", "content": user_prompt}],
             },
-            timeout=30
+            timeout=60
         )
         data     = response.json()
+        if data.get("error"):
+            print(f"  ⚠️  API error: {data['error']}")
+            return None
         raw_text = ""
         for block in data.get("content", []):
             if block.get("type") == "text":

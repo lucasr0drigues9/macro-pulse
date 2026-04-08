@@ -1775,10 +1775,9 @@ async def cron_daily(request: Request):
     new_geo_regime = geo.get("overall_regime_bias", "")
     old_geo_regime = old_synthesis.get("headline", "") if old_synthesis else ""
 
-    # Refresh synthesis
-    fred_data = get_all()
-    quadrant = get_quadrant(fred_data)
-    get_synthesis(geo, quadrant["quadrant"]["name"])
+    # Refresh synthesis — use regime from backtest timeline (consistent with regime indicator)
+    regime, fred_regime, _ = get_current_regime()
+    get_synthesis(geo, regime)
 
     # If geo regime changed, send alert
     sent = 0
