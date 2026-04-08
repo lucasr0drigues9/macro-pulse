@@ -221,13 +221,16 @@ function SectorCard({ sector, companies, catalysts }: {
 }
 
 const EU_TICKERS = ["EUAD.L", "IOGP.L", "ASML.AS", "NHY.OL"];
-type ReturnData = Record<string, { return1y: number; price: number }>;
+const PERF_TICKERS = ["RHM.DE", "EUAD.L", "SAF.PA", "ASML.AS", "IOGP.L", "SPY", "NHY.OL"];
+type ReturnEntry = { return: number; price: number; startPrice: number };
+type ReturnData = Record<string, ReturnEntry>;
 
-function ReturnBadge({ ticker, returns }: { ticker: string; returns: ReturnData }) {
+function ReturnBadge({ ticker, returns, label }: { ticker: string; returns: ReturnData; label?: string }) {
   const data = returns[ticker];
   if (!data) return <span className="text-[10px] text-[#333]">loading...</span>;
-  const color = data.return1y >= 0 ? "#22c55e" : "#ef4444";
-  return <span className="text-xs font-bold" style={{ color }}>{data.return1y >= 0 ? "+" : ""}{data.return1y}% 1Y</span>;
+  const ret = data["return"];
+  const color = ret >= 0 ? "#22c55e" : "#ef4444";
+  return <span className="text-xs font-bold" style={{ color }}>{ret >= 0 ? "+" : ""}{ret}%{label ? ` ${label}` : ""}</span>;
 }
 
 export default function EuropePage() {
@@ -235,11 +238,16 @@ export default function EuropePage() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [returns, setReturns] = useState<ReturnData>({});
+  const [invasionReturns, setInvasionReturns] = useState<ReturnData>({});
 
   useEffect(() => {
     fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
       .then((r) => r.json())
       .then((d) => setReturns(d.returns || {}))
+      .catch(() => {});
+    fetch(apiUrl(`/api/returns?tickers=${PERF_TICKERS.join(",")}&start=2022-02-24`))
+      .then((r) => r.json())
+      .then((d) => setInvasionReturns(d.returns || {}))
       .catch(() => {});
   }, []);
 
@@ -508,38 +516,34 @@ export default function EuropePage() {
           <h3 className="text-sm font-bold text-[#e0e0e0] mb-2">Since Russia&apos;s invasion of Ukraine (February 2022)</h3>
           <p className="text-xs text-[#555] mb-3">The structural catalyst date for European strategic autonomy</p>
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">RHM.DE — Rheinmetall (held inside EUAD)</span>
-              <span className="text-[#22c55e] font-bold">+820%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">EUAD.L — iShares European Defence ETF</span>
-              <span className="text-[#22c55e] font-bold">since inception *</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">SAF.PA — Safran (€108 → €287)</span>
-              <span className="text-[#22c55e] font-bold">+166%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">ASML.AS — ASML (€558 → €1,161)</span>
-              <span className="text-[#22c55e] font-bold">+108%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">IOGP.L — iShares Oil &amp; Gas ($21 → $36)</span>
-              <span className="text-[#22c55e] font-bold">+71%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">SPY — S&amp;P 500 ($428 → $658)</span>
-              <span className="text-[#22c55e] font-bold">+54%</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-[#888]">NHY.OL — Norsk Hydro (NOK 82 → NOK 103)</span>
-              <span className="text-[#22c55e] font-bold">+24%</span>
-            </div>
+            {PERF_TICKERS.map((t) => {
+              const d = invasionReturns[t];
+              const names: Record<string, string> = {
+                "RHM.DE": "Rheinmetall (held inside EUAD)",
+                "EUAD.L": "iShares European Defence ETF",
+                "SAF.PA": "Safran",
+                "ASML.AS": "ASML",
+                "IOGP.L": "iShares Oil & Gas",
+                "SPY": "S&P 500",
+                "NHY.OL": "Norsk Hydro",
+              };
+              return (
+                <div key={t} className="flex justify-between items-center">
+                  <span className="text-[#888]">{t} — {names[t] || t}{d ? ` ($${d.startPrice} → $${d.price})` : ""}</span>
+                  {d ? (
+                    <span className={`font-bold ${d["return"] >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                      {d["return"] >= 0 ? "+" : ""}{d["return"]}%
+                    </span>
+                  ) : (
+                    <span className="text-[#333]">loading...</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
           <p className="text-xs text-[#555] mt-2">* EUAD launched after February 2022 — return shown since inception. Rheinmetall shown as individual stock to demonstrate underlying European defence performance.</p>
           <p className="text-xs text-[#888] mt-2">
-            European defence (Rheinmetall +820%) massively outperformed everything — policy-driven spending immune to macro cycles. EUAD captures this in one ETF with zero US exposure. ASML doubled despite being a tech stock. All positions outperformed SPY since the invasion.
+            European defence massively outperformed — policy-driven spending immune to macro cycles. EUAD captures this in one ETF with zero US exposure. Live prices from Yahoo Finance.
           </p>
           <p className="text-xs text-[#333] mt-2 italic">Past performance does not guarantee future results. February 2022 chosen as the structural catalyst date.</p>
         </div>
