@@ -68,16 +68,106 @@ const tools = [
   },
 ];
 
+const REGIME_COLORS: Record<string, string> = {
+  Stagflation: "#ef4444", Goldilocks: "#22c55e", Reflation: "#eab308", Deflation: "#3b82f6",
+};
+
+type PanelData = {
+  regime: string; months: number; confidence?: string;
+  picks: { ticker: string; name: string; ret: number }[];
+};
+
+function RegimePanel({ label, flag, source, data, href, linkText, divergesFrom }: {
+  label: string; flag: string; source: string; data: PanelData | null;
+  href: string; linkText: string; divergesFrom?: string;
+}) {
+  const regime = data?.regime || "Loading";
+  const color = REGIME_COLORS[regime] || "#555";
+
+  return (
+    <Link href={href} className="block">
+      <div
+        className="p-5 rounded-lg bg-[#111] border-l-2 border border-[#222] hover:bg-[#151515] transition-colors h-full"
+        style={{ borderLeftColor: color }}
+      >
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{flag}</span>
+            <span className="text-sm font-bold text-[#e0e0e0]">{label}</span>
+          </div>
+          <span className="text-[10px] text-[#333]">{source}</span>
+        </div>
+
+        {data ? (
+          <>
+            <div className="text-2xl sm:text-3xl font-bold mb-1" style={{ color }}>{regime}</div>
+            <div className="text-xs text-[#555] mb-1">Month {data.months}</div>
+            {data.confidence && <div className="text-[10px] text-[#555]">Confidence: {data.confidence}</div>}
+            {divergesFrom && (
+              <div className="text-[10px] text-[#eab308] mt-1">⚡ Diverging from {divergesFrom}</div>
+            )}
+
+            <div className="mt-3 space-y-1.5">
+              {data.picks.map((p) => (
+                <div key={p.ticker} className="flex items-center justify-between text-xs">
+                  <span className="text-[#888]">{p.ticker} <span className="text-[#333]">{p.name}</span></span>
+                  <span className="font-bold" style={{ color: p.ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                    {p.ret >= 0 ? "+" : ""}{p.ret}%
+                  </span>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="text-xs text-[#333] py-4">Loading regime data...</div>
+        )}
+
+        <div className="mt-3 text-xs text-[#555]">{linkText} →</div>
+      </div>
+    </Link>
+  );
+}
+
 export default function LobbyPage() {
   const [regimeStatus, setRegimeStatus] = useState<string | null>(null);
+  const [usData, setUsData] = useState<PanelData | null>(null);
+  const [euData] = useState<PanelData>({
+    regime: "Stagflation", months: 3, picks: [
+      { ticker: "EUAD", name: "European Defence", ret: 62.0 },
+      { ticker: "IOGP", name: "Oil & Gas", ret: 38.0 },
+      { ticker: "NHY", name: "Norsk Hydro", ret: 12.0 },
+    ],
+  });
+  const [cnData] = useState<PanelData>({
+    regime: "Deflation", months: 18, confidence: "Medium", picks: [
+      { ticker: "GLD", name: "Gold", ret: 15.4 },
+      { ticker: "ACWX", name: "All World ex-US", ret: 3.2 },
+    ],
+  });
 
   useEffect(() => {
-    fetch(apiUrl("/api/regime?mode=active"))
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.confirmed) {
-          const emoji = d.confirmed === "Stagflation" ? "\uD83D\uDD34" : d.confirmed === "Goldilocks" ? "\uD83D\uDFE2" : d.confirmed === "Reflation" ? "\uD83D\uDFE1" : "\uD83D\uDD35";
-          setRegimeStatus(`${emoji} ${d.confirmed} — Month ${d.consecutiveMonths}`);
+    // Fetch US regime + performance
+    Promise.all([
+      fetch(apiUrl("/api/regime?mode=active")).then((r) => r.json()),
+      fetch(apiUrl("/api/performance")).then((r) => r.json()),
+    ])
+      .then(([regime, perf]) => {
+        if (regime.confirmed) {
+          const emoji = regime.confirmed === "Stagflation" ? "\uD83D\uDD34" : regime.confirmed === "Goldilocks" ? "\uD83D\uDFE2" : regime.confirmed === "Reflation" ? "\uD83D\uDFE1" : "\uD83D\uDD35";
+          setRegimeStatus(`${emoji} ${regime.confirmed} — Month ${regime.consecutiveMonths}`);
+
+          const picks = (perf.assets || [])
+            .filter((a: { category: string }) => a.category === "pick")
+            .slice(0, 3)
+            .map((a: { ticker: string; name: string; returnPct: number }) => ({
+              ticker: a.ticker, name: a.name, ret: a.returnPct,
+            }));
+
+          setUsData({
+            regime: regime.confirmed,
+            months: regime.consecutiveMonths,
+            picks,
+          });
         }
       })
       .catch(() => {});
@@ -96,19 +186,62 @@ export default function LobbyPage() {
           Six systematic tools tracking the decline of US dominance, the rise of new powers, and where capital should flow as the world order transitions.
         </p>
 
-        {/* Live signal bar */}
-        <Link
-          href="/regimetracker"
-          className="inline-block p-3 rounded-lg bg-[#111] border border-[#222] hover:border-[#333] transition-colors"
-        >
-          <div className="text-xs text-[#555] mb-1">Current US regime</div>
-          <div className="text-sm text-[#e0e0e0] font-bold">
-            {regimeStatus || "Loading..."}
-          </div>
-          <div className="text-xs text-[#555] mt-1">
-            See the full analysis →
-          </div>
-        </Link>
+      </section>
+
+      {/* Three-panel regime map */}
+      <section className="px-4 py-12 max-w-5xl mx-auto">
+        <h2 className="text-lg font-bold text-[#e0e0e0] mb-1">Three Economies. Three Regimes. One Picture.</h2>
+        <p className="text-xs text-[#555] mb-6">Live economic regime signals across the US, Europe, and China — and the assets currently benefiting from each.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <RegimePanel
+            label="United States" flag="\uD83C\uDDFA\uD83C\uDDF8" source="FRED + AI geo"
+            data={usData} href="/regimetracker" linkText="Full US analysis"
+          />
+          <RegimePanel
+            label="Europe" flag="\uD83C\uDDEA\uD83C\uDDFA" source="Eurostat + ECB"
+            data={euData} href="/europe" linkText="Full European analysis"
+            divergesFrom={usData && euData.regime !== usData.regime ? "US" : undefined}
+          />
+          <RegimePanel
+            label="China" flag="\uD83C\uDDE8\uD83C\uDDF3" source="Proxy indicators"
+            data={cnData} href="/china" linkText="Full China analysis"
+            divergesFrom={usData && cnData.regime !== usData.regime ? "US" : undefined}
+          />
+        </div>
+
+        {/* Divergence indicator */}
+        {usData && (() => {
+          const regimes = [usData.regime, euData.regime, cnData.regime];
+          const unique = new Set(regimes);
+          const dominant = regimes.sort((a, b) =>
+            regimes.filter(r => r === b).length - regimes.filter(r => r === a).length
+          )[0];
+          const dominantColor = REGIME_COLORS[dominant] || "#555";
+
+          if (unique.size === 1) {
+            return (
+              <div className="p-3 rounded-lg text-center text-xs" style={{ backgroundColor: dominantColor + "10", border: `1px solid ${dominantColor}30` }}>
+                <span style={{ color: dominantColor }}>All three economies in <span className="font-bold">{dominant}</span> — global cycle dominant</span>
+              </div>
+            );
+          } else if (unique.size === 3) {
+            return (
+              <div className="p-3 rounded-lg text-center text-xs animate-pulse" style={{ backgroundColor: "#ef444410", border: "1px solid #ef444430" }}>
+                <span className="text-[#ef4444] font-bold">Global regime fragmentation</span>
+                <span className="text-[#888]"> — three economies in different cycles</span>
+              </div>
+            );
+          } else {
+            const outlier = regimes.find(r => regimes.filter(x => x === r).length === 1);
+            const outlierEcon = regimes[0] === outlier ? "US" : regimes[1] === outlier ? "Europe" : "China";
+            return (
+              <div className="p-3 rounded-lg text-center text-xs" style={{ backgroundColor: "#eab30810", border: "1px solid #eab30830" }}>
+                <span className="text-[#eab308]">⚡ {outlierEcon} diverging from global <span className="font-bold">{dominant}</span> signal</span>
+              </div>
+            );
+          }
+        })()}
       </section>
 
       {/* Six Tools */}
