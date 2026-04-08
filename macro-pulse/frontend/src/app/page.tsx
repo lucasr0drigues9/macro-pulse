@@ -60,11 +60,11 @@ const tools = [
     category: "MULTIPOLAR BENEFICIARIES",
     title: "Emerging Markets",
     description: "As the US-China competition intensifies, swing states and commodity exporters capture the decoupling opportunity. Tracking India, Brazil, Saudi Arabia, Indonesia, and Turkey.",
-    statusLabel: "Coming soon",
+    statusLabel: "5 economies · India, Brazil, Saudi, Indonesia, Turkey",
     cta: "Open tracker",
     href: "/emerging-markets",
     accent: "#22c55e",
-    enabled: false,
+    enabled: true,
   },
 ];
 
