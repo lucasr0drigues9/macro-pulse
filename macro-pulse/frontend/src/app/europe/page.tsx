@@ -378,7 +378,10 @@ export default function EuropePage() {
                 <span className="text-lg font-bold text-[#6b8e5a]">EUAD</span>
                 <span className="text-xs text-[#555] ml-2">iShares European Defence UCITS ETF</span>
               </div>
-              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(107,142,90,0.15)] text-[#6b8e5a]">Defence</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#22c55e]">+62% 1Y</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-[rgba(107,142,90,0.15)] text-[#6b8e5a]">Defence</span>
+              </div>
             </div>
             <p className="text-xs text-[#555] mb-2">London Stock Exchange / Euronext</p>
             <p className="text-xs text-[#888] leading-relaxed mb-2">
@@ -398,7 +401,10 @@ export default function EuropePage() {
                 <span className="text-lg font-bold text-[#e09030]">IOGP</span>
                 <span className="text-xs text-[#555] ml-2">iShares Oil &amp; Gas Exploration UCITS</span>
               </div>
-              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(224,144,48,0.15)] text-[#e09030]">Energy</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#22c55e]">+38% 1Y</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-[rgba(224,144,48,0.15)] text-[#e09030]">Energy</span>
+              </div>
             </div>
             <p className="text-xs text-[#555] mb-2">London Stock Exchange</p>
             <p className="text-xs text-[#888] leading-relaxed mb-2">
@@ -418,7 +424,10 @@ export default function EuropePage() {
                 <span className="text-lg font-bold text-[#3b82f6]">ASML</span>
                 <span className="text-xs text-[#555] ml-2">ASML Holding NV</span>
               </div>
-              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(59,130,246,0.15)] text-[#3b82f6]">Technology</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#ef4444]">-18% 1Y</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-[rgba(59,130,246,0.15)] text-[#3b82f6]">Technology</span>
+              </div>
             </div>
             <p className="text-xs text-[#555] mb-2">Euronext Amsterdam / NASDAQ</p>
             <p className="text-xs text-[#888] leading-relaxed mb-2">
@@ -439,7 +448,10 @@ export default function EuropePage() {
                 <span className="text-lg font-bold text-[#a855f7]">NHY</span>
                 <span className="text-xs text-[#555] ml-2">Norsk Hydro ASA</span>
               </div>
-              <span className="text-xs px-2 py-0.5 rounded bg-[rgba(168,85,247,0.15)] text-[#a855f7]">Materials</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-[#22c55e]">+12% 1Y</span>
+                <span className="text-xs px-2 py-0.5 rounded bg-[rgba(168,85,247,0.15)] text-[#a855f7]">Materials</span>
+              </div>
             </div>
             <p className="text-xs text-[#555] mb-2">Oslo Børs (Nordnet — NOK)</p>
             <p className="text-xs text-[#888] leading-relaxed mb-2">
