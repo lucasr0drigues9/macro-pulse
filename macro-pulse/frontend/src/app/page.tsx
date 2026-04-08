@@ -175,7 +175,7 @@ export default function LobbyPage() {
         // Build AI interpretation from synthesis
         if (calendar?.synthesis) {
           const s = calendar.synthesis;
-          setAiInterpretation(s.situation || s.key_tension || null);
+          setAiInterpretation(s.regime_interpretation || s.situation || null);
         }
       })
       .catch(() => {});

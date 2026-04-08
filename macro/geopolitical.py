@@ -267,7 +267,8 @@ Respond ONLY with valid JSON, no markdown:
       "bullish_signal": "what filing pattern would confirm the macro thesis",
       "bearish_signal": "what filing pattern would contradict it"
     }
-  }
+  },
+  "regime_interpretation": "2-3 sentences: what the US+Europe+China regime combination means for capital flows, which specific ETFs benefit, and one ETF to watch as leading indicator for next regime change. Use real tickers only."
 }"""
 
 def get_synthesis(geo_data, quadrant, transition_warning=None, performance_data=None):
@@ -406,7 +407,25 @@ Active geopolitical events:
 Given all of this, provide your investment synthesis and portfolio guidance.
 Include specific calendar_scenarios for the upcoming CPI, FOMC and 13F filings
 based on the CURRENT geopolitical and macro context — not generic advice.
-Be specific. Name tickers. Acknowledge what you don't know."""
+Be specific. Name tickers. Acknowledge what you don't know.
+
+Additionally, given these current regime signals:
+US: {quadrant} — current regime
+Europe: Stagflation — Month 3 (Eurostat: GDP +0.1%, HICP 2.6%, industrial production -1.8%)
+China: Deflation — Month 18 (Proxy: Caixin PMI 49.2, PPI -2.8%, property -8.5%)
+China confidence: Medium
+
+Add a field "regime_interpretation" to your JSON response with a 2-3 sentence interpretation:
+1. What this specific combination of regimes means for global capital flows right now
+2. Which specific ETFs benefit most from this divergence or synchronisation — always use real ETF tickers (e.g. GLD, XLE, INDA, EWZ, KSA, EUAD, EIDO, DBC, TLT, QQQ, IOGP)
+3. One specific ETF to watch as the leading indicator for the next regime change
+
+Rules for regime_interpretation:
+- Always use specific ETF tickers, never vague asset class names
+- Plain English not jargon
+- Frame as historical pattern observation not personalised advice
+- Maximum 3 sentences
+- End with one specific ETF as the leading indicator"""
 
     try:
         response = requests.post(
@@ -418,7 +437,7 @@ Be specific. Name tickers. Acknowledge what you don't know."""
             },
             json={
                 "model":    "claude-sonnet-4-20250514",
-                "max_tokens": 2000,
+                "max_tokens": 3000,
                 "system":   SYNTHESIS_PROMPT,
                 "messages": [{"role": "user", "content": user_prompt}],
             },
