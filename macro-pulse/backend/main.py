@@ -50,8 +50,81 @@ _seed_cache_on_startup()
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+import asyncio
 
-app = FastAPI(title="Macro Pulse API", version="0.3.0")
+
+async def _background_trigger_check():
+    """Check triggers every 4 hours in background."""
+    await asyncio.sleep(60)  # Wait 1 min after startup
+    while True:
+        try:
+            # Import here to avoid circular imports
+            from macro_kelly import get_current_regime, get_etf_price
+            import json as _j
+
+            regime, _, _ = get_current_regime()
+            trigger_history = os.path.join(MACRO, ".macro_cache", "trigger_history.json")
+            previous = {}
+            try:
+                with open(trigger_history) as f:
+                    previous = _j.load(f)
+            except Exception:
+                pass
+
+            oil = get_etf_price("CL=F")
+            if oil:
+                current_oil = {"value": round(oil, 1), "label": f"${round(oil, 1)}/bbl"}
+                # Check level crossings
+                levels_file = os.path.join(MACRO, ".macro_cache", "levels_crossed.json")
+                try:
+                    with open(levels_file) as f:
+                        levels_crossed = _j.load(f)
+                except Exception:
+                    levels_crossed = {}
+
+                prev_oil = previous.get("oil", {}).get("value")
+                if prev_oil:
+                    for level_info in [
+                        {"level": 100, "dir": "below", "label": "Oil below $100"},
+                        {"level": 90, "dir": "below", "label": "Oil below $90"},
+                        {"level": 85, "dir": "below", "label": "Oil below $85"},
+                        {"level": 120, "dir": "above", "label": "Oil above $120"},
+                    ]:
+                        alert_key = f"oil_{level_info['level']}_{level_info['dir']}"
+                        crossed = False
+                        if level_info["dir"] == "below" and prev_oil >= level_info["level"] and oil < level_info["level"]:
+                            crossed = True
+                        elif level_info["dir"] == "above" and prev_oil <= level_info["level"] and oil > level_info["level"]:
+                            crossed = True
+                        if crossed and not levels_crossed.get(alert_key, False):
+                            levels_crossed[alert_key] = True
+                            print(f"  ALERT: {level_info['label']} — ${prev_oil} → ${oil}")
+                        elif not crossed and levels_crossed.get(alert_key, False):
+                            levels_crossed[alert_key] = False
+
+                    with open(levels_file, "w") as f:
+                        _j.dump(levels_crossed, f)
+
+                # Update history
+                previous["oil"] = current_oil
+                with open(trigger_history, "w") as f:
+                    _j.dump(previous, f)
+
+        except Exception as e:
+            print(f"  Background trigger check error: {e}")
+
+        await asyncio.sleep(4 * 3600)  # Every 4 hours
+
+
+@asynccontextmanager
+async def lifespan(app):
+    task = asyncio.create_task(_background_trigger_check())
+    yield
+    task.cancel()
+
+
+app = FastAPI(title="Macro Pulse API", version="0.3.0", lifespan=lifespan)
 
 
 @app.get("/api/version")
@@ -1436,9 +1509,99 @@ async def cron_check_triggers(request: Request):
         },
     }
 
+    # Absolute price level alerts — fire when a key level is crossed
+    LEVEL_ALERTS = {
+        "oil": [
+            {"level": 100, "direction": "below", "label": "Oil below $100", "meaning": "Stagflation energy thesis weakening — supply disruption may be easing or demand destruction setting in"},
+            {"level": 90, "direction": "below", "label": "Oil below $90", "meaning": "Significant de-escalation signal — Hormuz reopening or demand collapse. Regime may transition."},
+            {"level": 85, "direction": "below", "label": "Oil below $85", "meaning": "Stagflation energy thesis broken — consider rotating from energy to growth/tech positions"},
+            {"level": 120, "direction": "above", "label": "Oil above $120", "meaning": "Escalation — war premium intensifying. Double down on Stagflation picks (GLD, XLE, DBC)"},
+        ],
+    }
+
     alerts_sent = 0
     movements = []
 
+    # Check absolute level crossings
+    levels_crossed_file = os.path.join(MACRO, ".macro_cache", "levels_crossed.json")
+    try:
+        with open(levels_crossed_file) as f:
+            levels_crossed = _json.load(f)
+    except Exception:
+        levels_crossed = {}
+
+    for key, levels in LEVEL_ALERTS.items():
+        if key not in current:
+            continue
+        curr_val = current[key]["value"]
+        prev_val = previous.get(key, {}).get("value")
+        if prev_val is None:
+            continue
+
+        for alert in levels:
+            alert_key = f"{key}_{alert['level']}_{alert['direction']}"
+            already_fired = levels_crossed.get(alert_key, False)
+
+            crossed = False
+            if alert["direction"] == "below" and prev_val >= alert["level"] and curr_val < alert["level"]:
+                crossed = True
+            elif alert["direction"] == "above" and prev_val <= alert["level"] and curr_val > alert["level"]:
+                crossed = True
+
+            if crossed and not already_fired:
+                levels_crossed[alert_key] = True
+
+                # Generate AI analysis for level crossing
+                anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+                analysis = f"{alert['label']}. {alert['meaning']}"
+
+                if anthropic_key:
+                    try:
+                        import requests as req
+                        synthesis = _load_synthesis()
+                        situation = synthesis.get("situation", "") if synthesis else ""
+                        r = req.post(
+                            "https://api.anthropic.com/v1/messages",
+                            headers={
+                                "Content-Type": "application/json",
+                                "x-api-key": anthropic_key,
+                                "anthropic-version": "2023-06-01",
+                            },
+                            json={
+                                "model": "claude-sonnet-4-20250514",
+                                "max_tokens": 300,
+                                "messages": [{"role": "user", "content": f"""{alert['label']} — oil moved from ${prev_val} to ${curr_val}. Current regime is {regime}. Context: {situation[:300]}.
+
+Explain in 3-4 sentences: 1) Why this level matters for investors, 2) What it signals about the Stagflation thesis, 3) What specific action to consider (which ETFs to watch). Plain English, no jargon."""}],
+                            },
+                            timeout=20,
+                        )
+                        data = r.json()
+                        text = "".join(b.get("text", "") for b in data.get("content", []))
+                        if text:
+                            analysis = text.strip()
+                    except Exception:
+                        pass
+
+                sent = emails.send_trigger_movement(
+                    trigger_name=alert["label"],
+                    previous_value=f"${prev_val}/bbl",
+                    current_value=f"${curr_val}/bbl",
+                    threshold=alert["meaning"],
+                    regime=regime,
+                    analysis=analysis,
+                )
+                alerts_sent += sent
+                movements.append({"trigger": alert["label"], "from": prev_val, "to": curr_val, "sent": sent})
+
+            elif not crossed and already_fired:
+                # Reset if price moved back above/below level
+                levels_crossed[alert_key] = False
+
+    with open(levels_crossed_file, "w") as f:
+        _json.dump(levels_crossed, f)
+
+    # Check relative movement thresholds (existing logic)
     for key, config in THRESHOLDS.items():
         if key not in current:
             continue
