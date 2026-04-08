@@ -3,33 +3,33 @@
 import { useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
-import { ACCENT, countries, regimeAlignment, type CountryEM } from "@/lib/emergingData";
+import { ACCENT, GOLD, morocco, countries, regimeAlignment, type CountryEM } from "@/lib/emergingData";
 
-type SortKey = "name" | "signal" | "gdp" | "chinaT" | "usT" | "etfReturn";
-
-function CountryCard({ c }: { c: CountryEM }) {
+function CountryCard({ c, featured }: { c: CountryEM; featured?: boolean }) {
   const [open, setOpen] = useState(false);
+
   return (
-    <div className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
+    <div className="rounded-lg bg-[#111] border overflow-hidden" style={{ borderColor: featured ? GOLD + "60" : "#222" }}>
       <button onClick={() => setOpen(!open)} className="w-full p-4 text-left hover:bg-[#151515] transition-colors">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="text-lg">{c.flag}</span>
             <span className="text-sm font-bold text-[#e0e0e0]">{c.name}</span>
-            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: c.allianceColor, backgroundColor: c.allianceColor + "20" }}>
-              {c.alliance}
-            </span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: c.allianceColor, backgroundColor: c.allianceColor + "20" }}>{c.alliance}</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color: c.signalColor, backgroundColor: c.signalColor + "20" }}>{c.signal}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color: c.signalColor, backgroundColor: c.signalColor + "20" }}>
-              {c.signal}
-            </span>
-            <span className="text-[#555] text-sm">{open ? "−" : "+"}</span>
-          </div>
+          <span className="text-[#555] text-sm shrink-0 ml-2">{open ? "−" : "+"}</span>
         </div>
+        {c.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {c.tags.map((t) => (
+              <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-[#181818] text-[#555]">{t}</span>
+            ))}
+          </div>
+        )}
         <div className="space-y-1">
           {c.whyBenefits.map((b, i) => (
-            <p key={i} className="text-xs text-[#888] leading-relaxed">→ {b}</p>
+            <p key={i} className="text-xs text-[#888] leading-relaxed">{"\u2192"} {b}</p>
           ))}
         </div>
       </button>
@@ -41,7 +41,7 @@ function CountryCard({ c }: { c: CountryEM }) {
             {c.metrics.map((m) => (
               <div key={m.label} className="p-2 rounded bg-[#0a0a0a]">
                 <div className="text-[10px] text-[#555]">{m.label}</div>
-                <div className="text-xs font-bold" style={{ color: ACCENT }}>{m.value}</div>
+                <div className="text-xs font-bold" style={{ color: featured ? GOLD : ACCENT }}>{m.value}</div>
               </div>
             ))}
           </div>
@@ -51,9 +51,9 @@ function CountryCard({ c }: { c: CountryEM }) {
             <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Dalio&apos;s Determinants</div>
             <div className="space-y-1">
               {c.determinants.map((d) => (
-                <div key={d.label} className="flex items-center gap-2 text-xs">
-                  <span>{d.emoji}</span>
-                  <span className="text-[#888] w-36">{d.label}</span>
+                <div key={d.label} className="flex items-start gap-2 text-xs">
+                  <span className="shrink-0">{d.emoji}</span>
+                  <span className="text-[#888] w-36 shrink-0">{d.label}</span>
                   <span className="text-[#555]">{d.note}</span>
                 </div>
               ))}
@@ -62,7 +62,7 @@ function CountryCard({ c }: { c: CountryEM }) {
 
           {/* ETFs */}
           <div className="mb-4">
-            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Investment ETFs</div>
+            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Investment Options</div>
             <div className="space-y-2">
               {c.etfs.map((etf) => (
                 <div key={etf.ticker} className="flex items-center justify-between p-2 rounded bg-[#0a0a0a]">
@@ -77,6 +77,24 @@ function CountryCard({ c }: { c: CountryEM }) {
                 </div>
               ))}
             </div>
+            {c.etfNote && <p className="text-[10px] text-[#555] mt-2 italic">{c.etfNote}</p>}
+          </div>
+
+          {/* Regime Alignment */}
+          <div className="mb-4">
+            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Regime Alignment</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {c.regimeAlignment.map((r) => (
+                <div key={r.regime} className="p-2 rounded bg-[#0a0a0a] text-xs">
+                  <div className="flex items-center gap-1 mb-1">
+                    <span>{r.emoji}</span>
+                    <span className="text-[#888]">{r.regime}</span>
+                    <span>{r.rating}</span>
+                  </div>
+                  <div className="text-[10px] text-[#333]">{r.note}</div>
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Risks */}
@@ -84,7 +102,7 @@ function CountryCard({ c }: { c: CountryEM }) {
             <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-2">Risk Factors</div>
             <div className="space-y-1">
               {c.risks.map((r, i) => (
-                <p key={i} className="text-[10px] text-[#555]">→ {r}</p>
+                <p key={i} className="text-[10px] text-[#555]">{"\u2192"} {r}</p>
               ))}
             </div>
           </div>
@@ -94,7 +112,11 @@ function CountryCard({ c }: { c: CountryEM }) {
   );
 }
 
+type SortKey = "name" | "signal" | "gdp" | "euLink" | "etfReturn";
+
 export default function EmergingMarketsPage() {
+  const allCountries = [morocco, ...countries];
+
   const [sortKey, setSortKey] = useState<SortKey>("signal");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
@@ -103,14 +125,13 @@ export default function EmergingMarketsPage() {
     else { setSortKey(key); setSortDir("desc"); }
   }
 
-  const sorted = [...countries].sort((a, b) => {
+  const sorted = [...allCountries].sort((a, b) => {
     let va: string | number, vb: string | number;
     switch (sortKey) {
       case "name": va = a.name; vb = b.name; break;
       case "signal": va = a.signal === "Strong" ? 1 : 0; vb = b.signal === "Strong" ? 1 : 0; break;
       case "gdp": va = parseFloat(a.gdpGrowth); vb = parseFloat(b.gdpGrowth); break;
-      case "chinaT": va = parseFloat(a.chinaTradeShare); vb = parseFloat(b.chinaTradeShare); break;
-      case "usT": va = parseFloat(a.usTradeShare); vb = parseFloat(b.usTradeShare); break;
+      case "euLink": va = a.euAutonomyLink; vb = b.euAutonomyLink; break;
       case "etfReturn": va = a.bestETFReturn; vb = b.bestETFReturn; break;
       default: va = 0; vb = 0;
     }
@@ -118,7 +139,7 @@ export default function EmergingMarketsPage() {
     return sortDir === "asc" ? (va as number) - (vb as number) : (vb as number) - (va as number);
   });
 
-  const arrow = (key: SortKey) => sortKey === key ? (sortDir === "asc" ? " ↑" : " ↓") : "";
+  const arrow = (key: SortKey) => sortKey === key ? (sortDir === "asc" ? " \u2191" : " \u2193") : "";
 
   return (
     <main className="min-h-screen">
@@ -131,7 +152,7 @@ export default function EmergingMarketsPage() {
           The multipolar world creates winners beyond the US and China.
         </p>
         <p className="text-sm text-[#555] max-w-2xl">
-          Five economies positioned to benefit from the world order transition — tracking why and how to invest.
+          Six economies positioned to benefit from the world order transition — tracking why and how to invest.
         </p>
       </section>
 
@@ -142,28 +163,37 @@ export default function EmergingMarketsPage() {
           <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#3b82f6" }}>
             <div className="text-xs font-bold text-[#3b82f6] mb-2">The Decoupling Dividend</div>
             <p className="text-xs text-[#888] leading-relaxed">
-              As the US and China decouple, global supply chains must relocate. Countries with young populations, competitive costs, and strategic neutrality become the factories of the next world order. India and Indonesia are the primary beneficiaries.
+              As the US and China decouple, global supply chains must relocate. Countries with young populations, competitive costs, and strategic neutrality become the factories of the next world order. India and Morocco are the primary beneficiaries — India for scale, Morocco for European proximity.
             </p>
           </div>
           <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#eab308" }}>
             <div className="text-xs font-bold text-[#eab308] mb-2">The Commodity Premium</div>
             <p className="text-xs text-[#888] leading-relaxed">
-              World order transitions create sustained commodity demand — rearmament requires metals, energy insecurity drives resource premiums. Countries sitting on commodity wealth benefit regardless of which power wins. Brazil and Saudi Arabia are the clearest cases.
+              World order transitions create sustained commodity demand — rearmament requires metals, energy insecurity drives resource premiums. Brazil and Saudi Arabia hold what the transition runs on.
             </p>
           </div>
           <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: ACCENT }}>
             <div className="text-xs font-bold mb-2" style={{ color: ACCENT }}>The Swing State Advantage</div>
             <p className="text-xs text-[#888] leading-relaxed">
-              Countries that refuse to choose sides can trade with both, receive investment from both, and extract concessions from both. India is the master of this strategy. Turkey, Saudi Arabia, and Indonesia are playing the same game.
+              Countries refusing to choose sides can trade with both powers and extract concessions from both. India perfected this. Turkey, Saudi Arabia, and Indonesia are playing the same game.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Five Country Cards */}
+      {/* Morocco Featured */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Five Economies</h2>
-        <p className="text-xs text-[#555] mb-6">Click any country for full analysis, ETFs, and risk factors.</p>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Overlooked Opportunity</h2>
+          <p className="text-xs text-[#555]">Most emerging market analysis misses the country in Europe&apos;s backyard that benefits most from European strategic autonomy.</p>
+        </div>
+        <CountryCard c={morocco} featured />
+      </section>
+
+      {/* Five Core Economies */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Five More Opportunities</h2>
+        <p className="text-xs text-[#555] mb-6">Swing states, commodity exporters, and decoupling beneficiaries. Click for full analysis.</p>
         <div className="space-y-3">
           {countries.map((c) => <CountryCard key={c.name} c={c} />)}
         </div>
@@ -171,7 +201,7 @@ export default function EmergingMarketsPage() {
 
       {/* Comparison Table */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Five Economies — Side by Side</h2>
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Six Economies — Side by Side</h2>
         <p className="text-xs text-[#555] mb-4">Click column headers to sort</p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
@@ -180,26 +210,24 @@ export default function EmergingMarketsPage() {
                 <th className="text-left py-2 pr-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("name")}>Country{arrow("name")}</th>
                 <th className="text-center py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("signal")}>Signal{arrow("signal")}</th>
                 <th className="text-left py-2 px-2 hidden sm:table-cell">Thesis</th>
+                <th className="text-left py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("euLink")}>EU Link{arrow("euLink")}</th>
                 <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("gdp")}>GDP{arrow("gdp")}</th>
                 <th className="text-left py-2 px-2 hidden sm:table-cell">Commodity</th>
-                <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("chinaT")}>CN%{arrow("chinaT")}</th>
-                <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("usT")}>US%{arrow("usT")}</th>
                 <th className="text-right py-2 px-2">ETF</th>
                 <th className="text-right py-2 pl-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("etfReturn")}>1Y{arrow("etfReturn")}</th>
               </tr>
             </thead>
             <tbody>
               {sorted.map((c) => (
-                <tr key={c.name} className="border-b border-[#181818]">
+                <tr key={c.name} className="border-b border-[#181818]" style={c.name === "Morocco" ? { backgroundColor: GOLD + "08" } : {}}>
                   <td className="py-3 pr-2 font-bold text-[#e0e0e0]">{c.flag} {c.name}</td>
                   <td className="py-3 px-2 text-center">
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color: c.signalColor, backgroundColor: c.signalColor + "20" }}>{c.signal}</span>
                   </td>
                   <td className="py-3 px-2 text-[#555] hidden sm:table-cell text-[10px]">{c.primaryThesis}</td>
+                  <td className="py-3 px-2 text-[10px]" style={{ color: "#3b82f6" }}>{c.euAutonomyLink}</td>
                   <td className="py-3 px-2 text-right" style={{ color: ACCENT }}>{c.gdpGrowth}</td>
                   <td className="py-3 px-2 text-[#555] hidden sm:table-cell text-[10px]">{c.keyCommodity}</td>
-                  <td className="py-3 px-2 text-right text-[#ef4444]">{c.chinaTradeShare}</td>
-                  <td className="py-3 px-2 text-right text-[#3b82f6]">{c.usTradeShare}</td>
                   <td className="py-3 px-2 text-right text-[#888]">{c.bestETF}</td>
                   <td className={`py-3 pl-2 text-right font-bold ${c.bestETFReturn >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
                     {c.bestETFReturn >= 0 ? "+" : ""}{c.bestETFReturn}%
@@ -211,47 +239,50 @@ export default function EmergingMarketsPage() {
         </div>
       </section>
 
-      {/* Common Thread */}
-      <section className="px-4 py-8 max-w-4xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-4">What Connects These Five</h2>
-        <p className="text-xs text-[#888] leading-relaxed">
-          These five economies share one characteristic: they benefit from the world order transition regardless of which power wins. India captures manufacturing migration and plays both sides diplomatically. Brazil feeds and supplies a commodity-hungry world. Saudi Arabia holds the energy the transition runs on. Indonesia holds the metals the EV transition requires. Turkey controls a strait that is strategically irreplaceable. None of them need the US to remain dominant. None of them need China to win. They need the transition to continue — and all evidence suggests it will.
+      {/* EU Autonomy Connection */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-4">How European Independence Creates Emerging Market Demand</h2>
+        <p className="text-xs text-[#888] leading-relaxed mb-4">
+          European strategic autonomy is not just a European story. The {"\u20AC"}800 billion ReArm Europe fund, the LNG terminal buildout, the critical materials strategy, and the manufacturing relocation away from China all create direct demand flowing to emerging markets. Morocco gets manufacturing and solar contracts. Gulf states get energy contracts. India gets supply chain investment. Indonesia gets battery material contracts. The European page tracks the companies enabling this shift. This page tracks the economies that supply it.
         </p>
+        <div className="text-center">
+          <Link href="/europe" className="inline-block px-6 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+            View European Autonomy Tracker {"\u2192"}
+          </Link>
+        </div>
       </section>
 
       {/* Regime Alignment */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Emerging Markets Across Regimes</h2>
-        <p className="text-xs text-[#555] mb-4">Which countries benefit in each economic season</p>
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Which Emerging Markets Perform Best Right Now</h2>
+        <p className="text-xs text-[#555] mb-4">Accounting for both US Stagflation and China Deflation</p>
 
         <div className="space-y-2 mb-4">
           {regimeAlignment.map((r) => (
-            <div
-              key={r.regime}
-              className="p-3 rounded-lg border flex flex-col sm:flex-row sm:items-center gap-2"
-              style={{
-                backgroundColor: r.current ? ACCENT + "10" : "#111",
-                borderColor: r.current ? ACCENT + "40" : "#222",
-              }}
-            >
-              <div className="flex items-center gap-2 sm:w-32">
+            <div key={r.regime} className="p-3 rounded-lg border flex flex-col sm:flex-row sm:items-start gap-2"
+              style={{ backgroundColor: r.current ? ACCENT + "10" : "#111", borderColor: r.current ? ACCENT + "40" : "#222" }}>
+              <div className="flex items-center gap-2 sm:w-32 shrink-0">
                 <span>{r.emoji}</span>
                 <span className={`text-sm font-bold ${r.current ? "text-[#e0e0e0]" : "text-[#555]"}`}>{r.regime}</span>
                 {r.current && <span className="text-[10px] font-bold" style={{ color: ACCENT }}>NOW</span>}
               </div>
               <div className="flex-1 text-xs text-[#888]">{r.performance}</div>
-              <div className="text-xs text-[#555] sm:w-24 sm:text-right">{r.bestETFs}</div>
+              <div className="text-xs text-[#555] sm:w-28 sm:text-right shrink-0">{r.bestETFs}</div>
             </div>
           ))}
         </div>
 
         <div className="p-3 rounded bg-[#111] border border-[#222]">
           <p className="text-xs text-[#888] leading-relaxed">
-            Current US regime is <span className="text-[#ef4444] font-bold">Stagflation</span> while China is in <span className="text-[#3b82f6] font-bold">Deflation</span>. This creates a split: Saudi Arabia benefits from the energy supply shock, India is resilient due to domestic demand, but commodity exporters to China (Brazil iron ore, Indonesia nickel) face mixed signals — energy prices up but Chinese demand down.{" "}
-            <Link href="/regimetracker" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: ACCENT }}>US regime →</Link>{" "}
-            <Link href="/china" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: "#3b82f6" }}>China tracker →</Link>
+            Current US regime is <span className="text-[#ef4444] font-bold">Stagflation</span> while China is in <span className="text-[#3b82f6] font-bold">Deflation</span>. Saudi Arabia benefits from energy supply shock. India resilient on domestic demand. Commodity exporters to China (Brazil iron ore, Indonesia nickel) face mixed signals. Morocco&apos;s phosphate premium rises on food security fears.{" "}
+            <Link href="/regimetracker" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: ACCENT }}>US regime {"\u2192"}</Link>{" "}
+            <Link href="/china" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: "#3b82f6" }}>China tracker {"\u2192"}</Link>
           </p>
         </div>
+
+        <p className="mt-3 text-[10px] text-[#333] italic text-center">
+          Regime alignment shows short-term fit. All six have structural multi-year theses regardless of current regime.
+        </p>
       </section>
 
       {/* Email signup */}
@@ -259,7 +290,7 @@ export default function EmergingMarketsPage() {
         <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
           <h2 className="text-lg font-bold text-[#e0e0e0] mb-2">Track Emerging Market Opportunities</h2>
           <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
-            Get notified when a significant shift occurs in any of the five tracked economies.
+            Get notified when a significant shift occurs in any of the six tracked economies or when European autonomy spending creates new demand.
           </p>
           <div className="flex gap-2 max-w-sm mx-auto">
             <input type="email" placeholder="your@email.com"
@@ -274,7 +305,7 @@ export default function EmergingMarketsPage() {
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
         <p className="text-xs text-[#333] max-w-xl mx-auto">
-          Emerging market investments carry additional risks including currency volatility, political instability, lower liquidity, and less regulatory protection. Country-specific risks noted for each economy. Not personalised financial advice. Always do your own research.
+          Emerging market investments carry additional risks including currency volatility, political instability, lower liquidity, and less regulatory protection. Country-specific risks noted above. Not personalised financial advice. Always do your own research.
         </p>
       </footer>
     </main>
