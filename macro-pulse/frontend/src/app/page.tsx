@@ -136,6 +136,10 @@ export default function LobbyPage() {
     out_of: { ticker: string; name: string; reason: string }[];
     into: { ticker: string; name: string; reason: string }[];
   } | null>(null);
+  const [currencies, setCurrencies] = useState<{
+    name: string; label: string; measures: string;
+    current: number; prev: number; changePct: number; trend: string;
+  }[] | null>(null);
   const [euData] = useState<PanelData>({
     regime: "Stagflation", months: 3, picks: [
       { ticker: "EUAD", name: "European Defence", ret: 62.0 },
@@ -182,6 +186,12 @@ export default function LobbyPage() {
           if (interp.capitalFlow) setCapitalFlow(interp.capitalFlow);
         }
       })
+      .catch(() => {});
+
+    // Fetch currencies
+    fetch(apiUrl("/api/currencies"))
+      .then((r) => r.json())
+      .then((d) => { if (d.pairs?.length) setCurrencies(d.pairs); })
       .catch(() => {});
   }, []);
 
@@ -320,6 +330,152 @@ export default function LobbyPage() {
           </div>
         )}
       </section>
+
+      {/* Currency Confirmation */}
+      {currencies && currencies.length > 0 && (() => {
+        const usRegime = usData?.regime || "Stagflation";
+        const euRegime = euData.regime;
+        const cnRegime = cnData.regime;
+
+        type Confirmation = { status: "confirmed" | "divergence" | "neutral"; text: string };
+
+        function confirmDXY(trend: string): Confirmation {
+          const leaving = usRegime === "Stagflation" || usRegime === "Deflation";
+          if (trend === "neutral") return { status: "neutral", text: "Dollar stable — flows not yet decisive." };
+          if (leaving) {
+            return trend === "weakening"
+              ? { status: "confirmed", text: `Dollar weakening confirms capital rotating from US assets — consistent with ${usRegime}.` }
+              : { status: "divergence", text: `Dollar strengthening contradicts ${usRegime} — safe haven demand may be overriding regime flows.` };
+          }
+          return trend === "strengthening"
+            ? { status: "confirmed", text: `Dollar strengthening confirms capital flowing toward US assets — consistent with ${usRegime}.` }
+            : { status: "divergence", text: `Dollar weakening contradicts ${usRegime} signal — investigate before acting.` };
+        }
+
+        function confirmEURUSD(trend: string): Confirmation {
+          const entering = euRegime === "Goldilocks" || euRegime === "Reflation";
+          if (trend === "neutral") return { status: "neutral", text: "EUR/USD stable — European flows not decisive." };
+          if (entering) {
+            return trend === "strengthening"
+              ? { status: "confirmed", text: "Euro strengthening confirms capital entering Europe." }
+              : { status: "divergence", text: "Euro weakening contradicts European growth signal." };
+          }
+          return trend === "weakening"
+            ? { status: "confirmed", text: `Euro weakening confirms capital leaving Europe — consistent with ${euRegime}.` }
+            : { status: "divergence", text: `Euro strengthening contradicts European ${euRegime} signal.` };
+        }
+
+        function confirmUSDJPY(trend: string): Confirmation {
+          if (trend === "neutral") return { status: "neutral", text: "Yen stable — carry trade dynamics not decisive." };
+          if (trend === "weakening") // yen strengthening (USDJPY falling)
+            return { status: "divergence", text: "Yen strengthening — carry trade unwinding. Historically precedes volatility within 2-4 weeks." };
+          return { status: "confirmed", text: "Yen weakening — carry trade active, risk appetite high globally." };
+        }
+
+        function confirmCNH(trend: string): Confirmation {
+          const leaving = cnRegime === "Stagflation" || cnRegime === "Deflation";
+          if (trend === "neutral") return { status: "neutral", text: "Yuan stable — Chinese capital flows not decisive." };
+          if (leaving) {
+            return trend === "strengthening" // USD strengthening vs CNH = yuan weakening
+              ? { status: "confirmed", text: `Yuan weakening confirms capital leaving China — consistent with ${cnRegime}.` }
+              : { status: "divergence", text: `Yuan strengthening contradicts Chinese ${cnRegime} — policy intervention likely.` };
+          }
+          return trend === "weakening"
+            ? { status: "confirmed", text: "Yuan strengthening confirms Chinese recovery — capital flowing toward China proxies." }
+            : { status: "divergence", text: "Yuan weakening contradicts Chinese recovery signal." };
+        }
+
+        const confirmations = currencies.map((c) => {
+          let conf: Confirmation;
+          if (c.name === "DXY") conf = confirmDXY(c.trend);
+          else if (c.name === "EUR/USD") conf = confirmEURUSD(c.trend);
+          else if (c.name === "USD/JPY") conf = confirmUSDJPY(c.trend);
+          else if (c.name === "USD/CNH") conf = confirmCNH(c.trend);
+          else conf = { status: "neutral", text: "" };
+          return { ...c, confirmation: conf };
+        });
+
+        const confirmed = confirmations.filter((c) => c.confirmation.status === "confirmed").length;
+        const divergent = confirmations.filter((c) => c.confirmation.status === "divergence").length;
+
+        let overallStatus: "confirmed" | "mixed" | "diverging";
+        let overallText: string;
+        let overallColor: string;
+
+        if (confirmed >= 3 && divergent <= 1) {
+          overallStatus = "confirmed";
+          overallText = `Currency markets confirming regime signal — ${confirmed} of ${currencies.length} pairs aligned. High conviction.`;
+          overallColor = "#22c55e";
+        } else if (divergent >= 2) {
+          overallStatus = "diverging";
+          overallText = "Currency markets contradicting regime signal. Something the model isn't capturing may be driving flows. Reduce conviction.";
+          overallColor = "#ef4444";
+        } else {
+          overallStatus = "mixed";
+          overallText = "Currency markets sending mixed signals. Some flows confirm the regime, others diverge. Standard conviction.";
+          overallColor = "#eab308";
+        }
+
+        const statusIcon = overallStatus === "confirmed" ? "\uD83D\uDFE2" : overallStatus === "diverging" ? "\uD83D\uDD34" : "\uD83D\uDFE1";
+
+        return (
+          <section className="px-4 py-8 max-w-5xl mx-auto">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="text-lg font-bold text-[#e0e0e0]">Are the Flows Confirmed?</h2>
+            </div>
+            <p className="text-xs text-[#555] mb-4">
+              Currency markets move faster than economic data. When they align with the regime signal, conviction is high.
+            </p>
+
+            {/* Overall score */}
+            <div className="p-4 rounded-lg mb-4" style={{ backgroundColor: overallColor + "10", border: `1px solid ${overallColor}30` }}>
+              <div className="flex items-center gap-2 mb-1">
+                <span>{statusIcon}</span>
+                <span className="text-sm font-bold" style={{ color: overallColor }}>
+                  FLOWS {overallStatus.toUpperCase()}
+                </span>
+              </div>
+              <p className="text-xs text-[#888]">{overallText}</p>
+            </div>
+
+            {/* Individual pairs */}
+            <div className="space-y-2">
+              {confirmations.map((c) => {
+                const confColor = c.confirmation.status === "confirmed" ? "#22c55e" : c.confirmation.status === "divergence" ? "#eab308" : "#555";
+                const confIcon = c.confirmation.status === "confirmed" ? "\u2705" : c.confirmation.status === "divergence" ? "\u26A0\uFE0F" : "\u27A1\uFE0F";
+                const arrow = c.changePct > 0 ? "\u2191" : c.changePct < 0 ? "\u2193" : "\u2192";
+                const changeColor = c.changePct > 0 ? "#22c55e" : c.changePct < 0 ? "#ef4444" : "#555";
+
+                return (
+                  <div key={c.name} className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                    <div className="flex items-center justify-between mb-1">
+                      <div>
+                        <span className="text-sm font-bold text-[#e0e0e0]">{c.name}</span>
+                        <span className="text-xs text-[#555] ml-2">{c.measures}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="text-[#888]">{c.current.toFixed(c.current > 100 ? 1 : 4)}</span>
+                        <span style={{ color: changeColor }}>{arrow} {c.changePct > 0 ? "+" : ""}{c.changePct}%</span>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-1.5 text-xs">
+                      <span>{confIcon}</span>
+                      <span style={{ color: confColor }}>{c.confirmation.text}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-[10px] text-[#333] mt-3 text-center">
+              Rates updated daily · 30-day trend filters daily noise · Not a trading signal — use as regime confirmation only
+            </p>
+            <p className="text-[10px] text-[#333] mt-1 text-center italic">
+              Framework inspired by Druckenmiller&apos;s principle that currency direction confirms capital flows before stock markets reflect them.
+            </p>
+          </section>
+        );
+      })()}
 
       {/* Six Tools */}
       <section className="px-4 py-12 max-w-5xl mx-auto">

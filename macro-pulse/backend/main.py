@@ -223,6 +223,50 @@ def get_interpretation():
     }
 
 
+@app.get("/api/currencies")
+def get_currencies():
+    """Fetch currency pairs for regime confirmation."""
+    import yfinance as yf
+    from datetime import datetime, timedelta
+
+    pairs = [
+        {"ticker": "DX-Y.NYB", "name": "DXY", "label": "Dollar Strength Index", "measures": "Overall US dollar strength"},
+        {"ticker": "EURUSD=X", "name": "EUR/USD", "label": "Euro vs Dollar", "measures": "European vs US capital attractiveness"},
+        {"ticker": "JPY=X", "name": "USD/JPY", "label": "Carry Trade Signal", "measures": "Global risk appetite and carry trade dynamics"},
+        {"ticker": "CNH=X", "name": "USD/CNH", "label": "Dollar vs Yuan", "measures": "Chinese capital flows and real growth"},
+    ]
+
+    start_30d = (datetime.now() - timedelta(days=35)).strftime("%Y-%m-%d")
+    results = []
+
+    for pair in pairs:
+        try:
+            hist = yf.Ticker(pair["ticker"]).history(start=start_30d)
+            if len(hist) >= 2:
+                current = float(hist["Close"].iloc[-1])
+                oldest = float(hist["Close"].iloc[0])
+                change_pct = round((current - oldest) / oldest * 100, 2)
+                if change_pct > 1:
+                    trend = "strengthening"
+                elif change_pct < -1:
+                    trend = "weakening"
+                else:
+                    trend = "neutral"
+                results.append({
+                    "name": pair["name"],
+                    "label": pair["label"],
+                    "measures": pair["measures"],
+                    "current": round(current, 4),
+                    "prev": round(oldest, 4),
+                    "changePct": change_pct,
+                    "trend": trend,
+                })
+        except Exception:
+            continue
+
+    return {"pairs": results}
+
+
 @app.post("/api/create-audience")
 def create_audience():
     """One-time: create Resend Audience and return the ID."""
