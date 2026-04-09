@@ -223,6 +223,110 @@ def get_interpretation():
     }
 
 
+@app.get("/api/eu/regime")
+def get_eu_regime():
+    """Current European economic regime from Eurostat + ECB data."""
+    try:
+        from eurostat import get_all as eu_get_all
+        from eu_quadrant import get_eu_quadrant
+        from backtest_regime_eu import build_eu_regime_timeline, identify_eu_periods
+        import contextlib, io as _io
+
+        # Get live snapshot
+        with contextlib.redirect_stdout(_io.StringIO()):
+            eu_data = eu_get_all()
+        snapshot = get_eu_quadrant(eu_data)
+
+        # Get backtest timeline for consistent current regime
+        with contextlib.redirect_stdout(_io.StringIO()):
+            timeline = build_eu_regime_timeline()
+        periods = identify_eu_periods(timeline)
+
+        current_regime = periods[-1]["regime"] if periods else snapshot["quadrant"]["name"]
+        last_period = periods[-1] if periods else None
+
+        # Calculate consecutive months
+        months = 0
+        if last_period:
+            from datetime import datetime as _dt
+            start = _dt.strptime(last_period["start"], "%Y-%m-%d")
+            end = _dt.strptime(last_period["end"], "%Y-%m-%d")
+            months = (end.year - start.year) * 12 + (end.month - start.month) + 1
+
+        # Get raw growth indicators
+        def latest_val(key):
+            return eu_data.get(key, [None])[0] if eu_data.get(key) else None
+
+        return {
+            "confirmed": current_regime,
+            "snapshotRegime": snapshot["quadrant"]["name"],
+            "consecutiveMonths": months,
+            "periodStart": last_period["start"] if last_period else None,
+            "periodEnd": last_period["end"] if last_period else None,
+            "growth": snapshot["growth"],
+            "inflation": snapshot["inflation"],
+            "latest": {
+                "gdp": latest_val("gdp"),
+                "industrialProduction": latest_val("industrial_production"),
+                "retailSales": latest_val("retail_sales"),
+                "unemployment": latest_val("unemployment"),
+                "hicp": latest_val("hicp"),
+            },
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/eu/backtest")
+def get_eu_backtest():
+    """European regime history for /europe page — same format as US backtest."""
+    try:
+        from backtest_regime_eu import build_eu_regime_timeline, identify_eu_periods, REGIME_ETFS_EU
+        from datetime import datetime as _dt
+        import contextlib, io as _io
+
+        with contextlib.redirect_stdout(_io.StringIO()):
+            timeline = build_eu_regime_timeline()
+        periods = identify_eu_periods(timeline)
+
+        timeline_data = []
+        for p in periods:
+            start = p["start"]
+            end = p["end"]
+            if start == end:
+                continue
+            try:
+                s_dt = _dt.strptime(start, "%Y-%m-%d")
+                e_dt = _dt.strptime(end, "%Y-%m-%d")
+                months = max(1, (e_dt.year - s_dt.year) * 12 + (e_dt.month - s_dt.month) + 1)
+            except Exception:
+                months = 1
+
+            timeline_data.append({
+                "regime": p["regime"],
+                "start": start[:7],
+                "end": end[:7],
+                "months": months,
+            })
+
+        timeline_data.reverse()  # Most recent first
+
+        # Regime breakdown
+        regime_counts = {}
+        for t in timeline_data:
+            r = t["regime"]
+            regime_counts[r] = regime_counts.get(r, 0) + 1
+
+        return {
+            "totalRegimes": len(timeline_data),
+            "yearRange": "2005-2026",
+            "timeline": timeline_data,
+            "regimeBreakdown": regime_counts,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/currencies")
 def get_currencies():
     """Fetch currency pairs for regime confirmation."""

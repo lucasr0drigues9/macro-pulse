@@ -233,12 +233,36 @@ function ReturnBadge({ ticker, returns, label }: { ticker: string; returns: Retu
   return <span className="text-xs font-bold" style={{ color }}>{ret >= 0 ? "+" : ""}{ret}%{label ? ` ${label}` : ""}</span>;
 }
 
+type EuRegimeData = {
+  confirmed: string;
+  consecutiveMonths: number;
+  periodStart: string;
+  growth: { direction: string; score: number; detail: Record<string, number> };
+  inflation: { direction: string; score: number; detail: Record<string, number> };
+  latest: {
+    gdp: [string, number] | null;
+    industrialProduction: [string, number] | null;
+    retailSales: [string, number] | null;
+    unemployment: [string, number] | null;
+    hicp: [string, number] | null;
+  };
+};
+
+type EuBacktestEntry = { regime: string; start: string; end: string; months: number };
+type EuBacktest = { totalRegimes: number; yearRange: string; timeline: EuBacktestEntry[]; regimeBreakdown: Record<string, number> };
+
+const EU_REGIME_COLORS: Record<string, string> = {
+  Stagflation: "#ef4444", Goldilocks: "#22c55e", Reflation: "#eab308", Deflation: "#3b82f6",
+};
+
 export default function EuropePage() {
   const [thesisOpen, setThesisOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [returns, setReturns] = useState<ReturnData>({});
   const [invasionReturns, setInvasionReturns] = useState<ReturnData>({});
+  const [euRegime, setEuRegime] = useState<EuRegimeData | null>(null);
+  const [euBacktest, setEuBacktest] = useState<EuBacktest | null>(null);
 
   useEffect(() => {
     fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
@@ -248,6 +272,14 @@ export default function EuropePage() {
     fetch(apiUrl(`/api/returns?tickers=${PERF_TICKERS.join(",")}&start=2022-02-24`))
       .then((r) => r.json())
       .then((d) => setInvasionReturns(d.returns || {}))
+      .catch(() => {});
+    fetch(apiUrl("/api/eu/regime"))
+      .then((r) => r.json())
+      .then((d) => { if (!d.error) setEuRegime(d); })
+      .catch(() => {});
+    fetch(apiUrl("/api/eu/backtest"))
+      .then((r) => r.json())
+      .then((d) => { if (!d.error) setEuBacktest(d); })
       .catch(() => {});
   }, []);
 
@@ -282,92 +314,94 @@ export default function EuropePage() {
         </div>
       </section>
 
-      {/* European Economic Regime */}
+      {/* European Economic Regime - LIVE */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-xl font-bold text-[#e0e0e0]">European Economic Regime</h2>
-            <p className="text-[10px] text-[#555]">Eurostat + ECB data · Updated on release dates</p>
+            <p className="text-[10px] text-[#555]">Live from Eurostat · EU27 aggregate</p>
           </div>
+          {euRegime && <span className="text-[10px] text-[#22c55e]">● live</span>}
         </div>
 
-        {/* Regime display */}
-        <div className="text-center py-8 rounded-lg border mb-4" style={{ borderColor: "#ef444440", backgroundColor: "#ef444410" }}>
-          <div className="text-4xl sm:text-6xl font-bold tracking-tight text-[#ef4444]">
-            Stagflation
-          </div>
-          <div className="mt-2 text-sm text-[#888]">3rd consecutive month</div>
-          <div className="mt-2 text-xs text-[#555]">Growth: <span className="text-[#ef4444]">falling</span> · Inflation: <span className="text-[#ef4444]">rising</span></div>
-        </div>
+        {euRegime ? (() => {
+          const color = EU_REGIME_COLORS[euRegime.confirmed] || "#555";
+          const growth = euRegime.growth.direction;
+          const inflation = euRegime.inflation.direction;
+          const fmt = (v: [string, number] | null) => v ? v[1].toFixed(1) : "—";
+          const fmtDate = (v: [string, number] | null) => v ? v[0].slice(0, 7) : "—";
+          return (
+            <>
+              {/* Regime display */}
+              <div className="text-center py-8 rounded-lg border mb-4" style={{ borderColor: color + "40", backgroundColor: color + "10" }}>
+                <div className="text-4xl sm:text-6xl font-bold tracking-tight" style={{ color }}>
+                  {euRegime.confirmed}
+                </div>
+                <div className="mt-2 text-sm text-[#888]">Month {euRegime.consecutiveMonths}</div>
+                <div className="mt-2 text-xs text-[#555]">
+                  Growth: <span style={{ color: growth === "rising" ? "#22c55e" : "#ef4444" }}>{growth}</span>
+                  {" · "}
+                  Inflation: <span style={{ color: inflation === "rising" ? "#ef4444" : "#3b82f6" }}>{inflation}</span>
+                </div>
+              </div>
 
-        {/* Two signal cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-            <div className="text-xs text-[#555] uppercase tracking-wider mb-3">Eurostat Growth Indicators</div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-[#888]">EU GDP (Q4 2025)</span>
-                <span className="text-[#ef4444]">+0.1% QoQ</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#888]">Industrial Production</span>
-                <span className="text-[#ef4444]">-1.8% YoY</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#888]">EU Retail Sales</span>
-                <span className="text-[#ef4444]">-0.3% MoM</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#888]">EU Unemployment</span>
-                <span className="text-[#22c55e]">6.0% (stable)</span>
-              </div>
-            </div>
-            <div className="mt-3 text-xs">
-              Direction: <span className="text-[#ef4444] font-bold">Falling</span>
-              <span className="text-[#333] ml-2">3 of 4 indicators negative</span>
-            </div>
-          </div>
+              {/* Two signal cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="text-xs text-[#555] uppercase tracking-wider mb-3">Eurostat Growth Indicators</div>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-[#888]">GDP ({fmtDate(euRegime.latest.gdp)})</span>
+                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.gdp)}% QoQ</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#888]">Industrial Production ({fmtDate(euRegime.latest.industrialProduction)})</span>
+                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.industrialProduction)} index</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#888]">Retail Sales ({fmtDate(euRegime.latest.retailSales)})</span>
+                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.retailSales)} index</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#888]">Unemployment ({fmtDate(euRegime.latest.unemployment)})</span>
+                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.unemployment)}%</span>
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs">
+                    Direction: <span className="font-bold" style={{ color: growth === "rising" ? "#22c55e" : "#ef4444" }}>{growth}</span>
+                    <span className="text-[#333] ml-2">score {euRegime.growth.score}</span>
+                  </div>
+                </div>
 
-          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-            <div className="text-xs text-[#555] uppercase tracking-wider mb-3">ECB Inflation Indicators</div>
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between">
-                <span className="text-[#888]">HICP Inflation</span>
-                <span className="text-[#ef4444]">2.6% YoY (rising)</span>
+                <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="text-xs text-[#555] uppercase tracking-wider mb-3">ECB Inflation Indicator</div>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-[#888]">HICP ({fmtDate(euRegime.latest.hicp)})</span>
+                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.hicp)}% YoY</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#888]">3-month momentum</span>
+                      <span className="text-[#e0e0e0]">
+                        {euRegime.inflation.detail.hicp_change_pct != null ?
+                          (euRegime.inflation.detail.hicp_change_pct > 0 ? "+" : "") +
+                          euRegime.inflation.detail.hicp_change_pct.toFixed(1) + "%" : "—"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs">
+                    Direction: <span className="font-bold" style={{ color: inflation === "rising" ? "#ef4444" : "#3b82f6" }}>{inflation}</span>
+                    <span className="text-[#333] ml-2">
+                      {inflation === "rising" ? "HICP rate accelerating" : "HICP rate cooling"}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#888]">EU PPI</span>
-                <span className="text-[#ef4444]">+1.8% YoY (turning positive)</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#888]">ECB Deposit Rate</span>
-                <span className="text-[#888]">2.50% (held)</span>
-              </div>
-            </div>
-            <div className="mt-3 text-xs">
-              Direction: <span className="text-[#ef4444] font-bold">Rising</span>
-              <span className="text-[#333] ml-2">Energy costs driving re-acceleration</span>
-            </div>
-          </div>
-        </div>
-
-        {/* US-EU divergence/alignment banner */}
-        <div className="p-3 rounded-lg bg-[#111] border border-[#222] mb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs text-[#22c55e] font-bold">Regimes aligned</span>
-          </div>
-          <p className="text-xs text-[#888]">
-            Both the US and Europe are in <span className="text-[#ef4444] font-bold">Stagflation</span> — driven by the same energy supply shock from the Hormuz blockade. European energy dependence makes the continent more vulnerable to this specific crisis.
-          </p>
-        </div>
-
-        {/* Regime implications for thesis */}
-        <div className="p-4 rounded-lg border border-[#222]" style={{ backgroundColor: "#3b82f610", borderColor: "#3b82f630" }}>
-          <div className="text-xs font-bold text-[#3b82f6] mb-2">What this means for European Autonomy investments</div>
-          <p className="text-xs text-[#888] leading-relaxed">
-            Europe is in Stagflation — falling growth and rising inflation from the Hormuz energy shock. Energy companies (Equinor, TotalEnergies) benefit directly from elevated prices. Defence spending is counter-cyclical and continues regardless — governments rearm in any regime. The {"\u20AC"}800B ReArm Europe fund is policy-committed, not cycle-dependent. Technology companies like ASML face near-term headwinds from high rates but maintain their structural monopoly. <span className="text-[#e0e0e0] font-bold">Prioritise: Energy and Defence. Monitor: Technology and Materials.</span>
-          </p>
-        </div>
+            </>
+          );
+        })() : (
+          <div className="text-center py-12 text-sm text-[#555]">Loading European regime from Eurostat...</div>
+        )}
 
         <p className="text-xs text-[#555] mt-6 text-center">
           The companies below are positioned for European strategic autonomy regardless of the current regime — but the signal above shows which sectors are most favoured right now.
@@ -556,6 +590,59 @@ export default function EuropePage() {
           ETF and stock selection for educational purposes only. Not a recommendation to buy or sell. Always verify current availability on your broker. Currency risk applies to non-NOK positions. Not personalised financial advice.
         </p>
       </section>
+
+      {/* EU Regime History */}
+      {euBacktest && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">
+            {euBacktest.totalRegimes} Regimes. {euBacktest.yearRange}. Every European Call.
+          </h2>
+          <p className="text-xs text-[#555] mb-4">
+            Historical regime timeline built from Eurostat data using the same four-quadrant framework as the US tracker.
+          </p>
+
+          {/* Regime breakdown */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((regime) => {
+              const count = euBacktest.regimeBreakdown[regime] || 0;
+              const color = EU_REGIME_COLORS[regime];
+              const pct = Math.round((count / euBacktest.totalRegimes) * 100);
+              return (
+                <div key={regime} className="p-3 rounded-lg text-center" style={{ borderColor: color + "30", backgroundColor: color + "10", border: "1px solid" }}>
+                  <div className="text-xs text-[#888] mb-1">{regime}</div>
+                  <div className="text-lg font-bold" style={{ color }}>{count}</div>
+                  <div className="text-xs text-[#555]">{pct}% of periods</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Timeline */}
+          <h3 className="text-sm font-bold text-[#888] uppercase tracking-wider mb-3">Recent Timeline</h3>
+          <div className="space-y-2">
+            {euBacktest.timeline.slice(0, 15).map((p, i) => {
+              const color = EU_REGIME_COLORS[p.regime] || "#555";
+              return (
+                <div key={i} className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                  <span className="text-sm font-bold sm:w-28" style={{ color }}>{p.regime}</span>
+                  <span className="text-xs text-[#888]">{p.start} → {p.end}</span>
+                  <span className="text-xs text-[#555] ml-auto">{p.months}mo</span>
+                </div>
+              );
+            })}
+          </div>
+          {euBacktest.timeline.length > 15 && (
+            <div className="mt-3 text-center text-xs text-[#333]">
+              Showing 15 most recent of {euBacktest.timeline.length} European regime periods
+            </div>
+          )}
+
+          <p className="mt-4 text-xs text-[#333] text-center italic">
+            Eurostat data with 2-month regime smoothing. Same methodology as US regime tracker but using EU27 aggregate indicators.
+          </p>
+        </section>
+      )}
 
       {/* Divider */}
       <div className="px-4 py-6 max-w-5xl mx-auto text-center">
