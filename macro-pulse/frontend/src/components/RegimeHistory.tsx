@@ -11,6 +11,9 @@ type TimelineEntry = {
   profitable: boolean | null; beatSpy: boolean | null;
   signalContext?: string;
   geoRegime?: RegimeName; geoPicksReturn?: number | null;
+  allRegimeReturns?: Record<string, number | null>;
+  bestRegime?: RegimeName;
+  frameworkCorrect?: boolean;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
@@ -197,6 +200,49 @@ export default function RegimeHistory() {
                         ) : "N/A"}
                       </span>
                     </div>
+
+                    {/* All 4 regimes performance comparison */}
+                    {period.allRegimeReturns && (
+                      <div className="mt-3 p-2 rounded bg-[#111] border border-[#222]">
+                        <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">
+                          How all 4 regime picks performed during this period
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                          {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((r) => {
+                            const ret = period.allRegimeReturns?.[r];
+                            const rColor = REGIME_COLORS[r]?.color || "#555";
+                            const isBest = period.bestRegime === r;
+                            const isActual = period.regime === r;
+                            return (
+                              <div
+                                key={r}
+                                className="p-1.5 rounded"
+                                style={{
+                                  backgroundColor: isBest ? "#22c55e10" : "#0a0a0a",
+                                  border: isBest ? "1px solid #22c55e40" : "1px solid #1a1a1a",
+                                }}
+                              >
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <span className="text-[10px] font-bold" style={{ color: rColor }}>{r}</span>
+                                  {isActual && <span className="text-[8px] text-[#555]">[called]</span>}
+                                  {isBest && <span className="text-[8px] text-[#22c55e]">★</span>}
+                                </div>
+                                <div className="text-xs font-bold" style={{ color: ret === null || ret === undefined ? "#333" : ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                                  {ret === null || ret === undefined ? "—" : `${ret >= 0 ? "+" : ""}${ret.toFixed(1)}%`}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {period.frameworkCorrect !== undefined && period.frameworkCorrect !== null && (
+                          <div className="mt-2 text-[10px]" style={{ color: period.frameworkCorrect ? "#22c55e" : "#eab308" }}>
+                            {period.frameworkCorrect
+                              ? `✓ Framework called ${period.regime} and those picks had the best return`
+                              : `⚠ Framework called ${period.regime} but ${period.bestRegime} picks outperformed`}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     {period.geoRegime && (
                       <div className="mt-2 p-2 rounded bg-[#111] border border-[#222]">
                         <div className="text-[10px] text-[#3b82f6] uppercase tracking-wider mb-1">AI geopolitical layer would have flagged</div>

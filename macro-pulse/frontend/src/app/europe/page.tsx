@@ -357,7 +357,16 @@ type EuRegimeData = {
   };
 };
 
-type EuBacktestEntry = { regime: string; start: string; end: string; months: number };
+type EuBacktestEntry = {
+  regime: string;
+  start: string;
+  end: string;
+  months: number;
+  picksReturn: number | null;
+  allRegimeReturns: Record<string, number | null>;
+  bestRegime: string | null;
+  frameworkCorrect: boolean | null;
+};
 type EuBacktest = { totalRegimes: number; yearRange: string; timeline: EuBacktestEntry[]; regimeBreakdown: Record<string, number> };
 
 const EU_REGIME_COLORS: Record<string, string> = {
@@ -374,6 +383,7 @@ export default function EuropePage() {
   const [euBacktest, setEuBacktest] = useState<EuBacktest | null>(null);
   const [regimePickReturns, setRegimePickReturns] = useState<ReturnData>({});
   const [expandedRegime, setExpandedRegime] = useState<string | null>(null);
+  const [expandedTimelineIdx, setExpandedTimelineIdx] = useState<number | null>(null);
   const [europeInterpretation, setEuropeInterpretation] = useState<string | null>(null);
 
   useEffect(() => {
@@ -893,16 +903,72 @@ export default function EuropePage() {
           </div>
 
           {/* Timeline */}
-          <h3 className="text-sm font-bold text-[#888] uppercase tracking-wider mb-3">Recent Timeline</h3>
+          <h3 className="text-sm font-bold text-[#888] uppercase tracking-wider mb-3">Recent Timeline — click to compare regime picks</h3>
           <div className="space-y-2">
             {euBacktest.timeline.slice(0, 15).map((p, i) => {
               const color = EU_REGIME_COLORS[p.regime] || "#555";
+              const isExpanded = expandedTimelineIdx === i;
+              const ret = p.picksReturn;
               return (
-                <div key={i} className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                  <span className="text-sm font-bold sm:w-28" style={{ color }}>{p.regime}</span>
-                  <span className="text-xs text-[#888]">{p.start} → {p.end}</span>
-                  <span className="text-xs text-[#555] ml-auto">{p.months}mo</span>
+                <div key={i}>
+                  <div
+                    className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-3 cursor-pointer hover:bg-[#151515] transition-colors"
+                    onClick={() => setExpandedTimelineIdx(isExpanded ? null : i)}
+                  >
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                    <span className="text-sm font-bold sm:w-28" style={{ color }}>{p.regime}</span>
+                    <span className="text-xs text-[#888]">{p.start} → {p.end}</span>
+                    <span className="text-xs text-[#555]">{p.months}mo</span>
+                    <span className="ml-auto flex items-center gap-2">
+                      {ret !== null && ret !== undefined && (
+                        <span className="text-xs font-bold" style={{ color: ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                          {ret >= 0 ? "+" : ""}{ret.toFixed(1)}%
+                        </span>
+                      )}
+                      <span className="text-[#333] text-[10px]">{isExpanded ? "▲" : "▼"}</span>
+                    </span>
+                  </div>
+                  {isExpanded && p.allRegimeReturns && (
+                    <div className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] bg-[#0a0a0a]">
+                      <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">
+                        How all 4 regime picks performed during this period
+                      </div>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                        {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((r) => {
+                          const rRet = p.allRegimeReturns?.[r];
+                          const rColor = EU_REGIME_COLORS[r];
+                          const isBest = p.bestRegime === r;
+                          const isActual = p.regime === r;
+                          return (
+                            <div
+                              key={r}
+                              className="p-1.5 rounded"
+                              style={{
+                                backgroundColor: isBest ? "#22c55e10" : "#111",
+                                border: isBest ? "1px solid #22c55e40" : "1px solid #1a1a1a",
+                              }}
+                            >
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <span className="text-[10px] font-bold" style={{ color: rColor }}>{r}</span>
+                                {isActual && <span className="text-[8px] text-[#555]">[called]</span>}
+                                {isBest && <span className="text-[8px] text-[#22c55e]">★</span>}
+                              </div>
+                              <div className="text-xs font-bold" style={{ color: rRet === null || rRet === undefined ? "#333" : rRet >= 0 ? "#22c55e" : "#ef4444" }}>
+                                {rRet === null || rRet === undefined ? "—" : `${rRet >= 0 ? "+" : ""}${rRet.toFixed(1)}%`}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      {p.frameworkCorrect !== null && p.frameworkCorrect !== undefined && (
+                        <div className="mt-2 text-[10px]" style={{ color: p.frameworkCorrect ? "#22c55e" : "#eab308" }}>
+                          {p.frameworkCorrect
+                            ? `✓ Framework called ${p.regime} and those picks had the best return`
+                            : `⚠ Framework called ${p.regime} but ${p.bestRegime} picks outperformed`}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -914,7 +980,7 @@ export default function EuropePage() {
           )}
 
           <p className="mt-4 text-xs text-[#333] text-center italic">
-            Eurostat data with 2-month regime smoothing. Same methodology as US regime tracker but using EU27 aggregate indicators.
+            Eurostat data with 2-month regime smoothing. Click any period to see how all 4 regime picks actually performed.
           </p>
         </section>
       )}

@@ -332,14 +332,18 @@ def get_eu_regime():
 
 @app.get("/api/eu/backtest")
 def get_eu_backtest():
-    """European regime history for /europe page — same format as US backtest."""
+    """European regime history with returns per regime for each period."""
     try:
-        from backtest_regime_eu import build_eu_regime_timeline, identify_eu_periods, REGIME_ETFS_EU
+        from backtest_regime_eu import (
+            build_eu_regime_timeline, identify_eu_periods, REGIME_ETFS_EU, load_all_eu_prices
+        )
+        from backtest_regime import compute_portfolio_return
         from datetime import datetime as _dt
         import contextlib, io as _io
 
         with contextlib.redirect_stdout(_io.StringIO()):
             timeline = build_eu_regime_timeline()
+            prices = load_all_eu_prices()
         periods = identify_eu_periods(timeline)
 
         timeline_data = []
@@ -355,11 +359,27 @@ def get_eu_backtest():
             except Exception:
                 months = 1
 
+            # Compute returns for all 4 regime baskets during this period
+            all_returns = {}
+            for r_name in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
+                ret = compute_portfolio_return(
+                    prices, REGIME_ETFS_EU.get(r_name, []), start, end, use_next_month_end=True
+                )
+                all_returns[r_name] = ret
+
+            valid_returns = {k: v for k, v in all_returns.items() if v is not None}
+            best_regime = max(valid_returns, key=lambda k: valid_returns[k]) if valid_returns else None
+            framework_correct = best_regime == p["regime"] if best_regime else None
+
             timeline_data.append({
                 "regime": p["regime"],
                 "start": start[:7],
                 "end": end[:7],
                 "months": months,
+                "picksReturn": all_returns.get(p["regime"]),
+                "allRegimeReturns": all_returns,
+                "bestRegime": best_regime,
+                "frameworkCorrect": framework_correct,
             })
 
         timeline_data.reverse()  # Most recent first
@@ -1155,6 +1175,19 @@ def get_backtest():
             prices, BT_REGIME_ETFS.get(regime, []), start, end, use_next_month_end=True
         )
 
+        # Compute returns for ALL regime baskets for this period — shows which picks actually won
+        all_regime_returns = {}
+        for r_name in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
+            r_ret = compute_portfolio_return(
+                prices, BT_REGIME_ETFS.get(r_name, []), start, end, use_next_month_end=True
+            )
+            all_regime_returns[r_name] = r_ret
+
+        # Identify the best-performing regime for this period
+        valid_returns = {k: v for k, v in all_regime_returns.items() if v is not None}
+        best_regime = max(valid_returns, key=lambda k: valid_returns[k]) if valid_returns else None
+        framework_correct = best_regime == regime if best_regime else None
+
         profitable = (picks_ret or 0) > 0 if picks_ret is not None else None
         beat_spy = (picks_ret or 0) > (spy_ret or 0) if picks_ret is not None and spy_ret is not None else None
 
@@ -1180,6 +1213,9 @@ def get_backtest():
             "beatSpy": beat_spy,
             "signalStrength": sig[0],
             "signalContext": sig[1],
+            "allRegimeReturns": all_regime_returns,
+            "bestRegime": best_regime,
+            "frameworkCorrect": framework_correct,
         }
         if geo_regime and geo_regime != regime:
             entry["geoRegime"] = geo_regime

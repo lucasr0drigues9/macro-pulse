@@ -4,6 +4,7 @@ but using Eurostat data.
 """
 import os
 import json
+import requests
 from datetime import datetime, timedelta
 
 from eu_quadrant import get_eu_quadrant
@@ -13,13 +14,63 @@ import eurostat
 CACHE_DIR = ".macro_cache"
 BACKTEST_START = "2005-01-01"
 
-# ETF baskets per regime — European ETFs and liquid European stocks
+# ETF baskets per regime — European UCITS ETFs accessible on Nordnet
+# Must match the EU_REGIME_PICKS in the frontend europe/page.tsx
 REGIME_ETFS_EU = {
-    "Stagflation": ["IOGP.L", "EUAD.L", "NHY.OL", "GLD"],
-    "Reflation":   ["EUAD.L", "NHY.OL", "IOGP.L"],
-    "Goldilocks":  ["ASML.AS", "EUAD.L", "IWDA.AS"],
-    "Deflation":   ["GLD", "AGG", "EUAD.L"],  # EUAD counter-cyclical, works in all regimes
+    "Stagflation": ["IOGP.L", "SGLD.L", "EXH1.DE"],
+    "Reflation":   ["EXV5.DE", "EXV8.DE", "EXSA.DE"],
+    "Goldilocks":  ["EXSA.DE", "IUIT.L", "EXH9.DE"],
+    "Deflation":   ["SGLD.L", "IBGL.L", "EXH4.DE"],
 }
+
+# All unique EU tickers we need price data for
+ALL_EU_TICKERS = list(set(t for picks in REGIME_ETFS_EU.values() for t in picks))
+
+
+def fetch_eu_etf_monthly(ticker, start="2010-01-01"):
+    """Fetch monthly close prices for an EU ETF, cached for 7 days.
+    Uses direct Yahoo query2 API with user-agent (bypasses yfinance quirks)."""
+    cache_file = f"{CACHE_DIR}/backtest_etf_{ticker}.json"
+    if os.path.exists(cache_file):
+        age = datetime.now() - datetime.fromtimestamp(os.path.getmtime(cache_file))
+        if age < timedelta(days=7):
+            return json.load(open(cache_file))
+
+    print(f"  Fetching {ticker}...")
+    try:
+        url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}"
+        params = {"range": "max", "interval": "1mo"}
+        headers = {"User-Agent": "Mozilla/5.0"}
+        r = requests.get(url, params=params, headers=headers, timeout=30)
+        data = r.json()
+        result = data.get("chart", {}).get("result", [])
+        if not result:
+            return {}
+        timestamps = result[0].get("timestamp", [])
+        quote = result[0].get("indicators", {}).get("quote", [{}])[0]
+        closes = quote.get("close", [])
+        prices = {}
+        for ts, close in zip(timestamps, closes):
+            if close is None:
+                continue
+            d = datetime.fromtimestamp(ts)
+            key = d.strftime("%Y-%m-01")
+            if key >= start:
+                prices[key] = round(float(close), 2)
+        with open(cache_file, "w") as f:
+            json.dump(prices, f)
+        return prices
+    except Exception as e:
+        print(f"  Failed {ticker}: {e}")
+        return {}
+
+
+def load_all_eu_prices():
+    """Load price data for all EU regime tickers (fetches if missing)."""
+    prices = {}
+    for ticker in ALL_EU_TICKERS:
+        prices[ticker] = fetch_eu_etf_monthly(ticker)
+    return prices
 
 
 def build_eu_regime_timeline():
