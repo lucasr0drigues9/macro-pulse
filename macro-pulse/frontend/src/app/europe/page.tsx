@@ -369,6 +369,7 @@ export default function EuropePage() {
   const [euBacktest, setEuBacktest] = useState<EuBacktest | null>(null);
   const [regimePickReturns, setRegimePickReturns] = useState<ReturnData>({});
   const [expandedRegime, setExpandedRegime] = useState<string | null>(null);
+  const [europeInterpretation, setEuropeInterpretation] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
@@ -386,6 +387,10 @@ export default function EuropePage() {
     fetch(apiUrl("/api/eu/backtest"))
       .then((r) => r.json())
       .then((d) => { if (!d.error) setEuBacktest(d); })
+      .catch(() => {});
+    fetch(apiUrl("/api/interpretation"))
+      .then((r) => r.json())
+      .then((d) => { if (d.europeInterpretation) setEuropeInterpretation(d.europeInterpretation); })
       .catch(() => {});
   }, []);
 
@@ -498,6 +503,22 @@ export default function EuropePage() {
           <span className="text-xs text-[#555]">See current European regime ↓</span>
         </div>
       </section>
+
+      {/* AI Geopolitical Interpretation for Europe */}
+      {europeInterpretation && (
+        <section className="px-4 pt-4 pb-2 max-w-5xl mx-auto">
+          <div className="p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[#555]">AI Geopolitical Layer — Europe</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+            </div>
+            <p className="text-xs text-[#888] italic leading-relaxed">{europeInterpretation}</p>
+            <p className="text-[10px] text-[#333] mt-2">
+              AI interpretation of current geopolitical events and how they affect the European regime signal. Updated daily. Not personalised financial advice.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* European Economic Regime - LIVE */}
       <section className="px-4 py-8 max-w-5xl mx-auto">

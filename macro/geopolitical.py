@@ -269,6 +269,7 @@ Respond ONLY with valid JSON, no markdown:
     }
   },
   "regime_interpretation": "2-3 sentences: what the US+Europe+China regime combination means for capital flows, which specific ETFs benefit, and one ETF to watch as leading indicator for next regime change. Use real tickers only.",
+  "europe_interpretation": "3-4 sentences specifically about Europe: how current geopolitical events affect the European regime signal (energy dependence, Russia, Hormuz, US relationship), whether they confirm or contradict Eurostat data, and which European UCITS ETFs (IOGP.L, EUAD.L, EXH1.DE, EXV5.DE, EXSA.DE, EXH9.DE, SGLD.L, IBGL.L, EXH4.DE) benefit most from the current environment. Plain English, specific tickers.",
   "capital_flow": {
     "out_of": [
       {"ticker": "TICKER", "name": "ETF Name", "reason": "One sentence — why capital is leaving this asset given the specific regime combination"}
@@ -434,6 +435,13 @@ Rules for regime_interpretation:
 - Frame as historical pattern observation not personalised advice
 - Maximum 3 sentences
 - End with one specific ETF as the leading indicator
+
+Also add "europe_interpretation" — 3-4 sentences specifically about Europe:
+- How current geopolitical events affect the European regime signal
+- Europe-specific risks: energy import dependence, Russia proximity, US relationship, Hormuz crisis
+- Whether geopolitical events confirm or contradict the Eurostat regime data (Deflation)
+- Which European UCITS ETFs benefit most right now (IOGP.L, EUAD.L, EXH1.DE, EXV5.DE, EXSA.DE, EXH9.DE, SGLD.L, IBGL.L, EXH4.DE)
+- Name specific tickers, plain English
 
 Also add "capital_flow" to your JSON with "out_of" and "into" arrays.
 Each item: {{"ticker": "XYZ", "name": "Full ETF Name", "reason": "one sentence mechanism"}}
