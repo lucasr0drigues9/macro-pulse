@@ -973,7 +973,11 @@ export default function EuropePage() {
                       </div>
 
                       {/* 3-way comparison: Eurostat / AI Geo / Best */}
-                      {p.aiRegime && p.bestRegime && (
+                      {p.aiRegime && p.bestRegime && (() => {
+                        const aiReg = p.aiRegime!;
+                        const bestReg = p.bestRegime!;
+                        const bestRet = p.allRegimeReturns?.[bestReg];
+                        return (
                         <div className="mt-3 p-2 rounded bg-[#111] border border-[#222]">
                           <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Eurostat vs AI geopolitical vs actual winner</div>
                           <div className="grid grid-cols-3 gap-2">
@@ -982,7 +986,7 @@ export default function EuropePage() {
                               <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[p.regime] }}>
                                 {p.regime}
                               </div>
-                              {p.picksReturn !== null && p.picksReturn !== undefined && (
+                              {typeof p.picksReturn === "number" && (
                                 <div className="text-[10px] mt-0.5" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
                                   {p.picksReturn >= 0 ? "+" : ""}{p.picksReturn.toFixed(1)}%
                                 </div>
@@ -996,10 +1000,10 @@ export default function EuropePage() {
                               }}
                             >
                               <div className="text-[9px] text-[#3b82f6] uppercase">AI geo</div>
-                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[p.aiRegime] }}>
-                                {p.aiRegime}
+                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[aiReg] }}>
+                                {aiReg}
                               </div>
-                              {p.aiPicksReturn !== null && p.aiPicksReturn !== undefined && (
+                              {typeof p.aiPicksReturn === "number" && (
                                 <div className="text-[10px] mt-0.5" style={{ color: p.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
                                   {p.aiPicksReturn >= 0 ? "+" : ""}{p.aiPicksReturn.toFixed(1)}%
                                 </div>
@@ -1013,12 +1017,12 @@ export default function EuropePage() {
                               }}
                             >
                               <div className="text-[9px] text-[#22c55e] uppercase">Winner ★</div>
-                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[p.bestRegime] }}>
-                                {p.bestRegime}
+                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[bestReg] }}>
+                                {bestReg}
                               </div>
-                              {p.allRegimeReturns?.[p.bestRegime] !== undefined && p.allRegimeReturns[p.bestRegime] !== null && (
+                              {typeof bestRet === "number" && (
                                 <div className="text-[10px] mt-0.5 text-[#22c55e]">
-                                  +{p.allRegimeReturns[p.bestRegime]!.toFixed(1)}%
+                                  +{bestRet.toFixed(1)}%
                                 </div>
                               )}
                             </div>
@@ -1029,17 +1033,18 @@ export default function EuropePage() {
                               <span className="text-[#22c55e]">✓ Both Eurostat and AI agreed with the winner — strongest signal.</span>
                             )}
                             {!p.frameworkCorrect && p.aiCorrect && (
-                              <span className="text-[#3b82f6]">✓ AI geo would have correctly called {p.bestRegime} while Eurostat was wrong.</span>
+                              <span className="text-[#3b82f6]">✓ AI geo would have correctly called {bestReg} while Eurostat was wrong.</span>
                             )}
                             {p.frameworkCorrect && !p.aiCorrect && (
                               <span className="text-[#eab308]">⚠ Eurostat got it right but AI would have missed it.</span>
                             )}
                             {!p.frameworkCorrect && !p.aiCorrect && (
-                              <span className="text-[#ef4444]">✗ Both Eurostat and AI missed — {p.bestRegime} picks outperformed.</span>
+                              <span className="text-[#ef4444]">✗ Both Eurostat and AI missed — {bestReg} picks outperformed.</span>
                             )}
                           </div>
                         </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
