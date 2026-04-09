@@ -254,6 +254,78 @@ const ALL_REGIME_PICK_TICKERS = Array.from(new Set(
   Object.values(EU_REGIME_PICKS).flat().map((p) => p.ticker)
 ));
 
+// European playbook — what each regime means for Europe specifically
+type PlaybookEntry = {
+  description: string;
+  whatHappens: string;
+  outperform: { asset: string; why: string }[];
+  underperform: { asset: string; why: string }[];
+  historicalExamples: string[];
+};
+
+const EU_PLAYBOOK: Record<string, PlaybookEntry> = {
+  Stagflation: {
+    description: "Falling growth + rising inflation",
+    whatHappens: "Europe slows while energy and food prices surge. The ECB is trapped — raising rates kills weak demand, cutting rates fuels inflation. Europe is structurally vulnerable because of energy import dependence. The Hormuz crisis and Russia/Ukraine aftermath compound the problem. Companies with pricing power, energy exposure, or defensive cash flows win.",
+    outperform: [
+      { asset: "European Energy (IOGP.L)", why: "Equinor, TotalEnergies, Shell benefit directly from oil and gas price spikes — revenues tied to the commodity driving inflation." },
+      { asset: "Gold (SGLD.L)", why: "Classic stagflation hedge — preserves purchasing power when real rates are negative and the ECB loses credibility." },
+      { asset: "Utilities (EXH1.DE)", why: "Defensive sector with regulated pricing power — passes energy costs through to consumers. Electricity demand is inelastic." },
+    ],
+    underperform: [
+      { asset: "European Tech", why: "High-growth European stocks like ASML get crushed when rates rise and valuations compress." },
+      { asset: "Long Bonds (IBGL.L)", why: "Fixed coupons get destroyed by rising inflation. Duration is your enemy when the price level is unstable." },
+      { asset: "European Small Caps", why: "Small companies have the least pricing power, highest debt sensitivity, and weakest defences against stagflation." },
+    ],
+    historicalExamples: ["1973–1975 (oil embargo)", "2022 (Russia-Ukraine energy shock)", "2025–2026 (Hormuz/Iran war)"],
+  },
+  Goldilocks: {
+    description: "Rising growth + falling inflation",
+    whatHappens: "The best environment for European risk assets — but rare given Europe's structural inflation challenges. The ECB has room to cut rates, corporate earnings grow, and valuation multiples expand. European tech, healthcare, and broad equity all benefit. This is when Europe most resembles the US growth story.",
+    outperform: [
+      { asset: "Broad Europe (EXSA.DE)", why: "Captures the whole cyclical and growth recovery — when everything works, owning the index is the simplest bet." },
+      { asset: "Tech (IUIT.L)", why: "Low rates and growth favour premium growth stocks. European investors access tech primarily through UCITS tech ETFs." },
+      { asset: "Healthcare (EXH9.DE)", why: "European pharma giants (Novartis, Roche, Sanofi) are quality compounders that thrive in stable growth environments." },
+    ],
+    underperform: [
+      { asset: "Gold (SGLD.L)", why: "No inflation to hedge against. Opportunity cost of holding a non-yielding asset rises when equities are running." },
+      { asset: "Defensive Staples", why: "Boring defensive sectors get left behind when growth-oriented assets are rallying." },
+      { asset: "Commodities", why: "Cooling inflation means commodity prices are flat or falling. The hedge is unnecessary when the risk isn't present." },
+    ],
+    historicalExamples: ["2013–2015 (post-taper recovery)", "2017 (synchronised global growth)", "2023 Q4 (soft landing optimism)"],
+  },
+  Reflation: {
+    description: "Rising growth + rising inflation",
+    whatHappens: "The European economy is heating up and prices are rising with it. The ECB is beginning to worry but hasn't aggressively tightened yet. Cyclical sectors lead — industrials, materials, banks. Energy companies benefit from both commodity prices and demand growth. The sweet spot for European cyclicals before inflation forces the ECB to brake hard.",
+    outperform: [
+      { asset: "Oil & Gas (EXV5.DE)", why: "Direct commodity exposure during cyclical upturn. Revenues rise with both prices and volumes." },
+      { asset: "Basic Resources (EXV8.DE)", why: "Mining and materials companies benefit directly from industrial recovery and commodity demand." },
+      { asset: "Broad Europe (EXSA.DE)", why: "Cyclical sectors lead the broad index higher. STOXX 600 captures the whole rotation." },
+    ],
+    underperform: [
+      { asset: "Long Bonds", why: "Rising inflation and growth expectations push yields higher, hammering bond prices. Duration is painful." },
+      { asset: "Gold (SGLD.L)", why: "Gold underperforms when real rates are positive and growth assets offer better returns." },
+      { asset: "Defensive Sectors", why: "Utilities and staples get left behind as capital rotates into cyclicals." },
+    ],
+    historicalExamples: ["2003–2006 (housing boom)", "2009–2011 (post-GFC recovery)", "2021 (reopening trade)"],
+  },
+  Deflation: {
+    description: "Falling growth + falling inflation",
+    whatHappens: "The European economy contracts and prices fall. The ECB cuts rates aggressively, cash flows dry up, credit tightens. Defensive positioning is required — bonds, gold, consumer staples. European defence companies are counter-cyclical (policy-committed spending) and hold up better than growth sectors. This is the regime for capital preservation, not growth.",
+    outperform: [
+      { asset: "Gold (SGLD.L)", why: "Store of value when financial system stress rises. Acts as the universal hedge when credibility falters." },
+      { asset: "European Govt Bonds (IBGL.L)", why: "Bunds and OATs rally aggressively as the ECB cuts rates. Best asset class in deflation scenarios." },
+      { asset: "Consumer Staples (EXH4.DE)", why: "Food, beverage, and household goods have stable demand regardless of the cycle. Dividends provide yield." },
+    ],
+    underperform: [
+      { asset: "Oil & Gas", why: "Demand collapses with economic activity. Energy commodity prices crash as the cycle turns down." },
+      { asset: "Basic Resources", why: "Industrial metals and mining companies face the sharpest demand destruction." },
+      { asset: "European Tech", why: "Risk-off environment hurts growth stocks even when rates are falling. Earnings uncertainty dominates." },
+    ],
+    historicalExamples: ["2008–2009 (Global Financial Crisis)", "2020 Q1 (COVID crash)", "2011 Q3 (European debt crisis)"],
+  },
+};
+
 type ReturnEntry = { return: number; price: number; startPrice: number };
 type ReturnData = Record<string, ReturnEntry>;
 
@@ -296,6 +368,7 @@ export default function EuropePage() {
   const [euRegime, setEuRegime] = useState<EuRegimeData | null>(null);
   const [euBacktest, setEuBacktest] = useState<EuBacktest | null>(null);
   const [regimePickReturns, setRegimePickReturns] = useState<ReturnData>({});
+  const [expandedRegime, setExpandedRegime] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
@@ -348,14 +421,81 @@ export default function EuropePage() {
       <Nav />
       {/* Header */}
       <section className="px-4 pt-8 pb-4 max-w-5xl mx-auto">
-        <div className="text-center mt-8 mb-4">
+        <div className="text-center mt-8 mb-6">
           <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">European Regime Tracker</h1>
           <p className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold mb-3">
             Markets rotate. Europe follows its own cycle.
           </p>
-          <p className="text-sm text-[#888] max-w-xl mx-auto leading-relaxed">
-            Live European economic regime from Eurostat data — plus the structural autonomy thesis that runs alongside short-term cycles.
+          <p className="text-sm text-[#555] max-w-md mx-auto">
+            Four seasons. Four strategies. One European framework.
           </p>
+        </div>
+
+        {/* Expandable regime menu */}
+        <div className="space-y-3 mb-8">
+          {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((regime) => {
+            const color = EU_REGIME_COLORS[regime];
+            const data = EU_PLAYBOOK[regime];
+            const isOpen = expandedRegime === regime;
+
+            return (
+              <div key={regime} className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
+                <button
+                  onClick={() => setExpandedRegime(isOpen ? null : regime)}
+                  className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-[#1a1a1a] transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                    <div>
+                      <span className="font-bold text-sm" style={{ color }}>{regime}</span>
+                      <span className="text-xs text-[#555] ml-2">{data.description}</span>
+                    </div>
+                  </div>
+                  <span className="text-[#555] text-sm">{isOpen ? "−" : "+"}</span>
+                </button>
+
+                {isOpen && (
+                  <div className="px-4 pb-4 border-t border-[#181818]">
+                    <p className="text-sm text-[#888] mt-4 mb-4 leading-relaxed">{data.whatHappens}</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <h4 className="text-xs uppercase tracking-wider text-[#22c55e] mb-2">Outperform</h4>
+                        <div className="space-y-2">
+                          {data.outperform.map((a) => (
+                            <div key={a.asset} className="p-2 rounded bg-[#0a0a0a]">
+                              <div className="text-sm font-bold text-[#e0e0e0]">{a.asset}</div>
+                              <div className="text-xs text-[#888] mt-0.5">{a.why}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="text-xs uppercase tracking-wider text-[#ef4444] mb-2">Underperform</h4>
+                        <div className="space-y-2">
+                          {data.underperform.map((a) => (
+                            <div key={a.asset} className="p-2 rounded bg-[#0a0a0a]">
+                              <div className="text-sm font-bold text-[#e0e0e0]">{a.asset}</div>
+                              <div className="text-xs text-[#888] mt-0.5">{a.why}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs uppercase tracking-wider text-[#555] mb-1">Historical examples</h4>
+                      <p className="text-xs text-[#888]">{data.historicalExamples.join(" · ")}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="text-center">
+          <span className="text-xs text-[#555]">See current European regime ↓</span>
         </div>
       </section>
 
