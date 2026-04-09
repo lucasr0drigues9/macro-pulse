@@ -239,7 +239,7 @@ const EU_REGIME_PICKS: Record<string, RegimePick[]> = {
   ],
   Goldilocks: [
     { ticker: "EXSA.DE", name: "iShares STOXX Europe 600", rationale: "Broad European equity — best environment for risk assets, rising tide lifts everything" },
-    { ticker: "ASML.AS", name: "ASML Holding", rationale: "European tech monopoly — low rates and growth favour premium growth stocks" },
+    { ticker: "IUIT.L", name: "iShares S&P 500 Information Technology UCITS", rationale: "Tech exposure for European investors — low rates and growth favour premium tech" },
     { ticker: "EXH9.DE", name: "iShares STOXX Europe 600 Health Care", rationale: "European pharma giants — quality compounders thrive in stable growth environments" },
   ],
   Deflation: [
@@ -314,16 +314,21 @@ export default function EuropePage() {
       .then((r) => r.json())
       .then((d) => { if (!d.error) setEuBacktest(d); })
       .catch(() => {});
-    // Fetch live 1Y returns for all European regime picks (batches of max 10)
+  }, []);
+
+  // Fetch regime picks returns using the regime start date (only after euRegime loads)
+  useEffect(() => {
+    if (!euRegime?.periodStart) return;
+    const start = euRegime.periodStart.slice(0, 10);
     const batchSize = 10;
     for (let i = 0; i < ALL_REGIME_PICK_TICKERS.length; i += batchSize) {
       const batch = ALL_REGIME_PICK_TICKERS.slice(i, i + batchSize).join(",");
-      fetch(apiUrl(`/api/returns?tickers=${batch}`))
+      fetch(apiUrl(`/api/returns?tickers=${batch}&start=${start}`))
         .then((r) => r.json())
         .then((d) => setRegimePickReturns((prev) => ({ ...prev, ...(d.returns || {}) })))
         .catch(() => {});
     }
-  }, []);
+  }, [euRegime?.periodStart]);
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -465,7 +470,7 @@ export default function EuropePage() {
               </span>
             </div>
             <p className="text-xs text-[#555] mb-4">
-              European UCITS ETFs that historically perform in {currentRegime} — cyclical regime plays for Norwegian investors (Nordnet accessible).
+              European UCITS ETFs that historically perform in {currentRegime} — cyclical regime plays for Norwegian investors (Nordnet accessible). Returns since regime started ({euRegime.periodStart?.slice(0, 7)}).
             </p>
 
             <div className="space-y-3">
@@ -481,7 +486,7 @@ export default function EuropePage() {
                       </div>
                       {ret !== null ? (
                         <span className="text-xs font-bold shrink-0" style={{ color: ret >= 0 ? "#22c55e" : "#ef4444" }}>
-                          {ret >= 0 ? "+" : ""}{ret}% 1Y
+                          {ret >= 0 ? "+" : ""}{ret}% since regime
                         </span>
                       ) : (
                         <span className="text-[10px] text-[#333]">loading...</span>
@@ -504,7 +509,7 @@ export default function EuropePage() {
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European ETFs Across All Regimes</h2>
         <p className="text-xs text-[#555] mb-6">
-          What historically performs in each economic season. The current regime is highlighted — rotate when the regime changes.
+          What historically performs in each economic season. Returns shown are since the current regime started ({euRegime?.periodStart?.slice(0, 7) || "—"}) to show which picks are actually working now.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -542,7 +547,7 @@ export default function EuropePage() {
                           <span className="text-xs font-bold text-[#e0e0e0]">{pick.ticker}</span>
                           {ret !== null ? (
                             <span className="text-[10px] font-bold" style={{ color: ret >= 0 ? "#22c55e" : "#ef4444" }}>
-                              {ret >= 0 ? "+" : ""}{ret}% 1Y
+                              {ret >= 0 ? "+" : ""}{ret}%
                             </span>
                           ) : (
                             <span className="text-[10px] text-[#333]">—</span>
@@ -559,7 +564,7 @@ export default function EuropePage() {
         </div>
 
         <p className="text-xs text-[#555] mt-4 text-center italic">
-          All UCITS-compliant ETFs, accessible on Nordnet. 1-year returns from Yahoo Finance.
+          All UCITS-compliant ETFs, accessible on Nordnet. Returns since current regime started, live from Yahoo Finance.
         </p>
       </section>
 
