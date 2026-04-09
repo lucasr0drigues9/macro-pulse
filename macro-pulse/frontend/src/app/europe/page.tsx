@@ -222,6 +222,38 @@ function SectorCard({ sector, companies, catalysts }: {
 
 const EU_TICKERS = ["EUAD.L", "IOGP.L", "ASML.AS", "NHY.OL"];
 const PERF_TICKERS = ["RHM.DE", "EUAD.L", "SAF.PA", "ASML.AS", "IOGP.L", "SPY", "NHY.OL"];
+
+// European regime ETF picks — UCITS ETFs accessible on Nordnet for Norwegian investors
+// These are cyclical regime plays, NOT the strategic autonomy thesis
+type RegimePick = { ticker: string; name: string; rationale: string };
+const EU_REGIME_PICKS: Record<string, RegimePick[]> = {
+  Stagflation: [
+    { ticker: "IOGP.L", name: "iShares Oil & Gas Exploration UCITS", rationale: "European energy majors (Equinor, TotalEnergies, Shell) — direct beneficiaries of energy price spikes" },
+    { ticker: "SGLD.L", name: "Invesco Physical Gold ETC", rationale: "Gold in GBP — classic stagflation hedge, preserves purchasing power when real rates are negative" },
+    { ticker: "EXH1.DE", name: "iShares STOXX Europe 600 Utilities", rationale: "Defensive sector with pricing power — passes energy costs through to consumers" },
+  ],
+  Reflation: [
+    { ticker: "EXV5.DE", name: "iShares STOXX Europe 600 Oil & Gas", rationale: "Energy cyclicals lead when growth and inflation are both rising — direct commodity exposure" },
+    { ticker: "EXV8.DE", name: "iShares STOXX Europe 600 Basic Resources", rationale: "Mining and materials — industrial recovery drives commodity demand" },
+    { ticker: "EXSA.DE", name: "iShares STOXX Europe 600", rationale: "Broad European equity — captures the whole cyclical recovery" },
+  ],
+  Goldilocks: [
+    { ticker: "EXSA.DE", name: "iShares STOXX Europe 600", rationale: "Broad European equity — best environment for risk assets, rising tide lifts everything" },
+    { ticker: "ASML.AS", name: "ASML Holding", rationale: "European tech monopoly — low rates and growth favour premium growth stocks" },
+    { ticker: "EXH9.DE", name: "iShares STOXX Europe 600 Health Care", rationale: "European pharma giants — quality compounders thrive in stable growth environments" },
+  ],
+  Deflation: [
+    { ticker: "SGLD.L", name: "Invesco Physical Gold ETC", rationale: "Gold holds value when financial system stress rises — universal safe haven" },
+    { ticker: "IBGL.L", name: "iShares Core Euro Govt Bond UCITS", rationale: "European government bonds rally when growth and inflation both fall — ECB cuts rates" },
+    { ticker: "EXH4.DE", name: "iShares STOXX Europe 600 Food & Beverage", rationale: "Consumer staples — stable demand and dividends when the economy contracts" },
+  ],
+};
+
+// All tickers we need live 1Y returns for (deduped)
+const ALL_REGIME_PICK_TICKERS = Array.from(new Set(
+  Object.values(EU_REGIME_PICKS).flat().map((p) => p.ticker)
+));
+
 type ReturnEntry = { return: number; price: number; startPrice: number };
 type ReturnData = Record<string, ReturnEntry>;
 
@@ -263,6 +295,7 @@ export default function EuropePage() {
   const [invasionReturns, setInvasionReturns] = useState<ReturnData>({});
   const [euRegime, setEuRegime] = useState<EuRegimeData | null>(null);
   const [euBacktest, setEuBacktest] = useState<EuBacktest | null>(null);
+  const [regimePickReturns, setRegimePickReturns] = useState<ReturnData>({});
 
   useEffect(() => {
     fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
@@ -280,6 +313,12 @@ export default function EuropePage() {
     fetch(apiUrl("/api/eu/backtest"))
       .then((r) => r.json())
       .then((d) => { if (!d.error) setEuBacktest(d); })
+      .catch(() => {});
+    // Fetch live 1Y returns for all European regime picks (two batches of max 10)
+    const batch1 = ALL_REGIME_PICK_TICKERS.slice(0, 10).join(",");
+    fetch(apiUrl(`/api/returns?tickers=${batch1}`))
+      .then((r) => r.json())
+      .then((d) => setRegimePickReturns((prev) => ({ ...prev, ...(d.returns || {}) })))
       .catch(() => {});
   }, []);
 
@@ -403,10 +442,60 @@ export default function EuropePage() {
           <div className="text-center py-12 text-sm text-[#555]">Loading European regime from Eurostat...</div>
         )}
 
-        <p className="text-xs text-[#555] mt-6 text-center">
-          The companies below are positioned for European strategic autonomy regardless of the current regime — but the signal above shows which sectors are most favoured right now.
-        </p>
       </section>
+
+      {/* Current Regime Picks — European ETFs that historically perform in this regime */}
+      {euRegime && (() => {
+        const currentRegime = euRegime.confirmed;
+        const picks = EU_REGIME_PICKS[currentRegime] || [];
+        const regimeColor = EU_REGIME_COLORS[currentRegime] || "#555";
+        if (picks.length === 0) return null;
+
+        return (
+          <section className="px-4 py-8 max-w-5xl mx-auto">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-xl font-bold text-[#e0e0e0]">
+                Current Regime Picks
+              </h2>
+              <span className="text-xs px-2 py-0.5 rounded font-bold" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>
+                {currentRegime}
+              </span>
+            </div>
+            <p className="text-xs text-[#555] mb-4">
+              European UCITS ETFs that historically perform in {currentRegime} — cyclical regime plays for Norwegian investors (Nordnet accessible).
+            </p>
+
+            <div className="space-y-3">
+              {picks.map((pick) => {
+                const data = regimePickReturns[pick.ticker];
+                const ret = data ? data["return"] : null;
+                return (
+                  <div key={pick.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <span className="text-sm font-bold text-[#e0e0e0]">{pick.ticker}</span>
+                        <span className="text-xs text-[#555] ml-2">{pick.name}</span>
+                      </div>
+                      {ret !== null ? (
+                        <span className="text-xs font-bold shrink-0" style={{ color: ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                          {ret >= 0 ? "+" : ""}{ret}% 1Y
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-[#333]">loading...</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#888] leading-relaxed">{pick.rationale}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-xs text-[#555] mt-4 text-center italic">
+              These are short-term regime plays. The strategic autonomy positions below are structural multi-year themes that work across regimes.
+            </p>
+          </section>
+        );
+      })()}
 
       {/* Thesis */}
       <section className="px-4 pb-8 max-w-5xl mx-auto">
