@@ -995,18 +995,27 @@ export default function EuropePage() {
                             <div
                               className="p-2 rounded"
                               style={{
-                                backgroundColor: p.aiDiffersFromFred ? "#3b82f610" : "#0a0a0a",
-                                border: p.aiDiffersFromFred ? "1px solid #3b82f630" : "1px solid transparent",
+                                backgroundColor: p.aiDiffersFromFred ? "#3b82f615" : "#0a0a0a",
+                                border: p.aiDiffersFromFred ? "1px solid #3b82f640" : "1px solid transparent",
                               }}
                             >
                               <div className="text-[9px] text-[#3b82f6] uppercase">AI geo</div>
-                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[aiReg] }}>
-                                {aiReg}
-                              </div>
-                              {typeof p.aiPicksReturn === "number" && (
-                                <div className="text-[10px] mt-0.5" style={{ color: p.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
-                                  {p.aiPicksReturn >= 0 ? "+" : ""}{p.aiPicksReturn.toFixed(1)}%
-                                </div>
+                              {p.aiDiffersFromFred ? (
+                                <>
+                                  <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[aiReg] }}>
+                                    {aiReg}
+                                  </div>
+                                  {typeof p.aiPicksReturn === "number" && (
+                                    <div className="text-[10px] mt-0.5" style={{ color: p.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                                      {p.aiPicksReturn >= 0 ? "+" : ""}{p.aiPicksReturn.toFixed(1)}%
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-xs font-bold text-[#555]">= same as data</div>
+                                  <div className="text-[10px] mt-0.5 text-[#333]">no override</div>
+                                </>
                               )}
                             </div>
                             <div

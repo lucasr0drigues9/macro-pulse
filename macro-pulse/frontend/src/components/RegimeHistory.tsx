@@ -273,18 +273,27 @@ export default function RegimeHistory() {
                           <div
                             className="p-2 rounded"
                             style={{
-                              backgroundColor: period.aiDiffersFromFred ? "#3b82f610" : "#0a0a0a",
-                              border: period.aiDiffersFromFred ? "1px solid #3b82f630" : "1px solid transparent",
+                              backgroundColor: period.aiDiffersFromFred ? "#3b82f615" : "#0a0a0a",
+                              border: period.aiDiffersFromFred ? "1px solid #3b82f640" : "1px solid transparent",
                             }}
                           >
                             <div className="text-[9px] text-[#3b82f6] uppercase">AI geo</div>
-                            <div className="text-xs font-bold" style={{ color: REGIME_COLORS[aiReg]?.color }}>
-                              {aiReg}
-                            </div>
-                            {typeof period.aiPicksReturn === "number" && (
-                              <div className="text-[10px] mt-0.5" style={{ color: period.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
-                                {period.aiPicksReturn >= 0 ? "+" : ""}{period.aiPicksReturn.toFixed(1)}%
-                              </div>
+                            {period.aiDiffersFromFred ? (
+                              <>
+                                <div className="text-xs font-bold" style={{ color: REGIME_COLORS[aiReg]?.color }}>
+                                  {aiReg}
+                                </div>
+                                {typeof period.aiPicksReturn === "number" && (
+                                  <div className="text-[10px] mt-0.5" style={{ color: period.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                                    {period.aiPicksReturn >= 0 ? "+" : ""}{period.aiPicksReturn.toFixed(1)}%
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <>
+                                <div className="text-xs font-bold text-[#555]">= same as data</div>
+                                <div className="text-[10px] mt-0.5 text-[#333]">no override</div>
+                              </>
                             )}
                           </div>
 
