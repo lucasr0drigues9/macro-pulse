@@ -405,7 +405,7 @@ def get_eu_backtest():
             ai_correct = best_regime == ai_regime if best_regime else None
 
             # Load double-miss explanation if both framework and AI were wrong
-            double_miss_reason = None
+            double_miss = None
             if framework_correct is False and ai_correct is False:
                 try:
                     dm_path = os.path.join(MACRO, ".macro_cache", "double_miss_eu.json")
@@ -414,7 +414,7 @@ def get_eu_backtest():
                             dm_cache = _json.load(_dmf)
                         dm_entry = dm_cache.get(start[:7])
                         if dm_entry:
-                            double_miss_reason = dm_entry.get("reason")
+                            double_miss = dm_entry.get("structured")
                 except Exception:
                     pass
 
@@ -433,7 +433,7 @@ def get_eu_backtest():
                 "aiPicksReturn": ai_picks_return,
                 "aiDiffersFromFred": geo_override is not None and geo_override != p["regime"],
                 "aiCorrect": ai_correct,
-                "doubleMissReason": double_miss_reason,
+                "doubleMiss": double_miss,
             })
 
         timeline_data.reverse()  # Most recent first
@@ -1262,7 +1262,7 @@ def get_backtest():
         ai_correct = best_regime == ai_regime if best_regime else None
 
         # Load double-miss explanation if both framework and AI were wrong
-        double_miss_reason = None
+        double_miss = None
         if framework_correct is False and ai_correct is False:
             try:
                 dm_path = os.path.join(MACRO, ".macro_cache", "double_miss_us.json")
@@ -1271,7 +1271,7 @@ def get_backtest():
                         dm_cache = json.load(_dmf)
                     dm_entry = dm_cache.get(start[:7])
                     if dm_entry:
-                        double_miss_reason = dm_entry.get("reason")
+                        double_miss = dm_entry.get("structured")
             except Exception:
                 pass
 
@@ -1293,7 +1293,7 @@ def get_backtest():
             "aiPicksReturn": ai_picks_ret,
             "aiDiffersFromFred": geo_regime is not None and geo_regime != regime,
             "aiCorrect": ai_correct,
-            "doubleMissReason": double_miss_reason,
+            "doubleMiss": double_miss,
         }
         # Keep legacy fields for compatibility
         if geo_regime and geo_regime != regime:

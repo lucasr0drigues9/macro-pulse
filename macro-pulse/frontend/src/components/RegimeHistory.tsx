@@ -18,7 +18,7 @@ type TimelineEntry = {
   aiPicksReturn?: number | null;
   aiDiffersFromFred?: boolean;
   aiCorrect?: boolean;
-  doubleMissReason?: string | null;
+  doubleMiss?: { event: string; blind_spot: string; winner_dynamic: string } | null;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
@@ -335,14 +335,25 @@ export default function RegimeHistory() {
                         </div>
 
                         {/* Post-mortem for double-miss periods */}
-                        {!period.frameworkCorrect && !period.aiCorrect && period.doubleMissReason && (
+                        {!period.frameworkCorrect && !period.aiCorrect && period.doubleMiss && (
                           <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#ef444425]">
-                            <div className="text-[9px] text-[#ef4444] uppercase tracking-wider mb-1">
-                              Why both layers missed
+                            <div className="text-[9px] text-[#ef4444] uppercase tracking-wider mb-2">
+                              Post-mortem — why both layers missed
                             </div>
-                            <p className="text-[10px] text-[#888] leading-relaxed italic">
-                              {period.doubleMissReason}
-                            </p>
+                            <div className="space-y-1.5">
+                              <div className="text-[10px] leading-relaxed">
+                                <span className="text-[#e0e0e0] font-bold">What happened: </span>
+                                <span className="text-[#888]">{period.doubleMiss.event}</span>
+                              </div>
+                              <div className="text-[10px] leading-relaxed">
+                                <span className="text-[#e0e0e0] font-bold">Blind spot: </span>
+                                <span className="text-[#888]">{period.doubleMiss.blind_spot}</span>
+                              </div>
+                              <div className="text-[10px] leading-relaxed">
+                                <span className="text-[#e0e0e0] font-bold">Why {bestReg} won: </span>
+                                <span className="text-[#888]">{period.doubleMiss.winner_dynamic}</span>
+                              </div>
+                            </div>
                           </div>
                         )}
                       </div>

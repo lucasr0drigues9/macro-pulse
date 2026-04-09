@@ -17,9 +17,9 @@ CACHE_DIR = ".macro_cache"
 
 
 def ask_claude(prompt: str) -> str:
-    """Call Claude for a short explanation. Returns the text."""
+    """Call Claude for a structured post-mortem. Returns raw text."""
     if not ANTHROPIC_KEY:
-        return "(no API key configured)"
+        return ""
     try:
         r = requests.post(
             "https://api.anthropic.com/v1/messages",
@@ -30,21 +30,52 @@ def ask_claude(prompt: str) -> str:
             },
             json={
                 "model": "claude-sonnet-4-20250514",
-                "max_tokens": 250,
+                "max_tokens": 400,
                 "messages": [{"role": "user", "content": prompt}],
             },
             timeout=30,
         )
         data = r.json()
         if data.get("error"):
-            return f"(API error: {data['error'].get('message', 'unknown')})"
+            return ""
         return "".join(b.get("text", "") for b in data.get("content", [])).strip()
-    except Exception as e:
-        return f"(error: {e})"
+    except Exception:
+        return ""
+
+
+def parse_structured(text: str) -> dict | None:
+    """Extract {event, blind_spot, winner_dynamic} from Claude response.
+    Tries fenced JSON first, then bare JSON object."""
+    if not text:
+        return None
+    import re
+    # Try fenced block
+    m = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    if m:
+        try:
+            obj = json.loads(m.group(1))
+        except Exception:
+            obj = None
+    else:
+        obj = None
+    if obj is None:
+        # Try bare braces
+        m = re.search(r"\{.*\}", text, re.DOTALL)
+        if m:
+            try:
+                obj = json.loads(m.group(0))
+            except Exception:
+                return None
+    if not isinstance(obj, dict):
+        return None
+    required = ("event", "blind_spot", "winner_dynamic")
+    if not all(k in obj and isinstance(obj[k], str) and obj[k].strip() for k in required):
+        return None
+    return {k: obj[k].strip() for k in required}
 
 
 def format_period_prompt(region: str, period: dict) -> str:
-    """Build a prompt asking Claude to explain a double-miss period."""
+    """Build a prompt asking Claude for a structured post-mortem."""
     start = period["start"]
     end = period["end"]
     fwd_regime = period["regime"]
@@ -52,16 +83,35 @@ def format_period_prompt(region: str, period: dict) -> str:
     best = period["bestRegime"]
     all_returns = period.get("allRegimeReturns", {})
 
-    framework_name = "FRED" if region == "US" else "Eurostat"
+    data_source = "FRED" if region == "US" else "Eurostat"
     returns_summary = ", ".join(
         f"{r}: {v:.1f}%" for r, v in all_returns.items() if v is not None
     )
+    region_label = "United States" if region == "US" else "Europe"
 
-    return f"""In the {region} from {start} to {end}, our economic regime framework called {fwd_regime} based on {framework_name} data, and the AI geopolitical layer also called {ai_regime}. But the best-performing regime picks during this period were {best}.
+    return f"""You are writing a post-mortem for a macro regime call that missed.
 
-Period returns by regime basket: {returns_summary}
+Context:
+- Period: {start} to {end}, {region_label}
+- {data_source} economic data called: {fwd_regime}
+- AI geopolitical layer called: {ai_regime}
+- Actual best-performing regime basket: {best}
+- Returns by regime basket: {returns_summary}
 
-In 2-3 sentences, explain specifically WHY both the data framework and the AI layer missed this call. What event, policy shift, or market dynamic drove {best} picks to outperform while everyone expected something different? Be specific — name events, policies, or market conditions. Don't hedge. This is a post-mortem of a framework failure, so be direct about what was missed."""
+Write a structured post-mortem as a JSON object with exactly three fields:
+1. "event" — ONE concrete sentence naming the specific event, policy, or market shift that actually drove the period. Name dates, policies, people, or numbers. Max 25 words.
+2. "blind_spot" — ONE sentence explaining why both the data and the AI layer failed to see it. What were they anchored on that turned out wrong? Max 25 words.
+3. "winner_dynamic" — ONE sentence explaining the mechanism: why did {best} picks specifically outperform? (What assets were in that basket, what drove them up?) Max 25 words.
+
+Hard rules:
+- Output ONLY the JSON object, nothing else. No preamble, no markdown fences, no commentary.
+- Every sentence must be concrete. Ban the words "framework", "layer", "signal", "missed", "failed to account", "however", "while".
+- Lead with nouns (events, policies, tickers, numbers), not abstractions.
+- Do not hedge. Be direct.
+- If you don't know the real reason, infer the most likely cause from the returns pattern — but still commit to a specific story.
+
+Example output format:
+{{"event": "Fed cut rates 50bps in Sep 2024 as inflation fell below 2.5% and unemployment climbed to 4.3%.", "blind_spot": "Both readings were anchored on Q2 growth momentum and sticky services inflation, missing the speed of the labour market cooling.", "winner_dynamic": "Reflation picks (XLE, XLI, commodities) rallied as rate cuts priced in a soft landing and a weaker dollar lifted industrials."}}"""
 
 
 def generate_for_region(region: str, timeline: list, output_file: str):
@@ -85,19 +135,39 @@ def generate_for_region(region: str, timeline: list, output_file: str):
     new_count = 0
     for p in double_miss:
         key = p["start"]
-        if key in cache and cache[key].get("reason"):
-            continue  # Already generated
+        # Skip only if we already have a structured entry
+        if (
+            key in cache
+            and isinstance(cache[key].get("structured"), dict)
+            and cache[key]["structured"].get("event")
+        ):
+            continue
 
         print(f"  {key}: {p['regime']} → winner {p['bestRegime']}")
         prompt = format_period_prompt(region, p)
-        reason = ask_claude(prompt)
+
+        # Retry up to 2 times if parsing fails
+        structured = None
+        raw_text = ""
+        for attempt in range(2):
+            raw_text = ask_claude(prompt)
+            structured = parse_structured(raw_text)
+            if structured:
+                break
+            print(f"    (retry — unparseable response)")
+
+        if not structured:
+            print(f"    ✗ failed to parse after 2 attempts")
+            structured = None
+
         cache[key] = {
             "start": p["start"],
             "end": p["end"],
             "framework": p["regime"],
             "ai": p.get("aiRegime", p["regime"]),
             "winner": p["bestRegime"],
-            "reason": reason,
+            "structured": structured,
+            "raw": raw_text,
             "generatedAt": datetime.now().isoformat(),
         }
         new_count += 1
