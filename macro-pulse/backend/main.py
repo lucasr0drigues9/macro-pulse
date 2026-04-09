@@ -332,7 +332,7 @@ def get_eu_regime():
 
 @app.get("/api/eu/backtest")
 def get_eu_backtest():
-    """European regime history with returns per regime for each period."""
+    """European regime history with returns per regime + AI geo overrides."""
     try:
         from backtest_regime_eu import (
             build_eu_regime_timeline, identify_eu_periods, REGIME_ETFS_EU, load_all_eu_prices
@@ -340,6 +340,32 @@ def get_eu_backtest():
         from backtest_regime import compute_portfolio_return
         from datetime import datetime as _dt
         import contextlib, io as _io
+
+        # AI geopolitical overrides for key European events
+        # Format: start_month (YYYY-MM) -> (strength, context, ai_regime_override_or_None)
+        EU_SIGNAL_STRENGTH = {
+            "2007-01": ("MODERATE", "Subprime crisis starting. European banks exposed to US mortgage assets.", "Stagflation"),
+            "2008-06": ("STRONG", "Pre-Lehman stress. Northern Rock had already failed. Credit crunch deepening.", "Deflation"),
+            "2008-11": ("STRONG", "Lehman collapse hit Europe hard. Iceland banking crisis. Deepest recession since WW2.", None),
+            "2009-11": ("MODERATE", "Greek debt crisis emerging. Early signs of European sovereign stress.", "Deflation"),
+            "2010-04": ("STRONG", "Greek bailout triggered sovereign debt crisis. Portugal, Ireland, Spain contagion.", "Stagflation"),
+            "2011-08": ("STRONG", "European debt crisis peak. Italy and Spain under attack. ECB buying bonds.", None),
+            "2012-07": ("STRONG", "Draghi 'whatever it takes' saved the euro. Turning point for European risk assets.", "Reflation"),
+            "2014-11": ("MODERATE", "Oil crash + Russia sanctions after Crimea. ECB QE approaching.", "Stagflation"),
+            "2015-03": ("STRONG", "ECB QE launched. Euro weakened. Deflation fear genuine but stimulus flowing.", "Reflation"),
+            "2016-04": ("MODERATE", "Brexit vote uncertainty building. Oil recovering. Mixed signals.", "Goldilocks"),
+            "2016-07": ("STRONG", "Brexit vote shock. Sterling collapsed. European integration under threat.", "Deflation"),
+            "2019-11": ("WEAK", "Brief pre-COVID weakness. Trade war concerns. No major European catalyst.", None),
+            "2020-04": ("STRONG", "COVID lockdowns. Italy and Spain hit first and hardest. Economy collapsed.", None),
+            "2020-07": ("STRONG", "EU recovery fund agreed — first joint fiscal action. Reopening boost.", "Reflation"),
+            "2021-11": ("MODERATE", "Energy prices spiking. Natural gas crisis building. Russia restricting flows.", "Stagflation"),
+            "2022-04": ("STRONG", "Russia invaded Ukraine Feb 2022. European energy crisis. ECB behind the curve.", "Stagflation"),
+            "2022-10": ("STRONG", "European gas storage filled, prices falling, recession fears dominant.", "Deflation"),
+            "2023-04": ("MODERATE", "Post-banking-crisis stability. ECB still hiking. Inflation sticky.", None),
+            "2024-03": ("MODERATE", "ECB signaling rate cuts. Germany struggling. Mixed signals.", "Deflation"),
+            "2024-12": ("STRONG", "Trump tariff threats + Iran tensions + German political crisis.", "Stagflation"),
+            "2025-07": ("STRONG", "Post-Iran war recovery attempt. Energy stabilising. ECB cutting.", "Reflation"),
+        }
 
         with contextlib.redirect_stdout(_io.StringIO()):
             timeline = build_eu_regime_timeline()
@@ -371,6 +397,13 @@ def get_eu_backtest():
             best_regime = max(valid_returns, key=lambda k: valid_returns[k]) if valid_returns else None
             framework_correct = best_regime == p["regime"] if best_regime else None
 
+            # AI geopolitical signal for this period
+            sig = EU_SIGNAL_STRENGTH.get(start[:7], ("MODERATE", "", None))
+            geo_override = sig[2] if len(sig) > 2 else None
+            ai_regime = geo_override if geo_override else p["regime"]
+            ai_picks_return = all_returns.get(ai_regime)
+            ai_correct = best_regime == ai_regime if best_regime else None
+
             timeline_data.append({
                 "regime": p["regime"],
                 "start": start[:7],
@@ -380,6 +413,12 @@ def get_eu_backtest():
                 "allRegimeReturns": all_returns,
                 "bestRegime": best_regime,
                 "frameworkCorrect": framework_correct,
+                "signalStrength": sig[0],
+                "signalContext": sig[1],
+                "aiRegime": ai_regime,
+                "aiPicksReturn": ai_picks_return,
+                "aiDiffersFromFred": geo_override is not None and geo_override != p["regime"],
+                "aiCorrect": ai_correct,
             })
 
         timeline_data.reverse()  # Most recent first
@@ -1202,6 +1241,11 @@ def get_backtest():
                 prices, BT_REGIME_ETFS.get(geo_regime, []), start, end, use_next_month_end=True
             )
 
+        # Always return an AI regime call (default to FRED regime when AI agrees)
+        ai_regime = geo_regime if geo_regime else regime
+        ai_picks_ret = all_regime_returns.get(ai_regime)
+        ai_correct = best_regime == ai_regime if best_regime else None
+
         entry = {
             "regime": regime,
             "start": start[:7],
@@ -1216,10 +1260,15 @@ def get_backtest():
             "allRegimeReturns": all_regime_returns,
             "bestRegime": best_regime,
             "frameworkCorrect": framework_correct,
+            "aiRegime": ai_regime,
+            "aiPicksReturn": ai_picks_ret,
+            "aiDiffersFromFred": geo_regime is not None and geo_regime != regime,
+            "aiCorrect": ai_correct,
         }
+        # Keep legacy fields for compatibility
         if geo_regime and geo_regime != regime:
             entry["geoRegime"] = geo_regime
-            entry["geoPicksReturn"] = geo_picks_ret
+            entry["geoPicksReturn"] = all_regime_returns.get(geo_regime)
         timeline_data.append(entry)
 
     timeline_data.reverse()  # Most recent first

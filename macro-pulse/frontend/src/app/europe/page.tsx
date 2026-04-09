@@ -366,6 +366,12 @@ type EuBacktestEntry = {
   allRegimeReturns: Record<string, number | null>;
   bestRegime: string | null;
   frameworkCorrect: boolean | null;
+  signalStrength?: string;
+  signalContext?: string;
+  aiRegime?: string;
+  aiPicksReturn?: number | null;
+  aiDiffersFromFred?: boolean;
+  aiCorrect?: boolean | null;
 };
 type EuBacktest = { totalRegimes: number; yearRange: string; timeline: EuBacktestEntry[]; regimeBreakdown: Record<string, number> };
 
@@ -930,6 +936,11 @@ export default function EuropePage() {
                   </div>
                   {isExpanded && p.allRegimeReturns && (
                     <div className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] bg-[#0a0a0a]">
+                      {/* Signal context if present */}
+                      {p.signalContext && (
+                        <p className="text-xs text-[#888] mb-3 italic leading-relaxed">{p.signalContext}</p>
+                      )}
+
                       <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">
                         How all 4 regime picks performed during this period
                       </div>
@@ -960,11 +971,73 @@ export default function EuropePage() {
                           );
                         })}
                       </div>
-                      {p.frameworkCorrect !== null && p.frameworkCorrect !== undefined && (
-                        <div className="mt-2 text-[10px]" style={{ color: p.frameworkCorrect ? "#22c55e" : "#eab308" }}>
-                          {p.frameworkCorrect
-                            ? `✓ Framework called ${p.regime} and those picks had the best return`
-                            : `⚠ Framework called ${p.regime} but ${p.bestRegime} picks outperformed`}
+
+                      {/* 3-way comparison: Eurostat / AI Geo / Best */}
+                      {p.aiRegime && p.bestRegime && (
+                        <div className="mt-3 p-2 rounded bg-[#111] border border-[#222]">
+                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Eurostat vs AI geopolitical vs actual winner</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="p-2 rounded bg-[#0a0a0a]">
+                              <div className="text-[9px] text-[#555] uppercase">Eurostat data</div>
+                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[p.regime] }}>
+                                {p.regime}
+                              </div>
+                              {p.picksReturn !== null && p.picksReturn !== undefined && (
+                                <div className="text-[10px] mt-0.5" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                                  {p.picksReturn >= 0 ? "+" : ""}{p.picksReturn.toFixed(1)}%
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className="p-2 rounded"
+                              style={{
+                                backgroundColor: p.aiDiffersFromFred ? "#3b82f610" : "#0a0a0a",
+                                border: p.aiDiffersFromFred ? "1px solid #3b82f630" : "1px solid transparent",
+                              }}
+                            >
+                              <div className="text-[9px] text-[#3b82f6] uppercase">AI geo</div>
+                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[p.aiRegime] }}>
+                                {p.aiRegime}
+                              </div>
+                              {p.aiPicksReturn !== null && p.aiPicksReturn !== undefined && (
+                                <div className="text-[10px] mt-0.5" style={{ color: p.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                                  {p.aiPicksReturn >= 0 ? "+" : ""}{p.aiPicksReturn.toFixed(1)}%
+                                </div>
+                              )}
+                            </div>
+                            <div
+                              className="p-2 rounded"
+                              style={{
+                                backgroundColor: "#22c55e10",
+                                border: "1px solid #22c55e40",
+                              }}
+                            >
+                              <div className="text-[9px] text-[#22c55e] uppercase">Winner ★</div>
+                              <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[p.bestRegime] }}>
+                                {p.bestRegime}
+                              </div>
+                              {p.allRegimeReturns?.[p.bestRegime] !== undefined && p.allRegimeReturns[p.bestRegime] !== null && (
+                                <div className="text-[10px] mt-0.5 text-[#22c55e]">
+                                  +{p.allRegimeReturns[p.bestRegime]!.toFixed(1)}%
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="mt-2 text-[10px] leading-relaxed">
+                            {p.frameworkCorrect && p.aiCorrect && (
+                              <span className="text-[#22c55e]">✓ Both Eurostat and AI agreed with the winner — strongest signal.</span>
+                            )}
+                            {!p.frameworkCorrect && p.aiCorrect && (
+                              <span className="text-[#3b82f6]">✓ AI geo would have correctly called {p.bestRegime} while Eurostat was wrong.</span>
+                            )}
+                            {p.frameworkCorrect && !p.aiCorrect && (
+                              <span className="text-[#eab308]">⚠ Eurostat got it right but AI would have missed it.</span>
+                            )}
+                            {!p.frameworkCorrect && !p.aiCorrect && (
+                              <span className="text-[#ef4444]">✗ Both Eurostat and AI missed — {p.bestRegime} picks outperformed.</span>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
