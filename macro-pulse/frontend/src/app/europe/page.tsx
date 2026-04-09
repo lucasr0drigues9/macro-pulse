@@ -347,16 +347,14 @@ export default function EuropePage() {
     <main className="min-h-screen">
       <Nav />
       {/* Header */}
-      <section className="px-4 pt-8 pb-8 max-w-5xl mx-auto">
-        <div className="text-center mt-8 mb-6">
-          <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">Macro Pulse</h1>
-          <p className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold mb-3">European Strategic Autonomy</p>
-          <p className="text-sm text-[#888] max-w-lg mx-auto leading-relaxed">
-            Tracking Europe&apos;s structural shift toward independence in defence, energy, technology,
-            finance, and critical materials. A multi-year investment theme independent of short-term macro regimes.
+      <section className="px-4 pt-8 pb-4 max-w-5xl mx-auto">
+        <div className="text-center mt-8 mb-4">
+          <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">European Regime Tracker</h1>
+          <p className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold mb-3">
+            Markets rotate. Europe follows its own cycle.
           </p>
-          <p className="text-xs text-[#555] mt-3 italic">
-            This is a long-term structural theme tracker, not a short-term regime signal. These positions are held across multiple macro regimes.
+          <p className="text-sm text-[#888] max-w-xl mx-auto leading-relaxed">
+            Live European economic regime from Eurostat data — plus the structural autonomy thesis that runs alongside short-term cycles.
           </p>
         </div>
       </section>
@@ -568,6 +566,70 @@ export default function EuropePage() {
         </p>
       </section>
 
+      {/* EU Regime History */}
+      {euBacktest && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">
+            {euBacktest.totalRegimes} Regimes. {euBacktest.yearRange}. Every European Call.
+          </h2>
+          <p className="text-xs text-[#555] mb-4">
+            Historical regime timeline built from Eurostat data using the same four-quadrant framework as the US tracker.
+          </p>
+
+          {/* Regime breakdown */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((regime) => {
+              const count = euBacktest.regimeBreakdown[regime] || 0;
+              const color = EU_REGIME_COLORS[regime];
+              const pct = Math.round((count / euBacktest.totalRegimes) * 100);
+              return (
+                <div key={regime} className="p-3 rounded-lg text-center" style={{ borderColor: color + "30", backgroundColor: color + "10", border: "1px solid" }}>
+                  <div className="text-xs text-[#888] mb-1">{regime}</div>
+                  <div className="text-lg font-bold" style={{ color }}>{count}</div>
+                  <div className="text-xs text-[#555]">{pct}% of periods</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Timeline */}
+          <h3 className="text-sm font-bold text-[#888] uppercase tracking-wider mb-3">Recent Timeline</h3>
+          <div className="space-y-2">
+            {euBacktest.timeline.slice(0, 15).map((p, i) => {
+              const color = EU_REGIME_COLORS[p.regime] || "#555";
+              return (
+                <div key={i} className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                  <span className="text-sm font-bold sm:w-28" style={{ color }}>{p.regime}</span>
+                  <span className="text-xs text-[#888]">{p.start} → {p.end}</span>
+                  <span className="text-xs text-[#555] ml-auto">{p.months}mo</span>
+                </div>
+              );
+            })}
+          </div>
+          {euBacktest.timeline.length > 15 && (
+            <div className="mt-3 text-center text-xs text-[#333]">
+              Showing 15 most recent of {euBacktest.timeline.length} European regime periods
+            </div>
+          )}
+
+          <p className="mt-4 text-xs text-[#333] text-center italic">
+            Eurostat data with 2-month regime smoothing. Same methodology as US regime tracker but using EU27 aggregate indicators.
+          </p>
+        </section>
+      )}
+
+      {/* Transition to autonomy thesis */}
+      <div className="px-4 pt-12 pb-4 max-w-5xl mx-auto text-center">
+        <div className="border-t border-[#222] pt-8">
+          <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">Beyond the Cycle</h2>
+          <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold">European Strategic Autonomy</p>
+          <p className="text-xs text-[#555] mt-2 max-w-lg mx-auto">
+            The structural 3-10 year investment theme that runs alongside short-term regimes.
+          </p>
+        </div>
+      </div>
+
       {/* Thesis */}
       <section className="px-4 pb-8 max-w-5xl mx-auto">
         <div className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
@@ -750,59 +812,6 @@ export default function EuropePage() {
           ETF and stock selection for educational purposes only. Not a recommendation to buy or sell. Always verify current availability on your broker. Currency risk applies to non-NOK positions. Not personalised financial advice.
         </p>
       </section>
-
-      {/* EU Regime History */}
-      {euBacktest && (
-        <section className="px-4 py-8 max-w-5xl mx-auto">
-          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">
-            {euBacktest.totalRegimes} Regimes. {euBacktest.yearRange}. Every European Call.
-          </h2>
-          <p className="text-xs text-[#555] mb-4">
-            Historical regime timeline built from Eurostat data using the same four-quadrant framework as the US tracker.
-          </p>
-
-          {/* Regime breakdown */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-            {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((regime) => {
-              const count = euBacktest.regimeBreakdown[regime] || 0;
-              const color = EU_REGIME_COLORS[regime];
-              const pct = Math.round((count / euBacktest.totalRegimes) * 100);
-              return (
-                <div key={regime} className="p-3 rounded-lg text-center" style={{ borderColor: color + "30", backgroundColor: color + "10", border: "1px solid" }}>
-                  <div className="text-xs text-[#888] mb-1">{regime}</div>
-                  <div className="text-lg font-bold" style={{ color }}>{count}</div>
-                  <div className="text-xs text-[#555]">{pct}% of periods</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Timeline */}
-          <h3 className="text-sm font-bold text-[#888] uppercase tracking-wider mb-3">Recent Timeline</h3>
-          <div className="space-y-2">
-            {euBacktest.timeline.slice(0, 15).map((p, i) => {
-              const color = EU_REGIME_COLORS[p.regime] || "#555";
-              return (
-                <div key={i} className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-3">
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                  <span className="text-sm font-bold sm:w-28" style={{ color }}>{p.regime}</span>
-                  <span className="text-xs text-[#888]">{p.start} → {p.end}</span>
-                  <span className="text-xs text-[#555] ml-auto">{p.months}mo</span>
-                </div>
-              );
-            })}
-          </div>
-          {euBacktest.timeline.length > 15 && (
-            <div className="mt-3 text-center text-xs text-[#333]">
-              Showing 15 most recent of {euBacktest.timeline.length} European regime periods
-            </div>
-          )}
-
-          <p className="mt-4 text-xs text-[#333] text-center italic">
-            Eurostat data with 2-month regime smoothing. Same methodology as US regime tracker but using EU27 aggregate indicators.
-          </p>
-        </section>
-      )}
 
       {/* Divider */}
       <div className="px-4 py-6 max-w-5xl mx-auto text-center">
