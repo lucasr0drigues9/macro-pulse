@@ -226,44 +226,67 @@ def get_interpretation():
 
 @app.get("/api/eu/regime")
 def get_eu_regime():
-    """Current European economic regime from Eurostat + ECB data."""
+    """Current European economic regime — geo override logic matches US tracker.
+
+    Priority:
+    1. AI geopolitical signal (if different from snapshot, and clear catalyst)
+    2. Eurostat snapshot (latest values across all series — most current data)
+    3. Backtest timeline (fallback only)
+    """
     try:
         from eurostat import get_all as eu_get_all
         from eu_quadrant import get_eu_quadrant
         from backtest_regime_eu import build_eu_regime_timeline, identify_eu_periods
-        import contextlib, io as _io
+        import contextlib, io as _io, re
 
-        # Get live snapshot
+        # Get live snapshot (uses latest available data from each series)
         with contextlib.redirect_stdout(_io.StringIO()):
             eu_data = eu_get_all()
         snapshot = get_eu_quadrant(eu_data)
+        eurostat_regime = snapshot["quadrant"]["name"]
 
-        # Get backtest timeline for consistent current regime
+        # Get AI geopolitical regime from synthesis cache
+        synthesis = _load_synthesis() or {}
+        europe_text = synthesis.get("europe_interpretation", "") or ""
+        geo_match = re.search(r"\b(Stagflation|Goldilocks|Reflation|Deflation)\b", europe_text)
+        geo_regime = geo_match.group(1) if geo_match else None
+
+        # Apply override logic: geo overrides when different
+        lag_warning = False
+        if geo_regime and geo_regime != eurostat_regime:
+            confirmed = geo_regime
+            lag_warning = True
+        else:
+            confirmed = eurostat_regime
+
+        # Get backtest timeline for historical context only
         with contextlib.redirect_stdout(_io.StringIO()):
             timeline = build_eu_regime_timeline()
         periods = identify_eu_periods(timeline)
 
-        current_regime = periods[-1]["regime"] if periods else snapshot["quadrant"]["name"]
-        last_period = periods[-1] if periods else None
-
-        # Calculate consecutive months
-        months = 0
-        if last_period:
+        # Calculate consecutive months since the regime was first detected
+        # Use snapshot regime for counting — walk back through timeline from end
+        months = 1
+        if periods:
             from datetime import datetime as _dt
-            start = _dt.strptime(last_period["start"], "%Y-%m-%d")
-            end = _dt.strptime(last_period["end"], "%Y-%m-%d")
-            months = (end.year - start.year) * 12 + (end.month - start.month) + 1
+            last = periods[-1]
+            if last["regime"] == confirmed:
+                start = _dt.strptime(last["start"], "%Y-%m-%d")
+                end = _dt.strptime(last["end"], "%Y-%m-%d")
+                months = (end.year - start.year) * 12 + (end.month - start.month) + 1
 
-        # Get raw growth indicators
+        # Get raw growth indicators (latest available value per series)
         def latest_val(key):
             return eu_data.get(key, [None])[0] if eu_data.get(key) else None
 
         return {
-            "confirmed": current_regime,
-            "snapshotRegime": snapshot["quadrant"]["name"],
+            "confirmed": confirmed,
+            "eurostatRegime": eurostat_regime,
+            "geoRegime": geo_regime,
+            "lagWarning": lag_warning,
             "consecutiveMonths": months,
-            "periodStart": last_period["start"] if last_period else None,
-            "periodEnd": last_period["end"] if last_period else None,
+            "periodStart": periods[-1]["start"] if periods else None,
+            "periodEnd": periods[-1]["end"] if periods else None,
             "growth": snapshot["growth"],
             "inflation": snapshot["inflation"],
             "latest": {

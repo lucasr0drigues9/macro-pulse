@@ -339,6 +339,9 @@ function ReturnBadge({ ticker, returns, label }: { ticker: string; returns: Retu
 
 type EuRegimeData = {
   confirmed: string;
+  eurostatRegime: string;
+  geoRegime: string | null;
+  lagWarning: boolean;
   consecutiveMonths: number;
   periodStart: string;
   growth: { direction: string; score: number; detail: Record<string, number> };
@@ -509,14 +512,15 @@ export default function EuropePage() {
         {euRegime && <div className="text-center mb-4"><span className="text-xs text-[#22c55e]">● live data</span></div>}
 
         {euRegime ? (() => {
+          // confirmed = AI override if geo differs, else eurostatRegime
           const color = EU_REGIME_COLORS[euRegime.confirmed] || "#555";
           const fmt = (v: [string, number] | null) => v ? v[1].toFixed(1) : "—";
-          // Parse the AI's European regime call from the interpretation text
-          const geoText = europeInterpretation || "";
-          const geoRegimeMatch = geoText.match(/Stagflation|Goldilocks|Reflation|Deflation/);
-          const geoRegime = geoRegimeMatch ? geoRegimeMatch[0] : euRegime.confirmed;
+          const geoRegime = euRegime.geoRegime || euRegime.confirmed;
+          const eurostatRegime = euRegime.eurostatRegime;
           const geoColor = EU_REGIME_COLORS[geoRegime] || "#555";
-          const diverge = geoRegime !== euRegime.confirmed;
+          const eurostatColor = EU_REGIME_COLORS[eurostatRegime] || "#555";
+          const diverge = euRegime.lagWarning;
+          const geoText = europeInterpretation || "";
 
           return (
             <>
@@ -550,8 +554,8 @@ export default function EuropePage() {
                 </div>
                 <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
                   <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — Eurostat Data</div>
-                  <div className="text-xl font-bold" style={{ color }}>
-                    {euRegime.confirmed}
+                  <div className="text-xl font-bold" style={{ color: eurostatColor }}>
+                    {eurostatRegime}
                   </div>
                   <div className="text-xs text-[#555] mt-1">
                     GDP {fmt(euRegime.latest.gdp)}% · HICP {fmt(euRegime.latest.hicp)}% · Unemployment {fmt(euRegime.latest.unemployment)}%
