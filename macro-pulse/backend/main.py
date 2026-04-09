@@ -248,8 +248,9 @@ def get_eu_regime():
         # Get AI geopolitical regime from synthesis cache
         synthesis = _load_synthesis() or {}
         europe_text = synthesis.get("europe_interpretation", "") or ""
-        geo_match = re.search(r"\b(Stagflation|Goldilocks|Reflation|Deflation)\b", europe_text)
-        geo_regime = geo_match.group(1) if geo_match else None
+        # Case-insensitive match — AI often writes "stagflation regime" in lowercase
+        geo_match = re.search(r"\b(stagflation|goldilocks|reflation|deflation)\b", europe_text, re.IGNORECASE)
+        geo_regime = geo_match.group(1).capitalize() if geo_match else None
 
         # Apply override logic: geo overrides when different
         lag_warning = False
