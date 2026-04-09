@@ -66,7 +66,7 @@ export default function RegimeHistory() {
       <div className="p-3 rounded bg-[#111] border border-[#222] mb-6">
         <p className="text-xs text-[#e0e0e0] font-bold mb-2">FRED vs AI — why context matters</p>
         <p className="text-xs text-[#888] leading-relaxed">
-          FRED data can lag reality by months. When a major event happens (war, pandemic, policy shift), the <span className="text-[#a855f7]">AI geopolitical layer</span> detects the real regime before FRED catches up. Click any period to see the narrative at the time — and where the AI would have overridden FRED with a better call.
+          FRED data can lag reality by months. When a major event happens (war, pandemic, policy shift), the <span className="text-[#9ca3af]">AI geopolitical layer</span> detects the real regime before FRED catches up. Click any period to see the narrative at the time — and where the AI would have overridden FRED with a better call.
         </p>
       </div>
 
@@ -139,7 +139,7 @@ export default function RegimeHistory() {
                   {hasGeoOverride && (
                     <span
                       className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
-                      style={{ backgroundColor: "rgba(168,85,247,0.15)", color: "#a855f7", border: "1px solid rgba(168,85,247,0.3)" }}
+                      style={{ backgroundColor: "rgba(156,163,175,0.15)", color: "#9ca3af", border: "1px solid rgba(156,163,175,0.3)" }}
                     >
                       AI: {period.geoRegime}
                     </span>
@@ -273,11 +273,11 @@ export default function RegimeHistory() {
                           <div
                             className="p-2 rounded"
                             style={{
-                              backgroundColor: period.aiDiffersFromFred ? "#a855f715" : "#0a0a0a",
-                              border: period.aiDiffersFromFred ? "1px solid #a855f740" : "1px solid transparent",
+                              backgroundColor: period.aiDiffersFromFred ? "#9ca3af15" : "#0a0a0a",
+                              border: period.aiDiffersFromFred ? "1px solid #9ca3af40" : "1px solid transparent",
                             }}
                           >
-                            <div className="text-[9px] text-[#a855f7] uppercase">AI geo</div>
+                            <div className="text-[9px] text-[#9ca3af] uppercase">AI geo</div>
                             {period.aiDiffersFromFred ? (
                               <>
                                 <div className="text-xs font-bold" style={{ color: REGIME_COLORS[aiReg]?.color }}>
@@ -323,7 +323,7 @@ export default function RegimeHistory() {
                             <span className="text-[#22c55e]">✓ Both FRED and AI agreed with the winner — strongest signal.</span>
                           )}
                           {!period.frameworkCorrect && period.aiCorrect && (
-                            <span className="text-[#a855f7]">✓ AI geo layer would have correctly called {bestReg} while FRED was wrong.</span>
+                            <span className="text-[#9ca3af]">✓ AI geo layer would have correctly called {bestReg} while FRED was wrong.</span>
                           )}
                           {period.frameworkCorrect && !period.aiCorrect && (
                             <span className="text-[#eab308]">⚠ FRED got it right but AI would have missed it.</span>
@@ -374,7 +374,7 @@ export default function RegimeHistory() {
             return withOverride.length > 0 ? (
               <div className="flex justify-between">
                 <span className="text-[#555]">AI override beat FRED</span>
-                <span className="text-[#a855f7] font-bold">
+                <span className="text-[#9ca3af] font-bold">
                   {aiBetter.length}/{withOverride.length} ({Math.round(aiBetter.length / withOverride.length * 100)}%)
                 </span>
               </div>

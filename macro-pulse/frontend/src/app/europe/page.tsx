@@ -995,11 +995,11 @@ export default function EuropePage() {
                             <div
                               className="p-2 rounded"
                               style={{
-                                backgroundColor: p.aiDiffersFromFred ? "#a855f715" : "#0a0a0a",
-                                border: p.aiDiffersFromFred ? "1px solid #a855f740" : "1px solid transparent",
+                                backgroundColor: p.aiDiffersFromFred ? "#9ca3af15" : "#0a0a0a",
+                                border: p.aiDiffersFromFred ? "1px solid #9ca3af40" : "1px solid transparent",
                               }}
                             >
-                              <div className="text-[9px] text-[#a855f7] uppercase">AI geo</div>
+                              <div className="text-[9px] text-[#9ca3af] uppercase">AI geo</div>
                               {p.aiDiffersFromFred ? (
                                 <>
                                   <div className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[aiReg] }}>
@@ -1042,7 +1042,7 @@ export default function EuropePage() {
                               <span className="text-[#22c55e]">✓ Both Eurostat and AI agreed with the winner — strongest signal.</span>
                             )}
                             {!p.frameworkCorrect && p.aiCorrect && (
-                              <span className="text-[#a855f7]">✓ AI geo would have correctly called {bestReg} while Eurostat was wrong.</span>
+                              <span className="text-[#9ca3af]">✓ AI geo would have correctly called {bestReg} while Eurostat was wrong.</span>
                             )}
                             {p.frameworkCorrect && !p.aiCorrect && (
                               <span className="text-[#eab308]">⚠ Eurostat got it right but AI would have missed it.</span>
