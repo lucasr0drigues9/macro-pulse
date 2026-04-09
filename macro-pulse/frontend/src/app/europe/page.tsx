@@ -750,37 +750,88 @@ export default function EuropePage() {
         );
       })()}
 
-      {/* All European Regime Picks — Reference */}
+      {/* All European Regime Picks — Reference with performance comparison */}
+      {(() => {
+        // Compute average return per regime since the current regime started
+        const regimeAvgs: Record<string, number | null> = {};
+        (["Stagflation", "Reflation", "Goldilocks", "Deflation"] as const).forEach((regime) => {
+          const picks = EU_REGIME_PICKS[regime] || [];
+          const returns = picks
+            .map((p) => regimePickReturns[p.ticker]?.return)
+            .filter((r): r is number => typeof r === "number");
+          regimeAvgs[regime] = returns.length > 0
+            ? Math.round((returns.reduce((a, b) => a + b, 0) / returns.length) * 10) / 10
+            : null;
+        });
+        const validAvgs = Object.entries(regimeAvgs).filter(([, v]) => v !== null) as [string, number][];
+        const winner = validAvgs.length > 0
+          ? validAvgs.reduce((a, b) => (a[1] > b[1] ? a : b))[0]
+          : null;
+
+        return (
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European ETFs Across All Regimes</h2>
-        <p className="text-xs text-[#555] mb-6">
-          What historically performs in each economic season. Returns shown are since the current regime started ({euRegime?.periodStart?.slice(0, 7) || "—"}) to show which picks are actually working now.
+        <p className="text-xs text-[#555] mb-4">
+          What historically performs in each economic season. Returns shown are since the current regime started ({euRegime?.periodStart?.slice(0, 7) || "—"}) — the average per regime shows which framework call is actually working right now.
         </p>
+
+        {/* Leader summary */}
+        {winner && (
+          <div className="p-3 rounded-lg mb-4 border" style={{
+            backgroundColor: EU_REGIME_COLORS[winner] + "10",
+            borderColor: EU_REGIME_COLORS[winner] + "40",
+          }}>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-xs text-[#555]">Currently winning:</span>
+              <span className="text-sm font-bold" style={{ color: EU_REGIME_COLORS[winner] }}>{winner}</span>
+              <span className="text-xs font-bold" style={{ color: EU_REGIME_COLORS[winner] }}>
+                avg {regimeAvgs[winner]! >= 0 ? "+" : ""}{regimeAvgs[winner]}%
+              </span>
+            </div>
+            <p className="text-[10px] text-[#555]">
+              The {winner} picks have the best average return since the current regime started. If this doesn&apos;t match the current signal above, the framework&apos;s call may be wrong — or the underperforming regime&apos;s picks may be set up for a catch-up rally.
+            </p>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {(["Stagflation", "Reflation", "Goldilocks", "Deflation"] as const).map((regime) => {
             const picks = EU_REGIME_PICKS[regime] || [];
             const color = EU_REGIME_COLORS[regime];
             const isCurrent = euRegime?.confirmed === regime;
+            const isWinner = winner === regime;
+            const avg = regimeAvgs[regime];
             return (
               <div
                 key={regime}
                 className="p-4 rounded-lg"
                 style={{
-                  backgroundColor: isCurrent ? color + "10" : "#111",
-                  border: `1px solid ${isCurrent ? color + "60" : "#222"}`,
+                  backgroundColor: isCurrent || isWinner ? color + "10" : "#111",
+                  border: `1px solid ${isCurrent || isWinner ? color + "60" : "#222"}`,
                 }}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
                     <span className="text-sm font-bold" style={{ color }}>{regime}</span>
+                    {avg !== null && (
+                      <span className="text-xs font-bold" style={{ color: avg >= 0 ? "#22c55e" : "#ef4444" }}>
+                        avg {avg >= 0 ? "+" : ""}{avg}%
+                      </span>
+                    )}
                   </div>
-                  {isCurrent && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color, backgroundColor: color + "20" }}>
-                      NOW
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {isWinner && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color: "#22c55e", backgroundColor: "#22c55e20" }}>
+                        LEADING
+                      </span>
+                    )}
+                    {isCurrent && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color, backgroundColor: color + "20" }}>
+                        NOW
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   {picks.map((pick) => {
@@ -812,6 +863,8 @@ export default function EuropePage() {
           All UCITS-compliant ETFs, accessible on Nordnet. Returns since current regime started, live from Yahoo Finance.
         </p>
       </section>
+        );
+      })()}
 
       {/* EU Regime History */}
       {euBacktest && (
