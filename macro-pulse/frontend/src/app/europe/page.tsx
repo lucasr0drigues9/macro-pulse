@@ -504,111 +504,94 @@ export default function EuropePage() {
         </div>
       </section>
 
-      {/* AI Geopolitical Interpretation for Europe */}
-      {europeInterpretation && (
-        <section className="px-4 pt-4 pb-2 max-w-5xl mx-auto">
-          <div className="p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-[#555]">AI Geopolitical Layer — Europe</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
-            </div>
-            <p className="text-xs text-[#888] italic leading-relaxed">{europeInterpretation}</p>
-            <p className="text-[10px] text-[#333] mt-2">
-              AI interpretation of current geopolitical events and how they affect the European regime signal. Updated daily. Not personalised financial advice.
-            </p>
-          </div>
-        </section>
-      )}
-
-      {/* European Economic Regime - LIVE */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-bold text-[#e0e0e0]">European Economic Regime</h2>
-            <p className="text-[10px] text-[#555]">Live from Eurostat · EU27 aggregate</p>
-          </div>
-          {euRegime && <span className="text-[10px] text-[#22c55e]">● live</span>}
-        </div>
+      {/* European Regime Indicator — mirrors US RegimeIndicator layout */}
+      <section className="px-4 py-12 max-w-5xl mx-auto">
+        {euRegime && <div className="text-center mb-4"><span className="text-xs text-[#22c55e]">● live data</span></div>}
 
         {euRegime ? (() => {
           const color = EU_REGIME_COLORS[euRegime.confirmed] || "#555";
-          const growth = euRegime.growth.direction;
-          const inflation = euRegime.inflation.direction;
           const fmt = (v: [string, number] | null) => v ? v[1].toFixed(1) : "—";
-          const fmtDate = (v: [string, number] | null) => v ? v[0].slice(0, 7) : "—";
+          // Parse the AI's European regime call from the interpretation text
+          const geoText = europeInterpretation || "";
+          const geoRegimeMatch = geoText.match(/Stagflation|Goldilocks|Reflation|Deflation/);
+          const geoRegime = geoRegimeMatch ? geoRegimeMatch[0] : euRegime.confirmed;
+          const geoColor = EU_REGIME_COLORS[geoRegime] || "#555";
+          const diverge = geoRegime !== euRegime.confirmed;
+
           return (
             <>
-              {/* Regime display */}
-              <div className="text-center py-8 rounded-lg border mb-4" style={{ borderColor: color + "40", backgroundColor: color + "10" }}>
-                <div className="text-4xl sm:text-6xl font-bold tracking-tight" style={{ color }}>
+              {/* Main regime display */}
+              <div
+                className="text-center py-12 rounded-lg border"
+                style={{ borderColor: color + "40", backgroundColor: color + "10" }}
+              >
+                <div className="text-6xl sm:text-8xl font-bold tracking-tight" style={{ color }}>
                   {euRegime.confirmed}
                 </div>
-                <div className="mt-2 text-sm text-[#888]">Month {euRegime.consecutiveMonths}</div>
-                <div className="mt-2 text-xs text-[#555]">
-                  Growth: <span style={{ color: growth === "rising" ? "#22c55e" : "#ef4444" }}>{growth}</span>
-                  {" · "}
-                  Inflation: <span style={{ color: inflation === "rising" ? "#ef4444" : "#3b82f6" }}>{inflation}</span>
+                <div className="mt-3 text-lg text-[#888]">
+                  Month {euRegime.consecutiveMonths}
+                </div>
+                <div className="mt-2">
+                  <span className="text-xs text-[#555]">See picks and allocation below</span>
                 </div>
               </div>
 
-              {/* Two signal cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              {/* Two signal cards — AI Geo + Eurostat */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
                 <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                  <div className="text-xs text-[#555] uppercase tracking-wider mb-3">Eurostat Growth Indicators</div>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-[#888]">GDP ({fmtDate(euRegime.latest.gdp)})</span>
-                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.gdp)}% QoQ</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#888]">Industrial Production ({fmtDate(euRegime.latest.industrialProduction)})</span>
-                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.industrialProduction)} index</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#888]">Retail Sales ({fmtDate(euRegime.latest.retailSales)})</span>
-                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.retailSales)} index</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#888]">Unemployment ({fmtDate(euRegime.latest.unemployment)})</span>
-                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.unemployment)}%</span>
-                    </div>
+                  <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Regime Detection — Geopolitical AI</div>
+                  <div className="text-xl font-bold" style={{ color: geoColor }}>
+                    {geoRegime}
                   </div>
-                  <div className="mt-3 text-xs">
-                    Direction: <span className="font-bold" style={{ color: growth === "rising" ? "#22c55e" : "#ef4444" }}>{growth}</span>
-                    <span className="text-[#333] ml-2">score {euRegime.growth.score}</span>
+                  <div className="text-xs text-[#555] mt-1 leading-relaxed">
+                    {geoText ? geoText.slice(0, 180) + (geoText.length > 180 ? "..." : "") : "Loading AI synthesis..."}
                   </div>
+                  <div className="text-xs text-[#333] mt-2">Updated daily · AI geopolitical layer</div>
                 </div>
-
                 <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                  <div className="text-xs text-[#555] uppercase tracking-wider mb-3">ECB Inflation Indicator</div>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between">
-                      <span className="text-[#888]">HICP ({fmtDate(euRegime.latest.hicp)})</span>
-                      <span className="text-[#e0e0e0]">{fmt(euRegime.latest.hicp)}% YoY</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-[#888]">3-month momentum</span>
-                      <span className="text-[#e0e0e0]">
-                        {euRegime.inflation.detail.hicp_change_pct != null ?
-                          (euRegime.inflation.detail.hicp_change_pct > 0 ? "+" : "") +
-                          euRegime.inflation.detail.hicp_change_pct.toFixed(1) + "%" : "—"}
-                      </span>
-                    </div>
+                  <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — Eurostat Data</div>
+                  <div className="text-xl font-bold" style={{ color }}>
+                    {euRegime.confirmed}
                   </div>
-                  <div className="mt-3 text-xs">
-                    Direction: <span className="font-bold" style={{ color: inflation === "rising" ? "#ef4444" : "#3b82f6" }}>{inflation}</span>
-                    <span className="text-[#333] ml-2">
-                      {inflation === "rising" ? "HICP rate accelerating" : "HICP rate cooling"}
-                    </span>
+                  <div className="text-xs text-[#555] mt-1">
+                    GDP {fmt(euRegime.latest.gdp)}% · HICP {fmt(euRegime.latest.hicp)}% · Unemployment {fmt(euRegime.latest.unemployment)}%
                   </div>
+                  {diverge && (
+                    <div className="text-xs text-[#eab308] mt-2">
+                      Eurostat and the geopolitical layer currently disagree. The AI layer overrides Eurostat when a clear real-world catalyst exists. Eurostat data lags by 1-3 months.
+                    </div>
+                  )}
+                  <div className="text-xs text-[#333] mt-2">Latest data: {euRegime.latest.hicp?.[0]?.slice(0, 7) || "—"}</div>
                 </div>
               </div>
+
+              {/* How to read explanation */}
+              <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
+                <div className="text-xs text-[#888] leading-relaxed">
+                  <span className="text-[#e0e0e0] font-bold">How to read these signals:</span> The AI geopolitical layer detects European regime changes in real time by analysing current events (ECB policy, energy crises, elections). Eurostat data is a <span className="text-[#eab308]">confirmation signal</span> — it tells you the regime has been confirmed by hard data, not that it&apos;s starting. When both signals agree, conviction is highest.
+                </div>
+                {diverge && (
+                  <div className="text-xs text-[#eab308] mt-2 pt-2 border-t border-[#222]">
+                    Eurostat and the AI geopolitical layer currently disagree. When there is a clear real-world catalyst (war, Hormuz shock, ECB pivot), the geopolitical signal tends to lead Eurostat by months. Eurostat will likely catch up once newer economic data is released.
+                  </div>
+                )}
+              </div>
+
+              {/* Full AI interpretation — matches US "Why this regime was flagged" */}
+              {europeInterpretation && (
+                <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="text-sm font-bold text-[#e0e0e0]">Why {geoRegime} was flagged by the AI</div>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+                  </div>
+                  <p className="text-xs text-[#888] italic leading-relaxed">{europeInterpretation}</p>
+                </div>
+              )}
             </>
           );
         })() : (
           <div className="text-center py-12 text-sm text-[#555]">Loading European regime from Eurostat...</div>
         )}
-
       </section>
 
       {/* Current Regime Picks — European ETFs that historically perform in this regime */}
