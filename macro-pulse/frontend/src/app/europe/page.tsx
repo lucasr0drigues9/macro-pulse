@@ -696,6 +696,60 @@ export default function EuropePage() {
         );
       })()}
 
+      {/* AI-driven Picks — shown only when AI regime differs from data regime */}
+      {euRegime && euRegime.geoRegime && euRegime.geoRegime !== euRegime.eurostatRegime && (() => {
+        const aiRegime = euRegime.geoRegime;
+        const picks = EU_REGIME_PICKS[aiRegime] || [];
+        const regimeColor = EU_REGIME_COLORS[aiRegime] || "#555";
+        if (picks.length === 0) return null;
+
+        return (
+          <section className="px-4 py-8 max-w-5xl mx-auto">
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-xl font-bold text-[#e0e0e0]">
+                AI-driven Picks
+              </h2>
+              <span className="text-xs px-2 py-0.5 rounded font-bold" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>
+                {aiRegime}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI geo layer</span>
+            </div>
+            <p className="text-xs text-[#555] mb-4">
+              If you trust the AI geopolitical layer over the lagging Eurostat data, these are the European UCITS ETFs that historically perform in {aiRegime} — reasoning from current events rather than hard data.
+            </p>
+
+            <div className="space-y-3">
+              {picks.map((pick) => {
+                const data = regimePickReturns[pick.ticker];
+                const ret = data ? data["return"] : null;
+                return (
+                  <div key={pick.ticker} className="p-4 rounded-lg bg-[#111] border" style={{ borderColor: regimeColor + "30" }}>
+                    <div className="flex items-start justify-between mb-1">
+                      <div>
+                        <span className="text-sm font-bold text-[#e0e0e0]">{pick.ticker}</span>
+                        <span className="text-xs text-[#555] ml-2">{pick.name}</span>
+                      </div>
+                      {ret !== null ? (
+                        <span className="text-xs font-bold shrink-0" style={{ color: ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                          {ret >= 0 ? "+" : ""}{ret}% since regime
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-[#333]">loading...</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#888] leading-relaxed">{pick.rationale}</p>
+                  </div>
+                );
+              })}
+            </div>
+
+            <p className="text-xs text-[#555] mt-4 text-center italic">
+              The AI layer and Eurostat data currently disagree. Compare both sets of picks and decide which signal you trust more given the current environment.
+            </p>
+          </section>
+        );
+      })()}
+
       {/* All European Regime Picks — Reference */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European ETFs Across All Regimes</h2>
