@@ -248,7 +248,11 @@ export default function RegimeHistory() {
                       </div>
                     )}
                     {/* 3-way comparison: FRED data / AI geo / Best performer */}
-                    {period.aiRegime && period.bestRegime && (
+                    {period.aiRegime && period.bestRegime && (() => {
+                      const aiReg = period.aiRegime!;
+                      const bestReg = period.bestRegime!;
+                      const bestRet = period.allRegimeReturns?.[bestReg];
+                      return (
                       <div className="mt-3 p-2 rounded bg-[#111] border border-[#222]">
                         <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">FRED data vs AI geopolitical vs actual winner</div>
                         <div className="grid grid-cols-3 gap-2">
@@ -258,7 +262,7 @@ export default function RegimeHistory() {
                             <div className="text-xs font-bold" style={{ color: REGIME_COLORS[period.regime]?.color }}>
                               {period.regime}
                             </div>
-                            {period.picksReturn !== null && (
+                            {typeof period.picksReturn === "number" && (
                               <div className="text-[10px] mt-0.5" style={{ color: period.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
                                 {period.picksReturn >= 0 ? "+" : ""}{period.picksReturn.toFixed(1)}%
                               </div>
@@ -274,10 +278,10 @@ export default function RegimeHistory() {
                             }}
                           >
                             <div className="text-[9px] text-[#3b82f6] uppercase">AI geo</div>
-                            <div className="text-xs font-bold" style={{ color: REGIME_COLORS[period.aiRegime]?.color }}>
-                              {period.aiRegime}
+                            <div className="text-xs font-bold" style={{ color: REGIME_COLORS[aiReg]?.color }}>
+                              {aiReg}
                             </div>
-                            {period.aiPicksReturn !== null && period.aiPicksReturn !== undefined && (
+                            {typeof period.aiPicksReturn === "number" && (
                               <div className="text-[10px] mt-0.5" style={{ color: period.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
                                 {period.aiPicksReturn >= 0 ? "+" : ""}{period.aiPicksReturn.toFixed(1)}%
                               </div>
@@ -293,12 +297,12 @@ export default function RegimeHistory() {
                             }}
                           >
                             <div className="text-[9px] text-[#22c55e] uppercase">Actual winner ★</div>
-                            <div className="text-xs font-bold" style={{ color: REGIME_COLORS[period.bestRegime]?.color }}>
-                              {period.bestRegime}
+                            <div className="text-xs font-bold" style={{ color: REGIME_COLORS[bestReg]?.color }}>
+                              {bestReg}
                             </div>
-                            {period.allRegimeReturns?.[period.bestRegime] !== undefined && period.allRegimeReturns[period.bestRegime] !== null && (
+                            {typeof bestRet === "number" && (
                               <div className="text-[10px] mt-0.5 text-[#22c55e]">
-                                +{period.allRegimeReturns[period.bestRegime]!.toFixed(1)}%
+                                +{bestRet.toFixed(1)}%
                               </div>
                             )}
                           </div>
@@ -310,17 +314,18 @@ export default function RegimeHistory() {
                             <span className="text-[#22c55e]">✓ Both FRED and AI agreed with the winner — strongest signal.</span>
                           )}
                           {!period.frameworkCorrect && period.aiCorrect && (
-                            <span className="text-[#3b82f6]">✓ AI geo layer would have correctly called {period.bestRegime} while FRED was wrong.</span>
+                            <span className="text-[#3b82f6]">✓ AI geo layer would have correctly called {bestReg} while FRED was wrong.</span>
                           )}
                           {period.frameworkCorrect && !period.aiCorrect && (
                             <span className="text-[#eab308]">⚠ FRED got it right but AI would have missed it.</span>
                           )}
                           {!period.frameworkCorrect && !period.aiCorrect && (
-                            <span className="text-[#ef4444]">✗ Both FRED and AI missed — {period.bestRegime} picks outperformed.</span>
+                            <span className="text-[#ef4444]">✗ Both FRED and AI missed — {bestReg} picks outperformed.</span>
                           )}
                         </div>
                       </div>
-                    )}
+                      );
+                    })()}
                   </div>
                 )}
               </div>
