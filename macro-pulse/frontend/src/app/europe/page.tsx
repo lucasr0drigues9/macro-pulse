@@ -522,75 +522,107 @@ export default function EuropePage() {
           const diverge = euRegime.lagWarning;
           const geoText = europeInterpretation || "";
 
+          const diverge2 = geoRegime !== eurostatRegime;
+          void color; // kept for compile; unused now that we show two separate signs
+
           return (
             <>
-              {/* Main regime display */}
-              <div
-                className="text-center py-12 rounded-lg border"
-                style={{ borderColor: color + "40", backgroundColor: color + "10" }}
-              >
-                <div className="text-6xl sm:text-8xl font-bold tracking-tight" style={{ color }}>
-                  {euRegime.confirmed}
-                </div>
-                <div className="mt-3 text-lg text-[#888]">
-                  Month {euRegime.consecutiveMonths}
-                </div>
-                <div className="mt-2">
-                  <span className="text-xs text-[#555]">See picks and allocation below</span>
-                </div>
-              </div>
-
-              {/* Two signal cards — AI Geo + Eurostat */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-                <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                  <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Regime Detection — Geopolitical AI</div>
-                  <div className="text-xl font-bold" style={{ color: geoColor }}>
+              {/* Two big regime signs side by side — AI and Data as equals */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* AI Layer */}
+                <div
+                  className="text-center py-10 rounded-lg border"
+                  style={{ borderColor: geoColor + "40", backgroundColor: geoColor + "10" }}
+                >
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-[#555] mb-2">AI Geopolitical Layer</div>
+                  <div className="text-4xl sm:text-5xl font-bold tracking-tight" style={{ color: geoColor }}>
                     {geoRegime}
                   </div>
-                  <div className="text-xs text-[#555] mt-1 leading-relaxed">
-                    {geoText ? geoText.slice(0, 180) + (geoText.length > 180 ? "..." : "") : "Loading AI synthesis..."}
-                  </div>
-                  <div className="text-xs text-[#333] mt-2">Updated daily · AI geopolitical layer</div>
+                  <div className="mt-3 text-xs text-[#555]">Based on current events</div>
                 </div>
-                <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                  <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Confirmation Signal — Eurostat Data</div>
-                  <div className="text-xl font-bold" style={{ color: eurostatColor }}>
+
+                {/* Eurostat Data */}
+                <div
+                  className="text-center py-10 rounded-lg border"
+                  style={{ borderColor: eurostatColor + "40", backgroundColor: eurostatColor + "10" }}
+                >
+                  <div className="text-[10px] uppercase tracking-[0.2em] text-[#555] mb-2">Eurostat Data</div>
+                  <div className="text-4xl sm:text-5xl font-bold tracking-tight" style={{ color: eurostatColor }}>
                     {eurostatRegime}
                   </div>
-                  <div className="text-xs text-[#555] mt-1">
-                    GDP {fmt(euRegime.latest.gdp)}% · HICP {fmt(euRegime.latest.hicp)}% · Unemployment {fmt(euRegime.latest.unemployment)}%
-                  </div>
-                  {diverge && (
-                    <div className="text-xs text-[#eab308] mt-2">
-                      Eurostat and the geopolitical layer currently disagree. The AI layer overrides Eurostat when a clear real-world catalyst exists. Eurostat data lags by 1-3 months.
-                    </div>
-                  )}
-                  <div className="text-xs text-[#333] mt-2">Latest data: {euRegime.latest.hicp?.[0]?.slice(0, 7) || "—"}</div>
+                  <div className="mt-3 text-xs text-[#555]">Based on latest hard data</div>
                 </div>
               </div>
 
-              {/* How to read explanation */}
+              {/* Divergence banner */}
+              {diverge2 ? (
+                <div className="mt-4 p-3 rounded-lg border" style={{ backgroundColor: "#eab30810", borderColor: "#eab30830" }}>
+                  <div className="text-xs text-[#eab308] font-bold mb-1">⚡ AI and Data diverge</div>
+                  <p className="text-xs text-[#888] leading-relaxed">
+                    The geopolitical layer reads <span style={{ color: geoColor }} className="font-bold">{geoRegime}</span> while Eurostat data shows <span style={{ color: eurostatColor }} className="font-bold">{eurostatRegime}</span>. This happens when a real-world catalyst (war, energy shock, policy shift) hasn&apos;t yet transmitted into the hard data — or when the AI is reasoning from a narrative the data doesn&apos;t support. Neither is definitive. Watch HICP and industrial production in the coming releases to see which signal wins.
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-4 p-3 rounded-lg border" style={{ backgroundColor: "#22c55e10", borderColor: "#22c55e30" }}>
+                  <div className="text-xs text-[#22c55e] font-bold mb-1">✓ Signals aligned</div>
+                  <p className="text-xs text-[#888]">
+                    Both the AI geopolitical layer and Eurostat data agree: Europe is in <span style={{ color: geoColor }} className="font-bold">{geoRegime}</span>. Highest conviction signal.
+                  </p>
+                </div>
+              )}
+
+              {/* Data breakdown */}
               <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
-                <div className="text-xs text-[#888] leading-relaxed">
-                  <span className="text-[#e0e0e0] font-bold">How to read these signals:</span> The AI geopolitical layer detects European regime changes in real time by analysing current events (ECB policy, energy crises, elections). Eurostat data is a <span className="text-[#eab308]">confirmation signal</span> — it tells you the regime has been confirmed by hard data, not that it&apos;s starting. When both signals agree, conviction is highest.
-                </div>
-                {diverge && (
-                  <div className="text-xs text-[#eab308] mt-2 pt-2 border-t border-[#222]">
-                    Eurostat and the AI geopolitical layer currently disagree. When there is a clear real-world catalyst (war, Hormuz shock, ECB pivot), the geopolitical signal tends to lead Eurostat by months. Eurostat will likely catch up once newer economic data is released.
+                <div className="text-xs text-[#555] uppercase tracking-wider mb-3">Eurostat indicators (latest)</div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                  <div>
+                    <div className="text-[10px] text-[#555]">GDP QoQ</div>
+                    <div className="text-[#e0e0e0] font-bold">{fmt(euRegime.latest.gdp)}%</div>
+                    <div className="text-[10px] text-[#333]">{euRegime.latest.gdp?.[0]?.slice(0, 7) || "—"}</div>
                   </div>
-                )}
+                  <div>
+                    <div className="text-[10px] text-[#555]">Industrial Prod</div>
+                    <div className="text-[#e0e0e0] font-bold">{fmt(euRegime.latest.industrialProduction)}</div>
+                    <div className="text-[10px] text-[#333]">{euRegime.latest.industrialProduction?.[0]?.slice(0, 7) || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-[#555]">Retail Sales</div>
+                    <div className="text-[#e0e0e0] font-bold">{fmt(euRegime.latest.retailSales)}</div>
+                    <div className="text-[10px] text-[#333]">{euRegime.latest.retailSales?.[0]?.slice(0, 7) || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-[#555]">Unemployment</div>
+                    <div className="text-[#e0e0e0] font-bold">{fmt(euRegime.latest.unemployment)}%</div>
+                    <div className="text-[10px] text-[#333]">{euRegime.latest.unemployment?.[0]?.slice(0, 7) || "—"}</div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-[#555]">HICP YoY</div>
+                    <div className="text-[#e0e0e0] font-bold">{fmt(euRegime.latest.hicp)}%</div>
+                    <div className="text-[10px] text-[#333]">{euRegime.latest.hicp?.[0]?.slice(0, 7) || "—"}</div>
+                  </div>
+                </div>
               </div>
 
-              {/* Full AI interpretation — matches US "Why this regime was flagged" */}
+              {/* Full AI interpretation */}
               {europeInterpretation && (
                 <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
                   <div className="flex items-center justify-between mb-2">
-                    <div className="text-sm font-bold text-[#e0e0e0]">Why {geoRegime} was flagged by the AI</div>
+                    <div className="text-sm font-bold text-[#e0e0e0]">Why the AI reads {geoRegime}</div>
                     <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
                   </div>
-                  <p className="text-xs text-[#888] italic leading-relaxed">{europeInterpretation}</p>
+                  <p className="text-xs text-[#888] italic leading-relaxed">{geoText}</p>
                 </div>
               )}
+
+              {/* How to read — unchanged */}
+              <div className="mt-4 p-4 rounded-lg bg-[#111] border border-[#222]">
+                <div className="text-xs text-[#888] leading-relaxed">
+                  <span className="text-[#e0e0e0] font-bold">How to read these signals:</span> The AI geopolitical layer detects European regime changes in real time by analysing current events (ECB policy, energy crises, elections). Eurostat data is a <span className="text-[#eab308]">confirmation signal</span> — it tells you the regime has been confirmed by hard data, not that it&apos;s starting. When both signals agree, conviction is highest. When they diverge, neither is definitive.
+                </div>
+              </div>
+
+              {/* Invisible reference to satisfy unused vars — diverge came from lagWarning but we compute diverge2 from regime strings directly */}
+              {diverge && null}
             </>
           );
         })() : (
@@ -600,7 +632,8 @@ export default function EuropePage() {
 
       {/* Current Regime Picks — European ETFs that historically perform in this regime */}
       {euRegime && (() => {
-        const currentRegime = euRegime.confirmed;
+        // Follow the Eurostat data regime for picks (data-driven, not narrative)
+        const currentRegime = euRegime.eurostatRegime || euRegime.confirmed;
         const picks = EU_REGIME_PICKS[currentRegime] || [];
         const regimeColor = EU_REGIME_COLORS[currentRegime] || "#555";
         if (picks.length === 0) return null;
@@ -609,14 +642,14 @@ export default function EuropePage() {
           <section className="px-4 py-8 max-w-5xl mx-auto">
             <div className="flex items-center gap-2 mb-1">
               <h2 className="text-xl font-bold text-[#e0e0e0]">
-                Current Regime Picks
+                Data-driven Picks
               </h2>
               <span className="text-xs px-2 py-0.5 rounded font-bold" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>
                 {currentRegime}
               </span>
             </div>
             <p className="text-xs text-[#555] mb-4">
-              European UCITS ETFs that historically perform in {currentRegime} — cyclical regime plays for Norwegian investors (Nordnet accessible). Returns since regime started ({euRegime.periodStart?.slice(0, 7)}).
+              European UCITS ETFs that historically perform in {currentRegime} — based on Eurostat data. Returns since the current regime started ({euRegime.periodStart?.slice(0, 7)}). If you trust the AI layer more, rotate to its picks from the grid below.
             </p>
 
             <div className="space-y-3">
