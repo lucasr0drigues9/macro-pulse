@@ -340,7 +340,9 @@ function ReturnBadge({ ticker, returns, label }: { ticker: string; returns: Retu
 type EuRegimeData = {
   confirmed: string;
   eurostatRegime: string;
+  eurostatPeriodStart: string | null;
   geoRegime: string | null;
+  aiLastUpdated: string | null;
   lagWarning: boolean;
   consecutiveMonths: number;
   periodStart: string;
@@ -539,6 +541,11 @@ export default function EuropePage() {
                     {geoRegime}
                   </div>
                   <div className="mt-3 text-xs text-[#555]">Based on current events</div>
+                  {euRegime.aiLastUpdated && (
+                    <div className="mt-1 text-[10px] text-[#333]">
+                      Updated {euRegime.aiLastUpdated}
+                    </div>
+                  )}
                 </div>
 
                 {/* Eurostat Data */}
@@ -551,6 +558,11 @@ export default function EuropePage() {
                     {eurostatRegime}
                   </div>
                   <div className="mt-3 text-xs text-[#555]">Based on latest hard data</div>
+                  {euRegime.eurostatPeriodStart && (
+                    <div className="mt-1 text-[10px] text-[#333]">
+                      Since {euRegime.eurostatPeriodStart.slice(0, 7)} · {euRegime.consecutiveMonths} month{euRegime.consecutiveMonths !== 1 ? "s" : ""}
+                    </div>
+                  )}
                 </div>
               </div>
 

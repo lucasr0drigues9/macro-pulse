@@ -260,21 +260,47 @@ def get_eu_regime():
         else:
             confirmed = eurostat_regime
 
-        # Get backtest timeline for historical context only
+        # Get backtest timeline for historical context and eurostat regime start date
         with contextlib.redirect_stdout(_io.StringIO()):
             timeline = build_eu_regime_timeline()
         periods = identify_eu_periods(timeline)
 
-        # Calculate consecutive months since the regime was first detected
-        # Use snapshot regime for counting — walk back through timeline from end
-        months = 1
+        # Find when the current Eurostat (snapshot) regime last started in the timeline
+        # Walk backwards from the most recent period
+        from datetime import datetime as _dt
+        eurostat_period_start = None
         if periods:
-            from datetime import datetime as _dt
-            last = periods[-1]
-            if last["regime"] == confirmed:
-                start = _dt.strptime(last["start"], "%Y-%m-%d")
-                end = _dt.strptime(last["end"], "%Y-%m-%d")
-                months = (end.year - start.year) * 12 + (end.month - start.month) + 1
+            # If last timeline period matches, use it
+            if periods[-1]["regime"] == eurostat_regime:
+                eurostat_period_start = periods[-1]["start"]
+            else:
+                # Snapshot differs from last timeline period — find last occurrence
+                for p in reversed(periods):
+                    if p["regime"] == eurostat_regime:
+                        eurostat_period_start = p["start"]
+                        break
+                # If still none found, timeline never matched — use month after last period end
+                if not eurostat_period_start and periods:
+                    last_end = _dt.strptime(periods[-1]["end"], "%Y-%m-%d")
+                    # Transition detected after the last timeline period
+                    eurostat_period_start = f"{last_end.year + (1 if last_end.month == 12 else 0)}-{(last_end.month % 12) + 1:02d}-01"
+
+        # Calculate months since eurostat regime started
+        months = 1
+        if eurostat_period_start:
+            start = _dt.strptime(eurostat_period_start, "%Y-%m-%d")
+            now = _dt.now()
+            months = max(1, (now.year - start.year) * 12 + (now.month - start.month) + 1)
+
+        # AI synthesis last updated timestamp
+        ai_last_updated = None
+        try:
+            synth_path = os.path.join(MACRO, ".macro_cache", "geo_synthesis.json")
+            if os.path.exists(synth_path):
+                mtime = os.path.getmtime(synth_path)
+                ai_last_updated = _dt.fromtimestamp(mtime).strftime("%Y-%m-%d")
+        except Exception:
+            pass
 
         # Get raw growth indicators (latest available value per series)
         def latest_val(key):
@@ -283,7 +309,9 @@ def get_eu_regime():
         return {
             "confirmed": confirmed,
             "eurostatRegime": eurostat_regime,
+            "eurostatPeriodStart": eurostat_period_start,
             "geoRegime": geo_regime,
+            "aiLastUpdated": ai_last_updated,
             "lagWarning": lag_warning,
             "consecutiveMonths": months,
             "periodStart": periods[-1]["start"] if periods else None,
