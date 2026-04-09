@@ -314,12 +314,15 @@ export default function EuropePage() {
       .then((r) => r.json())
       .then((d) => { if (!d.error) setEuBacktest(d); })
       .catch(() => {});
-    // Fetch live 1Y returns for all European regime picks (two batches of max 10)
-    const batch1 = ALL_REGIME_PICK_TICKERS.slice(0, 10).join(",");
-    fetch(apiUrl(`/api/returns?tickers=${batch1}`))
-      .then((r) => r.json())
-      .then((d) => setRegimePickReturns((prev) => ({ ...prev, ...(d.returns || {}) })))
-      .catch(() => {});
+    // Fetch live 1Y returns for all European regime picks (batches of max 10)
+    const batchSize = 10;
+    for (let i = 0; i < ALL_REGIME_PICK_TICKERS.length; i += batchSize) {
+      const batch = ALL_REGIME_PICK_TICKERS.slice(i, i + batchSize).join(",");
+      fetch(apiUrl(`/api/returns?tickers=${batch}`))
+        .then((r) => r.json())
+        .then((d) => setRegimePickReturns((prev) => ({ ...prev, ...(d.returns || {}) })))
+        .catch(() => {});
+    }
   }, []);
 
   const handleSubscribe = async (e: React.FormEvent) => {
@@ -496,6 +499,69 @@ export default function EuropePage() {
           </section>
         );
       })()}
+
+      {/* All European Regime Picks — Reference */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European ETFs Across All Regimes</h2>
+        <p className="text-xs text-[#555] mb-6">
+          What historically performs in each economic season. The current regime is highlighted — rotate when the regime changes.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {(["Stagflation", "Reflation", "Goldilocks", "Deflation"] as const).map((regime) => {
+            const picks = EU_REGIME_PICKS[regime] || [];
+            const color = EU_REGIME_COLORS[regime];
+            const isCurrent = euRegime?.confirmed === regime;
+            return (
+              <div
+                key={regime}
+                className="p-4 rounded-lg"
+                style={{
+                  backgroundColor: isCurrent ? color + "10" : "#111",
+                  border: `1px solid ${isCurrent ? color + "60" : "#222"}`,
+                }}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: color }} />
+                    <span className="text-sm font-bold" style={{ color }}>{regime}</span>
+                  </div>
+                  {isCurrent && (
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color, backgroundColor: color + "20" }}>
+                      NOW
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {picks.map((pick) => {
+                    const data = regimePickReturns[pick.ticker];
+                    const ret = data ? data["return"] : null;
+                    return (
+                      <div key={pick.ticker} className="p-2 rounded bg-[#0a0a0a]">
+                        <div className="flex items-center justify-between mb-0.5">
+                          <span className="text-xs font-bold text-[#e0e0e0]">{pick.ticker}</span>
+                          {ret !== null ? (
+                            <span className="text-[10px] font-bold" style={{ color: ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                              {ret >= 0 ? "+" : ""}{ret}% 1Y
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-[#333]">—</span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-[#555]">{pick.name}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <p className="text-xs text-[#555] mt-4 text-center italic">
+          All UCITS-compliant ETFs, accessible on Nordnet. 1-year returns from Yahoo Finance.
+        </p>
+      </section>
 
       {/* Thesis */}
       <section className="px-4 pb-8 max-w-5xl mx-auto">
