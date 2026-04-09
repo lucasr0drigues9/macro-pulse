@@ -339,7 +339,7 @@ def get_eu_backtest():
         )
         from backtest_regime import compute_portfolio_return
         from datetime import datetime as _dt
-        import contextlib, io as _io
+        import contextlib, io as _io, json as _json
 
         # AI geopolitical overrides for key European events
         # Format: start_month (YYYY-MM) -> (strength, context, ai_regime_override_or_None)
@@ -404,6 +404,20 @@ def get_eu_backtest():
             ai_picks_return = all_returns.get(ai_regime)
             ai_correct = best_regime == ai_regime if best_regime else None
 
+            # Load double-miss explanation if both framework and AI were wrong
+            double_miss_reason = None
+            if framework_correct is False and ai_correct is False:
+                try:
+                    dm_path = os.path.join(MACRO, ".macro_cache", "double_miss_eu.json")
+                    if os.path.exists(dm_path):
+                        with open(dm_path) as _dmf:
+                            dm_cache = _json.load(_dmf)
+                        dm_entry = dm_cache.get(start[:7])
+                        if dm_entry:
+                            double_miss_reason = dm_entry.get("reason")
+                except Exception:
+                    pass
+
             timeline_data.append({
                 "regime": p["regime"],
                 "start": start[:7],
@@ -419,6 +433,7 @@ def get_eu_backtest():
                 "aiPicksReturn": ai_picks_return,
                 "aiDiffersFromFred": geo_override is not None and geo_override != p["regime"],
                 "aiCorrect": ai_correct,
+                "doubleMissReason": double_miss_reason,
             })
 
         timeline_data.reverse()  # Most recent first
@@ -1246,6 +1261,20 @@ def get_backtest():
         ai_picks_ret = all_regime_returns.get(ai_regime)
         ai_correct = best_regime == ai_regime if best_regime else None
 
+        # Load double-miss explanation if both framework and AI were wrong
+        double_miss_reason = None
+        if framework_correct is False and ai_correct is False:
+            try:
+                dm_path = os.path.join(MACRO, ".macro_cache", "double_miss_us.json")
+                if os.path.exists(dm_path):
+                    with open(dm_path) as _dmf:
+                        dm_cache = json.load(_dmf)
+                    dm_entry = dm_cache.get(start[:7])
+                    if dm_entry:
+                        double_miss_reason = dm_entry.get("reason")
+            except Exception:
+                pass
+
         entry = {
             "regime": regime,
             "start": start[:7],
@@ -1264,6 +1293,7 @@ def get_backtest():
             "aiPicksReturn": ai_picks_ret,
             "aiDiffersFromFred": geo_regime is not None and geo_regime != regime,
             "aiCorrect": ai_correct,
+            "doubleMissReason": double_miss_reason,
         }
         # Keep legacy fields for compatibility
         if geo_regime and geo_regime != regime:

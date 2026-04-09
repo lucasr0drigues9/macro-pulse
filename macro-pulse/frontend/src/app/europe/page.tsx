@@ -372,6 +372,7 @@ type EuBacktestEntry = {
   aiPicksReturn?: number | null;
   aiDiffersFromFred?: boolean;
   aiCorrect?: boolean | null;
+  doubleMissReason?: string | null;
 };
 type EuBacktest = { totalRegimes: number; yearRange: string; timeline: EuBacktestEntry[]; regimeBreakdown: Record<string, number> };
 
@@ -1051,6 +1052,18 @@ export default function EuropePage() {
                               <span className="text-[#ef4444]">✗ Both Eurostat and AI missed — {bestReg} picks outperformed.</span>
                             )}
                           </div>
+
+                          {/* Post-mortem for double-miss periods */}
+                          {!p.frameworkCorrect && !p.aiCorrect && p.doubleMissReason && (
+                            <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#ef444425]">
+                              <div className="text-[9px] text-[#ef4444] uppercase tracking-wider mb-1">
+                                Why both layers missed
+                              </div>
+                              <p className="text-[10px] text-[#888] leading-relaxed italic">
+                                {p.doubleMissReason}
+                              </p>
+                            </div>
+                          )}
                         </div>
                         );
                       })()}

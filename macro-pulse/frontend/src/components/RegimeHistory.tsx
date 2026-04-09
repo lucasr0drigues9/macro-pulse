@@ -18,6 +18,7 @@ type TimelineEntry = {
   aiPicksReturn?: number | null;
   aiDiffersFromFred?: boolean;
   aiCorrect?: boolean;
+  doubleMissReason?: string | null;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
@@ -332,6 +333,18 @@ export default function RegimeHistory() {
                             <span className="text-[#ef4444]">✗ Both FRED and AI missed — {bestReg} picks outperformed.</span>
                           )}
                         </div>
+
+                        {/* Post-mortem for double-miss periods */}
+                        {!period.frameworkCorrect && !period.aiCorrect && period.doubleMissReason && (
+                          <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#ef444425]">
+                            <div className="text-[9px] text-[#ef4444] uppercase tracking-wider mb-1">
+                              Why both layers missed
+                            </div>
+                            <p className="text-[10px] text-[#888] leading-relaxed italic">
+                              {period.doubleMissReason}
+                            </p>
+                          </div>
+                        )}
                       </div>
                       );
                     })()}
