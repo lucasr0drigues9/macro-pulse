@@ -27,7 +27,7 @@ export async function subscribeEmail(payload: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-  } catch (err) {
+  } catch {
     return {
       ok: false,
       message: "Network error — please check your connection and try again.",
