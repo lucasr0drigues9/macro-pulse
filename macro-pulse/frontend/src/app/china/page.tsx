@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Nav from "@/components/Nav";
+import SubscribeForm from "@/components/SubscribeForm";
 import {
   ACCENT, chinaRegime, proxyIndicators, strategicCards,
   directETFs, proxyPlays, taiwanHedges, type ProxyIndicator,
@@ -258,22 +259,13 @@ export default function ChinaPage() {
 
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
-          <h2 className="text-lg font-bold text-[#e0e0e0] mb-2">Track China&apos;s Real Economy</h2>
-          <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
-            Get notified when proxy indicators shift significantly or when Taiwan risk level changes.
-          </p>
-          <div className="flex gap-2 max-w-sm mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none"
-            />
-            <button className="px-4 py-2 rounded text-sm text-[#e0e0e0] hover:opacity-80 transition-opacity" style={{ backgroundColor: ACCENT }}>
-              Track China
-            </button>
-          </div>
-        </div>
+        <SubscribeForm
+          title="Track China's Real Economy"
+          description="Get notified when proxy indicators shift significantly or when Taiwan risk level changes."
+          buttonLabel="Track China"
+          waitlistFeature="china"
+          accent={ACCENT}
+        />
       </section>
 
       {/* Footer */}

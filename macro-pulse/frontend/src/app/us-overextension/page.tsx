@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Nav from "@/components/Nav";
+import SubscribeForm from "@/components/SubscribeForm";
 import {
   ACCENT, dashboardIndicators, militaryCommitments, debtTimeline,
   bigCycleStages, dedollarisation, centralBankGold,
@@ -347,22 +348,13 @@ export default function USOverextensionPage() {
 
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
-          <h2 className="text-lg font-bold text-[#e0e0e0] mb-2">Track US Overextension</h2>
-          <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
-            Get notified when key indicators shift — debt milestones, new military commitments, reserve currency changes.
-          </p>
-          <div className="flex gap-2 max-w-sm mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none"
-            />
-            <button className="px-4 py-2 rounded text-sm text-[#e0e0e0] hover:opacity-80 transition-opacity" style={{ backgroundColor: ACCENT }}>
-              Track indicators
-            </button>
-          </div>
-        </div>
+        <SubscribeForm
+          title="Track US Overextension"
+          description="Get notified when key indicators shift — debt milestones, new military commitments, reserve currency changes."
+          buttonLabel="Track indicators"
+          waitlistFeature="us_overextension"
+          accent={ACCENT}
+        />
       </section>
 
       {/* Footer */}

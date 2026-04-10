@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Nav from "@/components/Nav";
+import SubscribeForm from "@/components/SubscribeForm";
 import {
   countries, DETERMINANT_LABELS, DETERMINANT_KEYS, CAMP_COLORS, CAMP_LABELS,
   SIGNAL_COLORS, getOverallScore, getStrongestDeterminant, getWeakestDeterminant,
@@ -333,22 +334,12 @@ export default function WorldOrderPage() {
 
       {/* Email Alerts */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
-          <h2 className="text-lg font-bold text-[#e0e0e0] mb-2">Track Alliance Shifts</h2>
-          <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
-            Get notified when a country&apos;s alliance position shifts — UN voting changes, major treaties, or power score movements.
-          </p>
-          <div className="flex gap-2 max-w-sm mx-auto">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none"
-            />
-            <button className="px-4 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
-              Track shifts
-            </button>
-          </div>
-        </div>
+        <SubscribeForm
+          title="Track Alliance Shifts"
+          description="Get notified when a country's alliance position shifts — UN voting changes, major treaties, or power score movements."
+          buttonLabel="Track shifts"
+          waitlistFeature="world_order"
+        />
       </section>
 
       {/* Footer */}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
+import SubscribeForm from "@/components/SubscribeForm";
 import { ACCENT, GOLD, morocco, countries, regimeAlignment, type CountryEM } from "@/lib/emergingData";
 
 function CountryCard({ c, featured }: { c: CountryEM; featured?: boolean }) {
@@ -287,19 +288,13 @@ export default function EmergingMarketsPage() {
 
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
-          <h2 className="text-lg font-bold text-[#e0e0e0] mb-2">Track Emerging Market Opportunities</h2>
-          <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
-            Get notified when a significant shift occurs in any of the six tracked economies or when European autonomy spending creates new demand.
-          </p>
-          <div className="flex gap-2 max-w-sm mx-auto">
-            <input type="email" placeholder="your@email.com"
-              className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none" />
-            <button className="px-4 py-2 rounded text-sm text-[#e0e0e0] hover:opacity-80 transition-opacity" style={{ backgroundColor: ACCENT }}>
-              Track opportunities
-            </button>
-          </div>
-        </div>
+        <SubscribeForm
+          title="Track Emerging Market Opportunities"
+          description="Get notified when a significant shift occurs in any of the six tracked economies or when European autonomy spending creates new demand."
+          buttonLabel="Track opportunities"
+          waitlistFeature="emerging_markets"
+          accent={ACCENT}
+        />
       </section>
 
       {/* Footer */}
