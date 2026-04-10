@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import { apiUrl } from "@/lib/api";
-import { subscribeEmail } from "@/lib/subscribe";
+import { subscribeEmail, confirmReceipt } from "@/lib/subscribe";
+
+type SignupPhase = "idle" | "submitting" | "awaiting_confirm" | "confirmed" | "missing" | "error";
+const SIGNUP_SOURCE = "home_regime_alerts";
 
 const tools = [
   {
@@ -159,31 +162,36 @@ export default function LobbyPage() {
   const [signupEmail, setSignupEmail] = useState("");
   const [signupRegimeAlerts, setSignupRegimeAlerts] = useState(true);
   const [signupNewAnalysis, setSignupNewAnalysis] = useState(true);
-  const [signupSubmitted, setSignupSubmitted] = useState(false);
-  const [signupSubmitting, setSignupSubmitting] = useState(false);
-  const [signupError, setSignupError] = useState<string | null>(null);
-  const [signupSuccess, setSignupSuccess] = useState("");
+  const [signupPhase, setSignupPhase] = useState<SignupPhase>("idle");
+  const [signupErrorMessage, setSignupErrorMessage] = useState("");
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!signupEmail || signupSubmitting) return;
-    setSignupSubmitting(true);
-    setSignupError(null);
+    if (!signupEmail || signupPhase === "submitting") return;
+    setSignupPhase("submitting");
+    setSignupErrorMessage("");
     const features: string[] = [];
     if (signupNewAnalysis) features.push("new_analysis");
     const result = await subscribeEmail({
       email: signupEmail,
+      source: SIGNUP_SOURCE,
       regimeAlerts: signupRegimeAlerts,
       waitlistFeatures: features,
     });
-    setSignupSubmitting(false);
     if (result.ok) {
-      setSignupSuccess(result.message);
-      setSignupSubmitted(true);
+      setSignupPhase("awaiting_confirm");
     } else {
-      setSignupError(result.message);
+      setSignupErrorMessage(result.message);
+      setSignupPhase("error");
     }
   };
+
+  const handleSignupGotIt = () => {
+    setSignupPhase("confirmed");
+    confirmReceipt(signupEmail, SIGNUP_SOURCE);
+  };
+
+  const handleSignupMissing = () => setSignupPhase("missing");
 
   useEffect(() => {
     // Fetch US regime + performance + AI interpretation
@@ -568,9 +576,7 @@ export default function LobbyPage() {
           <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
             Regime change alerts, alliance shift notifications, and new analysis — delivered when it matters.
           </p>
-          {signupSubmitted ? (
-            <p className="text-sm text-[#22c55e] py-2">{signupSuccess}</p>
-          ) : (
+          {(signupPhase === "idle" || signupPhase === "submitting" || signupPhase === "error") && (
             <form onSubmit={handleSignup}>
               <div className="flex gap-2 max-w-sm mx-auto mb-3">
                 <input
@@ -579,15 +585,15 @@ export default function LobbyPage() {
                   onChange={(e) => setSignupEmail(e.target.value)}
                   placeholder="your@email.com"
                   required
-                  disabled={signupSubmitting}
+                  disabled={signupPhase === "submitting"}
                   className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none disabled:opacity-50"
                 />
                 <button
                   type="submit"
-                  disabled={signupSubmitting}
+                  disabled={signupPhase === "submitting"}
                   className="px-4 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors disabled:opacity-50"
                 >
-                  {signupSubmitting ? "Sending…" : "Notify me"}
+                  {signupPhase === "submitting" ? "Sending…" : "Notify me"}
                 </button>
               </div>
               <div className="flex gap-4 justify-center text-[10px] text-[#555]">
@@ -610,10 +616,58 @@ export default function LobbyPage() {
                   New analysis
                 </label>
               </div>
-              {signupError && (
-                <p className="text-xs text-[#ef4444] mt-3" role="alert">{signupError}</p>
+              {signupPhase === "error" && signupErrorMessage && (
+                <p className="text-xs text-[#ef4444] mt-3" role="alert">{signupErrorMessage}</p>
               )}
             </form>
+          )}
+
+          {signupPhase === "awaiting_confirm" && (
+            <div className="max-w-md mx-auto py-2">
+              <p className="text-sm text-[#22c55e] mb-2">You&apos;re subscribed.</p>
+              <p className="text-xs text-[#888] mb-4 leading-relaxed">
+                We just sent a welcome email to <b className="text-[#e0e0e0]">{signupEmail}</b> from{" "}
+                <span className="text-[#e0e0e0]">alerts@macro-pulse.io</span>. It should arrive within a minute.
+                Once it lands, click below so we know our delivery pipeline is working.
+              </p>
+              <div className="flex gap-2 justify-center">
+                <button
+                  type="button"
+                  onClick={handleSignupGotIt}
+                  className="px-4 py-2 rounded text-sm text-[#0a0a0a] bg-[#22c55e] hover:opacity-90 transition-opacity font-bold"
+                >
+                  Got it ✓
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSignupMissing}
+                  className="px-4 py-2 rounded text-sm text-[#888] bg-[#1a1a1a] border border-[#222] hover:bg-[#222] transition-colors"
+                >
+                  Didn&apos;t arrive
+                </button>
+              </div>
+            </div>
+          )}
+
+          {signupPhase === "confirmed" && (
+            <div className="py-2">
+              <p className="text-sm text-[#22c55e] mb-1">Thanks — you&apos;re all set.</p>
+              <p className="text-xs text-[#555]">We&apos;ll be in touch when something matters.</p>
+            </div>
+          )}
+
+          {signupPhase === "missing" && (
+            <div className="max-w-md mx-auto py-2 text-left">
+              <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
+              <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
+                <li>Check your spam / promotions folder for &quot;Welcome to Macro Pulse&quot;</li>
+                <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts so future alerts land in your inbox</li>
+                <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> directly and we&apos;ll sort it out</li>
+              </ul>
+              <p className="text-[10px] text-[#555] text-center">
+                You&apos;re still subscribed — we&apos;ll send the next update either way.
+              </p>
+            </div>
           )}
         </div>
       </section>

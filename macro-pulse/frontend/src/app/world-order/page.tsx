@@ -338,6 +338,7 @@ export default function WorldOrderPage() {
           title="Track Alliance Shifts"
           description="Get notified when a country's alliance position shifts — UN voting changes, major treaties, or power score movements."
           buttonLabel="Track shifts"
+          source="world_order"
           waitlistFeature="world_order"
         />
       </section>

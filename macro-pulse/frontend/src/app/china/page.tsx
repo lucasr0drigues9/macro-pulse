@@ -263,6 +263,7 @@ export default function ChinaPage() {
           title="Track China's Real Economy"
           description="Get notified when proxy indicators shift significantly or when Taiwan risk level changes."
           buttonLabel="Track China"
+          source="china"
           waitlistFeature="china"
           accent={ACCENT}
         />

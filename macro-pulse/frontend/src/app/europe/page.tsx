@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { apiUrl } from "@/lib/api";
-import { subscribeEmail } from "@/lib/subscribe";
+import { subscribeEmail, confirmReceipt } from "@/lib/subscribe";
+
+type EuropeSignupPhase = "idle" | "submitting" | "awaiting_confirm" | "confirmed" | "missing" | "error";
+const EUROPE_SIGNUP_SOURCE = "europe";
 import Nav from "@/components/Nav";
 import {
   SECTORS, COMPANIES, CATALYSTS, REGIME_FIT_EMOJI, RISK_COLORS,
@@ -384,10 +387,8 @@ const EU_REGIME_COLORS: Record<string, string> = {
 export default function EuropePage() {
   const [thesisOpen, setThesisOpen] = useState(false);
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [subSubmitting, setSubSubmitting] = useState(false);
-  const [subError, setSubError] = useState<string | null>(null);
-  const [subSuccessMessage, setSubSuccessMessage] = useState("");
+  const [subPhase, setSubPhase] = useState<EuropeSignupPhase>("idle");
+  const [subErrorMessage, setSubErrorMessage] = useState("");
   const [returns, setReturns] = useState<ReturnData>({});
   const [invasionReturns, setInvasionReturns] = useState<ReturnData>({});
   const [euRegime, setEuRegime] = useState<EuRegimeData | null>(null);
@@ -436,21 +437,28 @@ export default function EuropePage() {
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || subSubmitting) return;
-    setSubSubmitting(true);
-    setSubError(null);
+    if (!email || subPhase === "submitting") return;
+    setSubPhase("submitting");
+    setSubErrorMessage("");
     const result = await subscribeEmail({
       email,
+      source: EUROPE_SIGNUP_SOURCE,
       waitlistFeatures: ["europe_tracker"],
     });
-    setSubSubmitting(false);
     if (result.ok) {
-      setSubSuccessMessage(result.message);
-      setSubmitted(true);
+      setSubPhase("awaiting_confirm");
     } else {
-      setSubError(result.message);
+      setSubErrorMessage(result.message);
+      setSubPhase("error");
     }
   };
+
+  const handleEuropeGotIt = () => {
+    setSubPhase("confirmed");
+    confirmReceipt(email, EUROPE_SIGNUP_SOURCE);
+  };
+
+  const handleEuropeMissing = () => setSubPhase("missing");
 
   return (
     <main className="min-h-screen">
@@ -1434,20 +1442,52 @@ export default function EuropePage() {
       {/* Email */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <div className="p-4 rounded-lg bg-[#111] border border-[#222] text-center">
-          {submitted ? (
-            <p className="text-sm text-[#22c55e]">{subSuccessMessage}</p>
-          ) : (
+          {(subPhase === "idle" || subPhase === "submitting" || subPhase === "error") && (
             <>
               <p className="text-sm text-[#e0e0e0] mb-1">Track the European autonomy theme</p>
               <p className="text-xs text-[#555] mb-3">Quarterly updates on milestones, policy, and company developments.</p>
               <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required disabled={subSubmitting} className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left disabled:opacity-50" />
-                <button type="submit" disabled={subSubmitting} className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50">{subSubmitting ? "Sending…" : "Track Europe"}</button>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required disabled={subPhase === "submitting"} className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left disabled:opacity-50" />
+                <button type="submit" disabled={subPhase === "submitting"} className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50">{subPhase === "submitting" ? "Sending…" : "Track Europe"}</button>
               </form>
-              {subError && (
-                <p className="text-xs text-[#ef4444] mt-2" role="alert">{subError}</p>
+              {subPhase === "error" && subErrorMessage && (
+                <p className="text-xs text-[#ef4444] mt-2" role="alert">{subErrorMessage}</p>
               )}
             </>
+          )}
+
+          {subPhase === "awaiting_confirm" && (
+            <div className="max-w-md mx-auto py-2">
+              <p className="text-sm text-[#22c55e] mb-2">You&apos;re subscribed.</p>
+              <p className="text-xs text-[#888] mb-4 leading-relaxed">
+                We just sent a welcome email to <b className="text-[#e0e0e0]">{email}</b> from{" "}
+                <span className="text-[#e0e0e0]">alerts@macro-pulse.io</span>. It should arrive within a minute.
+                Once it lands, click below so we know our delivery pipeline is working.
+              </p>
+              <div className="flex gap-2 justify-center">
+                <button type="button" onClick={handleEuropeGotIt} className="px-4 py-2 rounded text-sm text-[#0a0a0a] bg-[#22c55e] hover:opacity-90 transition-opacity font-bold">Got it ✓</button>
+                <button type="button" onClick={handleEuropeMissing} className="px-4 py-2 rounded text-sm text-[#888] bg-[#1a1a1a] border border-[#222] hover:bg-[#222] transition-colors">Didn&apos;t arrive</button>
+              </div>
+            </div>
+          )}
+
+          {subPhase === "confirmed" && (
+            <div className="py-2">
+              <p className="text-sm text-[#22c55e] mb-1">Thanks — you&apos;re all set.</p>
+              <p className="text-xs text-[#555]">Quarterly Europe updates incoming.</p>
+            </div>
+          )}
+
+          {subPhase === "missing" && (
+            <div className="max-w-md mx-auto py-2 text-left">
+              <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
+              <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
+                <li>Check your spam / promotions folder for &quot;Welcome to Macro Pulse&quot;</li>
+                <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts so future alerts land in your inbox</li>
+                <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> directly and we&apos;ll sort it out</li>
+              </ul>
+              <p className="text-[10px] text-[#555] text-center">You&apos;re still subscribed — we&apos;ll send the next update either way.</p>
+            </div>
           )}
         </div>
       </section>

@@ -292,6 +292,7 @@ export default function EmergingMarketsPage() {
           title="Track Emerging Market Opportunities"
           description="Get notified when a significant shift occurs in any of the six tracked economies or when European autonomy spending creates new demand."
           buttonLabel="Track opportunities"
+          source="emerging_markets"
           waitlistFeature="emerging_markets"
           accent={ACCENT}
         />

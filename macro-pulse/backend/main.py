@@ -1366,6 +1366,9 @@ def subscribe(body: dict, response: Response):
     Returns 200 only when the contact was actually persisted to Resend.
     Returns 422 for invalid input, 502 for upstream Resend failure.
     Never lies about success — the frontend can trust `ok` and the HTTP status.
+
+    On successful signup, sends a contextual welcome email based on `source`.
+    Welcome email failure does NOT fail the signup, but the admin is alerted.
     """
     import emails as _em
 
@@ -1374,6 +1377,7 @@ def subscribe(body: dict, response: Response):
         response.status_code = 422
         return {"ok": False, "error": "Invalid email address"}
 
+    source = body.get("source", "default")
     waitlist_features = body.get("waitlistFeatures", [])
     result = _em.add_subscriber(email, waitlist_features)
 
@@ -1387,18 +1391,47 @@ def subscribe(body: dict, response: Response):
         )
         return payload
 
+    # Send welcome email on successful new signup (skip for already-known addresses).
+    # Best-effort — never fails the response.
+    if result.persisted_to == "resend" and not result.already_existed:
+        try:
+            _em.send_welcome(email, source)
+        except Exception as e:
+            # send_welcome already logs + alerts; this is a last-resort catch.
+            print(f"[subscribe] welcome email exception: {e}")
+
     if result.persisted_to == "file":
         # Saved to ephemeral file backup — DEGRADED state, alert was already sent.
-        response.status_code = 202  # Accepted, but not durably stored
-        payload["message"] = "Subscribed (degraded mode — please retry if you don't get the welcome email)"
+        response.status_code = 202
+        payload["message"] = (
+            "Subscribed — but we couldn't send the welcome email right now. "
+            "You may need to retry in a moment."
+        )
         return payload
 
-    payload["message"] = (
-        "You're already on the list — first issue arrives next Tuesday."
-        if result.already_existed
-        else "Subscribed. First issue arrives next Tuesday."
-    )
+    if result.already_existed:
+        payload["message"] = "You're already on the list — thanks for coming back."
+    else:
+        payload["message"] = (
+            "Check your inbox — we just sent a welcome email from alerts@macro-pulse.io."
+        )
     return payload
+
+
+@app.post("/api/subscribe/confirm")
+def subscribe_confirm(body: dict):
+    """User clicked 'Got it ✓' to confirm they received the welcome email.
+
+    This is a lightweight deliverability health check — not double opt-in.
+    The user is already subscribed either way; we just log the confirmation.
+    """
+    email = body.get("email", "").strip().lower()
+    source = body.get("source", "unknown")
+    if not email:
+        return {"ok": False, "error": "missing email"}
+    # Log so confirmations show up in Railway logs and prove the pipeline works.
+    print(f"[confirm] receipt confirmed: email={email} source={source}")
+    return {"ok": True}
 
 
 @app.get("/api/admin/subscribers")

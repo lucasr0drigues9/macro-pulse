@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { calendarData as fallback } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
-import { subscribeEmail } from "@/lib/subscribe";
+import { subscribeEmail, confirmReceipt } from "@/lib/subscribe";
+
+type Phase = "idle" | "submitting" | "awaiting_confirm" | "confirmed" | "missing" | "error";
+const SOURCE = "weekly_calendar";
 
 type CalendarEvent = {
   name: string; source: string; date: string; day: string;
@@ -21,25 +24,28 @@ export default function WeeklyCalendar() {
   const [events, setEvents] = useState<CalendarEvent[]>(fallback);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState("");
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || submitting) return;
-    setSubmitting(true);
-    setError(null);
-    const result = await subscribeEmail({ email, eventAlerts: true });
-    setSubmitting(false);
+    if (!email || phase === "submitting") return;
+    setPhase("submitting");
+    setErrorMessage("");
+    const result = await subscribeEmail({ email, source: SOURCE, eventAlerts: true });
     if (result.ok) {
-      setSuccessMessage(result.message);
-      setSubmitted(true);
+      setPhase("awaiting_confirm");
     } else {
-      setError(result.message);
+      setErrorMessage(result.message);
+      setPhase("error");
     }
   };
+
+  const handleGotIt = () => {
+    setPhase("confirmed");
+    confirmReceipt(email, SOURCE);
+  };
+  const handleMissing = () => setPhase("missing");
 
   useEffect(() => {
     fetch(apiUrl("/api/calendar"))
@@ -109,9 +115,7 @@ export default function WeeklyCalendar() {
 
       {/* Email signup */}
       <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222] text-center">
-        {submitted ? (
-          <p className="text-sm text-[#22c55e]">{successMessage}</p>
-        ) : (
+        {(phase === "idle" || phase === "submitting" || phase === "error") && (
           <>
             <p className="text-sm text-[#e0e0e0] mb-1">Get notified after each event</p>
             <p className="text-xs text-[#555] mb-3">Plain English summary of what the data showed and whether your allocation needs to adjust.</p>
@@ -122,21 +126,50 @@ export default function WeeklyCalendar() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                disabled={submitting}
+                disabled={phase === "submitting"}
                 className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left disabled:opacity-50"
               />
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={phase === "submitting"}
                 className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
               >
-                {submitting ? "Sending…" : "Notify me"}
+                {phase === "submitting" ? "Sending…" : "Notify me"}
               </button>
             </form>
-            {error && (
-              <p className="text-xs text-[#ef4444] mt-2" role="alert">{error}</p>
+            {phase === "error" && errorMessage && (
+              <p className="text-xs text-[#ef4444] mt-2" role="alert">{errorMessage}</p>
             )}
           </>
+        )}
+
+        {phase === "awaiting_confirm" && (
+          <div className="max-w-md mx-auto py-2">
+            <p className="text-sm text-[#22c55e] mb-2">You&apos;re subscribed.</p>
+            <p className="text-xs text-[#888] mb-4 leading-relaxed">
+              We just sent a welcome email to <b className="text-[#e0e0e0]">{email}</b> from{" "}
+              <span className="text-[#e0e0e0]">alerts@macro-pulse.io</span>. Once it arrives, click below.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <button type="button" onClick={handleGotIt} className="px-4 py-2 rounded text-sm text-[#0a0a0a] bg-[#22c55e] hover:opacity-90 transition-opacity font-bold">Got it ✓</button>
+              <button type="button" onClick={handleMissing} className="px-4 py-2 rounded text-sm text-[#888] bg-[#1a1a1a] border border-[#222] hover:bg-[#222] transition-colors">Didn&apos;t arrive</button>
+            </div>
+          </div>
+        )}
+
+        {phase === "confirmed" && (
+          <p className="text-sm text-[#22c55e] py-2">Thanks — you&apos;re all set.</p>
+        )}
+
+        {phase === "missing" && (
+          <div className="max-w-md mx-auto py-2 text-left">
+            <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
+            <ul className="text-xs text-[#888] space-y-1.5 list-disc list-inside">
+              <li>Check spam / promotions for &quot;Welcome to Macro Pulse&quot;</li>
+              <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts</li>
+              <li>Still nothing? Email us directly at the same address</li>
+            </ul>
+          </div>
         )}
       </div>
     </section>

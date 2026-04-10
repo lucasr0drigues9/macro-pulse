@@ -352,6 +352,7 @@ export default function USOverextensionPage() {
           title="Track US Overextension"
           description="Get notified when key indicators shift — debt milestones, new military commitments, reserve currency changes."
           buttonLabel="Track indicators"
+          source="us_overextension"
           waitlistFeature="us_overextension"
           accent={ACCENT}
         />

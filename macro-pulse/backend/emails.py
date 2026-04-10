@@ -45,6 +45,58 @@ DISCLAIMER = (
     "Always consult a qualified financial advisor before making investment decisions."
 )
 
+# Contextual welcome copy per signup source — used by send_welcome()
+WELCOME_COPY = {
+    "home_weekly_pulse": {
+        "heading": "You're in. First pulse lands Tuesday.",
+        "body": "Every Tuesday morning you'll get the full Macro Pulse: current regime, triggers that moved, what the framework says to own, and the economic releases to watch this week.",
+    },
+    "home_regime_alerts": {
+        "heading": "You're tracking the transition.",
+        "body": "You'll be notified when the current economic regime shifts, when key triggers fire, or when new analysis drops on the site.",
+    },
+    "world_order": {
+        "heading": "You're tracking the world order.",
+        "body": "You'll be notified when a country's alliance position shifts — UN voting changes, major treaties, or power-score movements across the 30 tracked nations.",
+    },
+    "us_overextension": {
+        "heading": "You're tracking US overextension.",
+        "body": "You'll be notified when key Dalio indicators shift — debt milestones, new military commitments, or reserve-currency changes.",
+    },
+    "china": {
+        "heading": "You're tracking China's real economy.",
+        "body": "You'll be notified when proxy indicators (electricity, PMI, port throughput, copper imports) shift significantly or when Taiwan risk level changes.",
+    },
+    "emerging_markets": {
+        "heading": "You're tracking emerging markets.",
+        "body": "You'll be notified when a significant shift occurs in any of the six tracked economies or when European autonomy spending creates new demand.",
+    },
+    "europe": {
+        "heading": "You're tracking European autonomy.",
+        "body": "Quarterly updates on European strategic autonomy milestones, policy shifts, and company developments.",
+    },
+    "regime_triggers": {
+        "heading": "You're watching the triggers.",
+        "body": "You'll be notified the moment a regime-change trigger fires or the current regime shifts.",
+    },
+    "transition_outlook": {
+        "heading": "You're watching the transition.",
+        "body": "You'll be notified when triggers start firing, so you can act at the right time.",
+    },
+    "weekly_calendar": {
+        "heading": "You're watching the calendar.",
+        "body": "After each economic release you'll get a plain-English summary of what the data showed and whether your allocation needs to adjust.",
+    },
+    "coming_soon": {
+        "heading": "You're on the waitlist.",
+        "body": "We'll let you know when the features you flagged are ready for early access.",
+    },
+    "default": {
+        "heading": "You're subscribed.",
+        "body": "Thanks for signing up to Macro Pulse. We'll be in touch with updates from the framework.",
+    },
+}
+
 REGIME_COLORS = {
     "Stagflation": "#ef4444",
     "Goldilocks": "#22c55e",
@@ -229,6 +281,62 @@ def _email_wrapper(title: str, body: str) -> str:
 </div>
 </body>
 </html>"""
+
+
+def send_welcome(email: str, source: str = "default") -> bool:
+    """Send a welcome/confirmation email immediately after signup.
+
+    Content is contextual based on `source` (which form they subscribed from).
+    Tells the user to head back to the site and click "Got it" to confirm
+    delivery — we use that as a lightweight deliverability health check.
+
+    Returns True if Resend accepted the send, False otherwise. Failures are
+    logged and the admin is alerted but the caller should NOT fail the signup
+    just because the welcome email couldn't be sent.
+    """
+    copy = WELCOME_COPY.get(source, WELCOME_COPY["default"])
+    subject = "Welcome to Macro Pulse — please confirm"
+    body = f"""
+    <p style="font-size:14px;color:#e0e0e0;margin:0 0 16px;line-height:1.5;">
+        {copy['body']}
+    </p>
+
+    <div style="background:#111;border:1px solid #222;border-radius:8px;padding:16px;margin:24px 0;">
+        <p style="margin:0 0 8px;font-size:11px;color:#eab308;text-transform:uppercase;letter-spacing:1px;">
+            One small favour
+        </p>
+        <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
+            We want to make sure this email actually reached you — some inboxes
+            like to hide us. If you received this, please head back to Macro Pulse
+            and click the <b style="color:#22c55e;">"Got it ✓"</b> button on the
+            signup form. It proves the delivery pipeline works.
+        </p>
+        <p style="text-align:center;margin:16px 0 0;">
+            <a href="{SITE_URL}"
+               style="background:#222;color:#e0e0e0;padding:10px 24px;border-radius:4px;text-decoration:none;font-size:13px;display:inline-block;">
+                Return to Macro Pulse →
+            </a>
+        </p>
+    </div>
+
+    <p style="font-size:11px;color:#555;margin:16px 0 0;line-height:1.5;">
+        You're subscribed as <b>{email}</b>. If this wasn't you — or you'd like
+        to unsubscribe — just reply to this email and we'll remove you immediately.
+    </p>
+    """
+    html = _email_wrapper(copy["heading"], body)
+    ok = _send(email, subject, html)
+    if not ok:
+        logger.error(f"[welcome] failed to send to {email} source={source}")
+        _alert_admin(
+            "Welcome email send failed",
+            f"Email: {email}\nSource: {source}\n\nThe subscriber IS in Resend "
+            f"but the welcome email did not send. They may never know their "
+            f"signup worked.",
+        )
+    else:
+        logger.info(f"[welcome] sent to {email} source={source}")
+    return ok
 
 
 def _regime_badge(regime: str) -> str:
