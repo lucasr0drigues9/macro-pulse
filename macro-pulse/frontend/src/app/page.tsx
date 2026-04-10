@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import { apiUrl } from "@/lib/api";
+import { subscribeEmail } from "@/lib/subscribe";
 
 const tools = [
   {
@@ -154,6 +155,36 @@ export default function LobbyPage() {
     ],
   });
 
+  // Email signup state
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupRegimeAlerts, setSignupRegimeAlerts] = useState(true);
+  const [signupNewAnalysis, setSignupNewAnalysis] = useState(true);
+  const [signupSubmitted, setSignupSubmitted] = useState(false);
+  const [signupSubmitting, setSignupSubmitting] = useState(false);
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [signupSuccess, setSignupSuccess] = useState("");
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!signupEmail || signupSubmitting) return;
+    setSignupSubmitting(true);
+    setSignupError(null);
+    const features: string[] = [];
+    if (signupNewAnalysis) features.push("new_analysis");
+    const result = await subscribeEmail({
+      email: signupEmail,
+      regimeAlerts: signupRegimeAlerts,
+      waitlistFeatures: features,
+    });
+    setSignupSubmitting(false);
+    if (result.ok) {
+      setSignupSuccess(result.message);
+      setSignupSubmitted(true);
+    } else {
+      setSignupError(result.message);
+    }
+  };
+
   useEffect(() => {
     // Fetch US regime + performance + AI interpretation
     Promise.all([
@@ -265,23 +296,26 @@ export default function LobbyPage() {
           }
         })()}
 
-        {/* AI interpretation */}
-        {aiInterpretation && (
-          <div className="mt-4 p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-[#555]">What this means right now</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+        {/* AI interpretation — reserved height prevents layout shift while loading */}
+        <div className="mt-4 min-h-[140px]">
+          {aiInterpretation && (
+            <div className="p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-[#555]">What this means right now</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+              </div>
+              <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
+              <p className="text-[10px] text-[#333] mt-2">
+                AI-generated interpretation. ETF mentions for educational purposes only. Not personalised financial advice.
+              </p>
             </div>
-            <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
-            <p className="text-[10px] text-[#333] mt-2">
-              AI-generated interpretation. ETF mentions for educational purposes only. Not personalised financial advice.
-            </p>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* Capital Flow */}
+        {/* Capital Flow — reserved height prevents layout shift while loading */}
+        <div className="mt-6 min-h-[340px]">
         {capitalFlow && (capitalFlow.into.length > 0 || capitalFlow.out_of.length > 0) && (
-          <div className="mt-6">
+          <div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-[#e0e0e0]">Where Is Capital Flowing?</h3>
@@ -329,9 +363,11 @@ export default function LobbyPage() {
             </p>
           </div>
         )}
+        </div>
       </section>
 
-      {/* Currency Confirmation */}
+      {/* Currency Confirmation — reserved height prevents layout shift while loading */}
+      <div className="min-h-[700px]">
       {currencies && currencies.length > 0 && (() => {
         const usRegime = usData?.regime || "Stagflation";
         const euRegime = euData.regime;
@@ -476,6 +512,7 @@ export default function LobbyPage() {
           </section>
         );
       })()}
+      </div>
 
       {/* Six Tools */}
       <section className="px-4 py-12 max-w-5xl mx-auto">
@@ -531,20 +568,53 @@ export default function LobbyPage() {
           <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
             Regime change alerts, alliance shift notifications, and new analysis — delivered when it matters.
           </p>
-          <div className="flex gap-2 max-w-sm mx-auto mb-3">
-            <input
-              type="email"
-              placeholder="your@email.com"
-              className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none"
-            />
-            <button className="px-4 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
-              Notify me
-            </button>
-          </div>
-          <div className="flex gap-4 justify-center text-[10px] text-[#555]">
-            <label className="flex items-center gap-1"><input type="checkbox" defaultChecked className="accent-[#555]" /> Regime change alerts</label>
-            <label className="flex items-center gap-1"><input type="checkbox" defaultChecked className="accent-[#555]" /> New analysis</label>
-          </div>
+          {signupSubmitted ? (
+            <p className="text-sm text-[#22c55e] py-2">{signupSuccess}</p>
+          ) : (
+            <form onSubmit={handleSignup}>
+              <div className="flex gap-2 max-w-sm mx-auto mb-3">
+                <input
+                  type="email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  disabled={signupSubmitting}
+                  className="flex-1 px-3 py-2 rounded bg-[#0a0a0a] border border-[#222] text-sm text-[#e0e0e0] placeholder-[#333] focus:border-[#555] outline-none disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={signupSubmitting}
+                  className="px-4 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors disabled:opacity-50"
+                >
+                  {signupSubmitting ? "Sending…" : "Notify me"}
+                </button>
+              </div>
+              <div className="flex gap-4 justify-center text-[10px] text-[#555]">
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={signupRegimeAlerts}
+                    onChange={(e) => setSignupRegimeAlerts(e.target.checked)}
+                    className="accent-[#555]"
+                  />
+                  Regime change alerts
+                </label>
+                <label className="flex items-center gap-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={signupNewAnalysis}
+                    onChange={(e) => setSignupNewAnalysis(e.target.checked)}
+                    className="accent-[#555]"
+                  />
+                  New analysis
+                </label>
+              </div>
+              {signupError && (
+                <p className="text-xs text-[#ef4444] mt-3" role="alert">{signupError}</p>
+              )}
+            </form>
+          )}
         </div>
       </section>
 
