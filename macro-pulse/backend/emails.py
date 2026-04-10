@@ -7,6 +7,7 @@ Uses Resend Audiences for persistent subscriber storage.
 import os
 import json
 import logging
+import urllib.parse
 import resend
 
 logger = logging.getLogger("macro_pulse.emails")
@@ -296,6 +297,12 @@ def send_welcome(email: str, source: str = "default") -> bool:
     """
     copy = WELCOME_COPY.get(source, WELCOME_COPY["default"])
     subject = "Welcome to Macro Pulse — please confirm"
+    # Build the one-click confirmation URL
+    confirm_url = (
+        f"{SITE_URL}/confirmed?"
+        f"email={urllib.parse.quote_plus(email)}"
+        f"&source={urllib.parse.quote_plus(source)}"
+    )
     body = f"""
     <p style="font-size:14px;color:#e0e0e0;margin:0 0 16px;line-height:1.5;">
         {copy['body']}
@@ -306,15 +313,14 @@ def send_welcome(email: str, source: str = "default") -> bool:
             One small favour
         </p>
         <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
-            We want to make sure this email actually reached you — some inboxes
-            like to hide us. If you received this, please head back to Macro Pulse
-            and click the <b style="color:#22c55e;">"Got it ✓"</b> button on the
-            signup form. It proves the delivery pipeline works.
+            Click the button below to confirm you received this email. This
+            tells us our delivery pipeline is working and helps future alerts
+            land in your inbox instead of spam.
         </p>
         <p style="text-align:center;margin:16px 0 0;">
-            <a href="{SITE_URL}"
-               style="background:#222;color:#e0e0e0;padding:10px 24px;border-radius:4px;text-decoration:none;font-size:13px;display:inline-block;">
-                Return to Macro Pulse →
+            <a href="{confirm_url}"
+               style="background:#22c55e;color:#0a0a0a;padding:12px 28px;border-radius:4px;text-decoration:none;font-size:14px;font-weight:bold;display:inline-block;">
+                Confirm I got this email ✓
             </a>
         </p>
     </div>

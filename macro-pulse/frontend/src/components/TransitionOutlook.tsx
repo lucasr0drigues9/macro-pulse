@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
-import { subscribeEmail, confirmReceipt } from "@/lib/subscribe";
+import { subscribeEmail } from "@/lib/subscribe";
 
-type Phase = "idle" | "submitting" | "awaiting_confirm" | "confirmed" | "missing" | "error";
+type Phase = "idle" | "submitting" | "awaiting_confirm" | "missing" | "error";
 const SOURCE = "transition_outlook";
 
 type EtfOpportunity = {
@@ -65,10 +65,6 @@ export default function TransitionOutlook() {
     }
   };
 
-  const handleGotIt = () => {
-    setPhase("confirmed");
-    confirmReceipt(email, SOURCE);
-  };
   const handleMissing = () => setPhase("missing");
 
   useEffect(() => {
@@ -267,19 +263,13 @@ export default function TransitionOutlook() {
         {phase === "awaiting_confirm" && (
           <div className="max-w-md mx-auto py-2">
             <p className="text-sm text-[#22c55e] mb-2">You&apos;re subscribed.</p>
-            <p className="text-xs text-[#888] mb-4 leading-relaxed">
+            <p className="text-xs text-[#888] mb-3 leading-relaxed">
               We just sent a welcome email to <b className="text-[#e0e0e0]">{email}</b> from{" "}
-              <span className="text-[#e0e0e0]">alerts@macro-pulse.io</span>. Once it arrives, click below.
+              <span className="text-[#e0e0e0]">alerts@macro-pulse.io</span>. Open it and click
+              the <b className="text-[#22c55e]">&quot;Confirm I got this email ✓&quot;</b> button.
             </p>
-            <div className="flex gap-2 justify-center">
-              <button type="button" onClick={handleGotIt} className="px-4 py-2 rounded text-sm text-[#0a0a0a] bg-[#22c55e] hover:opacity-90 transition-opacity font-bold">Got it ✓</button>
-              <button type="button" onClick={handleMissing} className="px-4 py-2 rounded text-sm text-[#888] bg-[#1a1a1a] border border-[#222] hover:bg-[#222] transition-colors">Didn&apos;t arrive</button>
-            </div>
+            <button type="button" onClick={handleMissing} className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 transition-colors">Didn&apos;t arrive?</button>
           </div>
-        )}
-
-        {phase === "confirmed" && (
-          <p className="text-sm text-[#22c55e] py-2">Thanks — you&apos;re all set.</p>
         )}
 
         {phase === "missing" && (
