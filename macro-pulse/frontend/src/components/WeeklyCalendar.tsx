@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { calendarData as fallback } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
+import { subscribeEmail } from "@/lib/subscribe";
 
 type CalendarEvent = {
   name: string; source: string; date: string; day: string;
@@ -21,18 +22,23 @@ export default function WeeklyCalendar() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    try {
-      await fetch(apiUrl("/api/subscribe"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, eventAlerts: true }),
-      });
-    } catch {}
-    setSubmitted(true);
+    if (!email || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    const result = await subscribeEmail({ email, eventAlerts: true });
+    setSubmitting(false);
+    if (result.ok) {
+      setSuccessMessage(result.message);
+      setSubmitted(true);
+    } else {
+      setError(result.message);
+    }
   };
 
   useEffect(() => {
@@ -104,7 +110,7 @@ export default function WeeklyCalendar() {
       {/* Email signup */}
       <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222] text-center">
         {submitted ? (
-          <p className="text-sm text-[#22c55e]">You&apos;re in. We&apos;ll notify you after each release.</p>
+          <p className="text-sm text-[#22c55e]">{successMessage}</p>
         ) : (
           <>
             <p className="text-sm text-[#e0e0e0] mb-1">Get notified after each event</p>
@@ -116,15 +122,20 @@ export default function WeeklyCalendar() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left"
+                disabled={submitting}
+                className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left disabled:opacity-50"
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors"
+                disabled={submitting}
+                className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
               >
-                Notify me
+                {submitting ? "Sending…" : "Notify me"}
               </button>
             </form>
+            {error && (
+              <p className="text-xs text-[#ef4444] mt-2" role="alert">{error}</p>
+            )}
           </>
         )}
       </div>

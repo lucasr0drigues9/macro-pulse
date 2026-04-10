@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { apiUrl } from "@/lib/api";
+import { subscribeEmail } from "@/lib/subscribe";
 import Nav from "@/components/Nav";
 import {
   SECTORS, COMPANIES, CATALYSTS, REGIME_FIT_EMOJI, RISK_COLORS,
@@ -384,6 +385,9 @@ export default function EuropePage() {
   const [thesisOpen, setThesisOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [subSubmitting, setSubSubmitting] = useState(false);
+  const [subError, setSubError] = useState<string | null>(null);
+  const [subSuccessMessage, setSubSuccessMessage] = useState("");
   const [returns, setReturns] = useState<ReturnData>({});
   const [invasionReturns, setInvasionReturns] = useState<ReturnData>({});
   const [euRegime, setEuRegime] = useState<EuRegimeData | null>(null);
@@ -432,15 +436,20 @@ export default function EuropePage() {
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    try {
-      await fetch(apiUrl("/api/subscribe"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, waitlistFeatures: ["europe_tracker"] }),
-      });
-    } catch {}
-    setSubmitted(true);
+    if (!email || subSubmitting) return;
+    setSubSubmitting(true);
+    setSubError(null);
+    const result = await subscribeEmail({
+      email,
+      waitlistFeatures: ["europe_tracker"],
+    });
+    setSubSubmitting(false);
+    if (result.ok) {
+      setSubSuccessMessage(result.message);
+      setSubmitted(true);
+    } else {
+      setSubError(result.message);
+    }
   };
 
   return (
@@ -1426,15 +1435,18 @@ export default function EuropePage() {
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <div className="p-4 rounded-lg bg-[#111] border border-[#222] text-center">
           {submitted ? (
-            <p className="text-sm text-[#22c55e]">You&apos;re tracking. Quarterly updates on European strategic autonomy.</p>
+            <p className="text-sm text-[#22c55e]">{subSuccessMessage}</p>
           ) : (
             <>
               <p className="text-sm text-[#e0e0e0] mb-1">Track the European autonomy theme</p>
               <p className="text-xs text-[#555] mb-3">Quarterly updates on milestones, policy, and company developments.</p>
               <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left" />
-                <button type="submit" className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors">Track Europe</button>
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="your@email.com" required disabled={subSubmitting} className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left disabled:opacity-50" />
+                <button type="submit" disabled={subSubmitting} className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50">{subSubmitting ? "Sending…" : "Track Europe"}</button>
               </form>
+              {subError && (
+                <p className="text-xs text-[#ef4444] mt-2" role="alert">{subError}</p>
+              )}
             </>
           )}
         </div>

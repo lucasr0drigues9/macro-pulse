@@ -48,7 +48,7 @@ def _seed_cache_on_startup():
 
 _seed_cache_on_startup()
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 import asyncio
@@ -404,19 +404,18 @@ def get_eu_backtest():
             ai_picks_return = all_returns.get(ai_regime)
             ai_correct = best_regime == ai_regime if best_regime else None
 
-            # Load double-miss explanation if both framework and AI were wrong
-            double_miss = None
-            if framework_correct is False and ai_correct is False:
-                try:
-                    dm_path = os.path.join(MACRO, ".macro_cache", "double_miss_eu.json")
-                    if os.path.exists(dm_path):
-                        with open(dm_path) as _dmf:
-                            dm_cache = _json.load(_dmf)
-                        dm_entry = dm_cache.get(start[:7])
-                        if dm_entry:
-                            double_miss = dm_entry.get("structured")
-                except Exception:
-                    pass
+            # Load structured per-period analysis (all 4 outcome cases)
+            period_analysis = None
+            try:
+                pa_path = os.path.join(MACRO, ".macro_cache", "period_analysis_eu.json")
+                if os.path.exists(pa_path):
+                    with open(pa_path) as _paf:
+                        pa_cache = _json.load(_paf)
+                    pa_entry = pa_cache.get(start[:7])
+                    if pa_entry:
+                        period_analysis = pa_entry.get("structured")
+            except Exception:
+                pass
 
             timeline_data.append({
                 "regime": p["regime"],
@@ -433,7 +432,7 @@ def get_eu_backtest():
                 "aiPicksReturn": ai_picks_return,
                 "aiDiffersFromFred": geo_override is not None and geo_override != p["regime"],
                 "aiCorrect": ai_correct,
-                "doubleMiss": double_miss,
+                "periodAnalysis": period_analysis,
             })
 
         timeline_data.reverse()  # Most recent first
@@ -1261,19 +1260,18 @@ def get_backtest():
         ai_picks_ret = all_regime_returns.get(ai_regime)
         ai_correct = best_regime == ai_regime if best_regime else None
 
-        # Load double-miss explanation if both framework and AI were wrong
-        double_miss = None
-        if framework_correct is False and ai_correct is False:
-            try:
-                dm_path = os.path.join(MACRO, ".macro_cache", "double_miss_us.json")
-                if os.path.exists(dm_path):
-                    with open(dm_path) as _dmf:
-                        dm_cache = json.load(_dmf)
-                    dm_entry = dm_cache.get(start[:7])
-                    if dm_entry:
-                        double_miss = dm_entry.get("structured")
-            except Exception:
-                pass
+        # Load structured per-period analysis (all 4 outcome cases)
+        period_analysis = None
+        try:
+            pa_path = os.path.join(MACRO, ".macro_cache", "period_analysis_us.json")
+            if os.path.exists(pa_path):
+                with open(pa_path) as _paf:
+                    pa_cache = json.load(_paf)
+                pa_entry = pa_cache.get(start[:7])
+                if pa_entry:
+                    period_analysis = pa_entry.get("structured")
+        except Exception:
+            pass
 
         entry = {
             "regime": regime,
@@ -1293,7 +1291,7 @@ def get_backtest():
             "aiPicksReturn": ai_picks_ret,
             "aiDiffersFromFred": geo_regime is not None and geo_regime != regime,
             "aiCorrect": ai_correct,
-            "doubleMiss": double_miss,
+            "periodAnalysis": period_analysis,
         }
         # Keep legacy fields for compatibility
         if geo_regime and geo_regime != regime:
@@ -1362,18 +1360,74 @@ _emails_mod.SUBSCRIBERS_FILE = SUBSCRIBERS_FILE
 
 
 @app.post("/api/subscribe")
-def subscribe(body: dict):
-    """Email capture — stores in Resend Audience (persistent) + file backup."""
+def subscribe(body: dict, response: Response):
+    """Email capture — stores in Resend Audience as the source of truth.
+
+    Returns 200 only when the contact was actually persisted to Resend.
+    Returns 422 for invalid input, 502 for upstream Resend failure.
+    Never lies about success — the frontend can trust `ok` and the HTTP status.
+    """
     import emails as _em
 
     email = body.get("email", "").strip().lower()
-    if not email or "@" not in email:
-        return {"error": "Invalid email", "ok": False}
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        response.status_code = 422
+        return {"ok": False, "error": "Invalid email address"}
 
     waitlist_features = body.get("waitlistFeatures", [])
-    ok = _em.add_subscriber(email, waitlist_features)
+    result = _em.add_subscriber(email, waitlist_features)
 
-    return {"ok": ok, "message": "Subscribed successfully" if ok else "Failed to subscribe"}
+    payload = result.to_dict()
+    if not result.ok:
+        # Persistence failed — surface 502 so the frontend can show a real error.
+        response.status_code = 502
+        payload["message"] = (
+            "We couldn't save your email right now. Please try again in a moment "
+            "or email us directly."
+        )
+        return payload
+
+    if result.persisted_to == "file":
+        # Saved to ephemeral file backup — DEGRADED state, alert was already sent.
+        response.status_code = 202  # Accepted, but not durably stored
+        payload["message"] = "Subscribed (degraded mode — please retry if you don't get the welcome email)"
+        return payload
+
+    payload["message"] = (
+        "You're already on the list — first issue arrives next Tuesday."
+        if result.already_existed
+        else "Subscribed. First issue arrives next Tuesday."
+    )
+    return payload
+
+
+@app.get("/api/admin/subscribers")
+def admin_subscribers(request: Request):
+    """Lightweight monitoring endpoint — count subscribers in Resend.
+    Auth via x-admin-secret header (uses CRON_SECRET as the shared secret)."""
+    import emails as _em
+    secret = os.getenv("CRON_SECRET", "")
+    if secret and request.headers.get("x-admin-secret") != secret:
+        return {"error": "Unauthorized"}
+    try:
+        import resend as _resend
+        _resend.api_key = os.getenv("RESEND_API_KEY", "")
+        contacts = _resend.Contacts.list(audience_id=os.getenv("RESEND_AUDIENCE_ID", ""))
+        data = contacts.get("data", [])
+        return {
+            "count": len(data),
+            "audienceId": os.getenv("RESEND_AUDIENCE_ID", ""),
+            "subscribers": [
+                {
+                    "email": c.get("email"),
+                    "createdAt": c.get("created_at"),
+                    "unsubscribed": c.get("unsubscribed", False),
+                }
+                for c in data
+            ],
+        }
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.get("/api/value-scanner")

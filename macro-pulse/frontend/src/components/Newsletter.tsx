@@ -1,24 +1,29 @@
 "use client";
 
 import { useState } from "react";
-import { apiUrl } from "@/lib/api";
+import { subscribeEmail } from "@/lib/subscribe";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string>("");
   const [showPreview, setShowPreview] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    try {
-      await fetch(apiUrl("/api/subscribe"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, weeklyPulse: true }),
-      });
-    } catch {}
-    setSubmitted(true);
+    if (!email || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    const result = await subscribeEmail({ email, weeklyPulse: true });
+    setSubmitting(false);
+    if (result.ok) {
+      setSuccessMessage(result.message);
+      setSubmitted(true);
+    } else {
+      setError(result.message);
+    }
   };
 
   return (
@@ -32,7 +37,7 @@ export default function Newsletter() {
 
         {submitted ? (
           <div className="py-4">
-            <span className="text-[#22c55e] text-sm">Subscribed. First issue arrives next Tuesday.</span>
+            <span className="text-[#22c55e] text-sm">{successMessage}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
@@ -42,15 +47,20 @@ export default function Newsletter() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="your@email.com"
               required
-              className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left"
+              disabled={submitting}
+              className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none text-center sm:text-left disabled:opacity-50"
             />
             <button
               type="submit"
-              className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors"
+              disabled={submitting}
+              className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
             >
-              Send me the weekly pulse
+              {submitting ? "Sending…" : "Send me the weekly pulse"}
             </button>
           </form>
+        )}
+        {error && (
+          <p className="mt-3 text-xs text-[#ef4444]" role="alert">{error}</p>
         )}
 
         <button

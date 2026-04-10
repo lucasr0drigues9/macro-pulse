@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiUrl } from "@/lib/api";
+import { subscribeEmail } from "@/lib/subscribe";
 
 const features = [
   {
@@ -25,6 +25,9 @@ export default function ComingSoon() {
   const [email, setEmail] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const toggle = (id: string) => {
     const next = new Set(selected);
@@ -35,15 +38,20 @@ export default function ComingSoon() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    try {
-      await fetch(apiUrl("/api/subscribe"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, waitlistFeatures: Array.from(selected) }),
-      });
-    } catch {}
-    setSubmitted(true);
+    if (!email || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    const result = await subscribeEmail({
+      email,
+      waitlistFeatures: Array.from(selected),
+    });
+    setSubmitting(false);
+    if (result.ok) {
+      setSuccessMessage(result.message);
+      setSubmitted(true);
+    } else {
+      setError(result.message);
+    }
   };
 
   return (
@@ -63,7 +71,7 @@ export default function ComingSoon() {
       <div className="p-6 rounded-lg bg-[#111] border border-[#222]">
         {submitted ? (
           <div className="text-center py-2">
-            <span className="text-[#22c55e] text-sm">You&apos;re on the waitlist. We&apos;ll let you know.</span>
+            <span className="text-[#22c55e] text-sm">{successMessage}</span>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -87,15 +95,20 @@ export default function ComingSoon() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com"
                 required
-                className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none"
+                disabled={submitting}
+                className="flex-1 bg-[#0a0a0a] border border-[#222] rounded px-3 py-2 text-sm text-[#e0e0e0] focus:border-[#444] focus:outline-none disabled:opacity-50"
               />
               <button
                 type="submit"
-                className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors"
+                disabled={submitting}
+                className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
               >
-                Join waitlist
+                {submitting ? "Sending…" : "Join waitlist"}
               </button>
             </div>
+            {error && (
+              <p className="text-xs text-[#ef4444] mt-2" role="alert">{error}</p>
+            )}
           </form>
         )}
       </div>

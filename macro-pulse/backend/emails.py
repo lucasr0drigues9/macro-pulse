@@ -6,14 +6,37 @@ Uses Resend Audiences for persistent subscriber storage.
 
 import os
 import json
+import logging
 import resend
+
+logger = logging.getLogger("macro_pulse.emails")
+logging.basicConfig(level=logging.INFO)
 
 RESEND_KEY = os.getenv("RESEND_API_KEY", "")
 FROM_EMAIL = os.getenv("FROM_EMAIL", "Macro Pulse <onboarding@resend.dev>")
 SITE_URL = os.getenv("SITE_URL", "https://macro-pulse.vercel.app")
 AUDIENCE_ID = os.getenv("RESEND_AUDIENCE_ID", "")
+ADMIN_ALERT_EMAIL = os.getenv("ADMIN_ALERT_EMAIL", "lucasrodrigues12000@gmail.com")
 
 SUBSCRIBERS_FILE = None  # Legacy fallback — set by main.py
+
+
+class SubscribeResult:
+    """Outcome of a subscribe attempt — never lies about persistence."""
+    def __init__(self, ok: bool, persisted_to: str | None, error: str | None = None,
+                 already_existed: bool = False):
+        self.ok = ok
+        self.persisted_to = persisted_to  # "resend" | "file" | None
+        self.error = error
+        self.already_existed = already_existed
+
+    def to_dict(self) -> dict:
+        return {
+            "ok": self.ok,
+            "persistedTo": self.persisted_to,
+            "alreadyExisted": self.already_existed,
+            "error": self.error,
+        }
 
 DISCLAIMER = (
     "This is a systematic framework output for educational purposes only. "
@@ -30,44 +53,106 @@ REGIME_COLORS = {
 }
 
 
-def add_subscriber(email: str, features: list[str] = None) -> bool:
-    """Add a subscriber to Resend Audience. Falls back to file if no audience configured."""
-    if RESEND_KEY and AUDIENCE_ID:
-        try:
-            resend.api_key = RESEND_KEY
-            resend.Contacts.create({
-                "audience_id": AUDIENCE_ID,
-                "email": email,
-                "first_name": "",
-                "last_name": "",
-                "unsubscribed": False,
-            })
-            return True
-        except Exception as e:
-            print(f"  [email] Failed to add contact to Resend: {e}")
-            # Fall through to file backup
+def _alert_admin(subject: str, body: str):
+    """Send a self-alert email when something goes wrong with subscribe flow.
+    Best-effort — never raises."""
+    if not RESEND_KEY or not ADMIN_ALERT_EMAIL:
+        return
+    try:
+        resend.api_key = RESEND_KEY
+        resend.Emails.send({
+            "from": FROM_EMAIL,
+            "to": [ADMIN_ALERT_EMAIL],
+            "subject": f"[Macro Pulse alert] {subject}",
+            "html": f"<pre style='font-family:monospace;font-size:12px;'>{body}</pre>",
+        })
+    except Exception as e:
+        logger.error(f"Failed to send admin alert: {e}")
 
-    # Legacy file fallback
-    if SUBSCRIBERS_FILE:
-        try:
-            subs = []
-            if os.path.exists(SUBSCRIBERS_FILE):
-                with open(SUBSCRIBERS_FILE) as f:
-                    subs = json.load(f)
-            if not any(s.get("email") == email for s in subs):
-                subs.append({
-                    "email": email,
-                    "regimeAlerts": True,
-                    "eventAlerts": True,
-                    "weeklyPulse": True,
-                    "waitlistFeatures": features or [],
-                })
-                with open(SUBSCRIBERS_FILE, "w") as f:
-                    json.dump(subs, f)
-            return True
-        except Exception:
-            pass
-    return False
+
+def add_subscriber(email: str, features: list[str] = None) -> SubscribeResult:
+    """Add a subscriber to Resend Audience. Returns honest SubscribeResult.
+
+    Persistence priority:
+      1. Resend Audience (durable, source of truth)
+      2. File backup (only used if Resend not configured — ephemeral on Railway)
+
+    A duplicate email in Resend is considered SUCCESS (idempotent), not failure.
+    Any unhandled error triggers an admin alert email + logs the full context.
+    """
+    logger.info(f"[subscribe] attempt email={email} features={features}")
+
+    if not RESEND_KEY or not AUDIENCE_ID:
+        msg = (f"RESEND_API_KEY={'set' if RESEND_KEY else 'MISSING'}, "
+               f"RESEND_AUDIENCE_ID={'set' if AUDIENCE_ID else 'MISSING'}")
+        logger.error(f"[subscribe] config error: {msg}")
+        _alert_admin(
+            "Subscribe config error",
+            f"Email: {email}\nReason: Resend not configured ({msg})\n\n"
+            f"User saw success but the contact was NOT persisted durably.",
+        )
+        # Still try the file backup — better than dropping the email entirely
+        return _file_fallback(email, features, error=f"Resend not configured: {msg}")
+
+    try:
+        resend.api_key = RESEND_KEY
+        resend.Contacts.create({
+            "audience_id": AUDIENCE_ID,
+            "email": email,
+            "first_name": "",
+            "last_name": "",
+            "unsubscribed": False,
+        })
+        logger.info(f"[subscribe] resend OK email={email}")
+        return SubscribeResult(ok=True, persisted_to="resend")
+    except Exception as e:
+        err_str = str(e)
+        # Resend returns "validation_error" / "Contact already exists" for duplicates.
+        # Treat as success — the email is already persisted.
+        if "already exists" in err_str.lower() or "duplicate" in err_str.lower():
+            logger.info(f"[subscribe] duplicate email={email} (treated as success)")
+            return SubscribeResult(ok=True, persisted_to="resend", already_existed=True)
+
+        # Real failure — alert admin so we never lose another signup silently
+        logger.error(f"[subscribe] resend error email={email}: {e}")
+        _alert_admin(
+            "Subscribe FAILED — possible lost lead",
+            f"Email: {email}\nFeatures: {features}\n"
+            f"Resend error: {err_str}\n\n"
+            f"Falling back to file backup, but Railway wipes the FS on deploy. "
+            f"Add this address to Resend manually if you want to keep them.",
+        )
+        return _file_fallback(email, features, error=err_str)
+
+
+def _file_fallback(email: str, features: list[str] = None,
+                   error: str = None) -> SubscribeResult:
+    """Last-resort file persistence. Caller must understand this is ephemeral on Railway."""
+    if not SUBSCRIBERS_FILE:
+        return SubscribeResult(ok=False, persisted_to=None,
+                               error=error or "No file backup configured")
+    try:
+        subs = []
+        if os.path.exists(SUBSCRIBERS_FILE):
+            with open(SUBSCRIBERS_FILE) as f:
+                subs = json.load(f)
+        if any(s.get("email") == email for s in subs):
+            return SubscribeResult(ok=True, persisted_to="file",
+                                   already_existed=True, error=error)
+        subs.append({
+            "email": email,
+            "regimeAlerts": True,
+            "eventAlerts": True,
+            "weeklyPulse": True,
+            "waitlistFeatures": features or [],
+        })
+        with open(SUBSCRIBERS_FILE, "w") as f:
+            json.dump(subs, f)
+        return SubscribeResult(ok=True, persisted_to="file", error=error)
+    except Exception as e:
+        logger.error(f"[subscribe] file backup also failed for {email}: {e}")
+        return SubscribeResult(ok=False, persisted_to=None,
+                               error=f"{error}; file backup also failed: {e}")
 
 
 def _load_subscribers(filter_field: str = None) -> list[dict]:
