@@ -567,31 +567,19 @@ async def chat_period(body: dict):
     )
 
     # ── Build system prompt + messages ──
-    system_prompt = f"""You are an expert macro investment analyst answering questions about a specific historical regime period on the World Order View platform.
+    system_prompt = f"""Expert macro analyst for World Order View. Answer questions about this regime period.
 
-Period: {start} to {end}, {region}
-{data_source} data called: {regime}
-AI geopolitical layer called: {ai_regime}
-Best-performing regime basket: {best}
-Returns by basket: {returns_str}
+{start}→{end}, {region}. Data: {regime}. AI: {ai_regime}. Winner: {best}. Returns: {returns_str}.
+Event: {analysis.get('event', 'N/A')}
+Data: {analysis.get('why_data', 'N/A')}
+AI: {analysis.get('why_ai', 'N/A')}
+Winner: {analysis.get('winner_dynamic', 'N/A')}
 
-Pre-generated analysis:
-- Event: {analysis.get('event', 'N/A')}
-- {data_source} reading: {analysis.get('why_data', 'N/A')}
-- AI reading: {analysis.get('why_ai', 'N/A')}
-- Winner mechanism: {analysis.get('winner_dynamic', 'N/A')}
+Rules: 2-4 sentences max. Name events, dates, numbers. Use web_search for specifics. No investment advice."""
 
-Rules:
-- Answer in 2-4 sentences max. Be specific to THIS period — name events, policies, dates, numbers.
-- Use your training knowledge freely. You know a lot about macro events — use it.
-- When the user asks for specifics beyond the pre-generated analysis, use the web_search tool to find real details (dates, names, policies, data points).
-- If you genuinely don't know a specific detail even after searching, say so briefly and offer what you DO know.
-- Never give investment advice. Say "historically" and "during this period" not "you should".
-- Keep the tone direct and analytical — no fluff."""
-
-    # Build message list from conversation history
+    # Build message list — keep last 6 messages to stay within token limits
     messages = []
-    for msg in history[:-1]:  # Everything except the latest (which is the current question)
+    for msg in history[-6:-1]:
         role = msg.get("role", "user")
         content = msg.get("content", "")
         if role in ("user", "assistant") and content:
@@ -608,10 +596,10 @@ Rules:
             },
             json={
                 "model": "claude-sonnet-4-20250514",
-                "max_tokens": 4096,
+                "max_tokens": 1024,
                 "system": system_prompt,
                 "messages": messages,
-                "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": 2}],
+                "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": 1}],
             },
             timeout=30,
         )
