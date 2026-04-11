@@ -553,38 +553,7 @@ async def chat_period(body: dict):
         f"{k}: {v:.1f}%" for k, v in returns.items() if v is not None
     )
 
-    # ── Step 1: Web search for real-world context ──
-    search_snippets = ""
-    try:
-        region_label = "United States" if region == "US" else "Europe"
-        search_query = f"{question} {region_label} {start} {end} economy markets"
-        sr = _req.get(
-            "https://api.duckduckgo.com/",
-            params={"q": search_query, "format": "json", "no_html": 1, "skip_disambig": 1},
-            timeout=5,
-        )
-        search_data = sr.json()
-        snippets = []
-        # Abstract
-        if search_data.get("Abstract"):
-            snippets.append(search_data["Abstract"][:300])
-        # Related topics
-        for topic in (search_data.get("RelatedTopics") or [])[:4]:
-            if isinstance(topic, dict) and topic.get("Text"):
-                snippets.append(topic["Text"][:200])
-        if snippets:
-            search_snippets = "\n".join(f"- {s}" for s in snippets)
-    except Exception:
-        pass  # Search is best-effort — don't fail the chat
-
-    # ── Step 2: Build system prompt + messages ──
-    search_block = ""
-    if search_snippets:
-        search_block = f"""
-
-Web search results (use these for specific details the pre-generated analysis doesn't cover):
-{search_snippets}"""
-
+    # ── Build system prompt + messages ──
     system_prompt = f"""You are an expert macro investment analyst answering questions about a specific historical regime period on the World Order View platform.
 
 Period: {start} to {end}, {region}
@@ -597,13 +566,13 @@ Pre-generated analysis:
 - Event: {analysis.get('event', 'N/A')}
 - {data_source} reading: {analysis.get('why_data', 'N/A')}
 - AI reading: {analysis.get('why_ai', 'N/A')}
-- Winner mechanism: {analysis.get('winner_dynamic', 'N/A')}{search_block}
+- Winner mechanism: {analysis.get('winner_dynamic', 'N/A')}
 
 Rules:
 - Answer in 2-4 sentences max. Be specific to THIS period — name events, policies, dates, numbers.
-- Use your training knowledge AND the search results above to give detailed, specific answers.
-- If the search results contain relevant information, incorporate specific names, dates, and facts.
-- If you genuinely don't know a specific detail, say so briefly and offer what you DO know about the period.
+- Use your training knowledge freely. You know a lot about macro events — use it.
+- When the user asks for specifics beyond the pre-generated analysis, use the web_search tool to find real details (dates, names, policies, data points).
+- If you genuinely don't know a specific detail even after searching, say so briefly and offer what you DO know.
 - Never give investment advice. Say "historically" and "during this period" not "you should".
 - Keep the tone direct and analytical — no fluff."""
 
@@ -626,17 +595,20 @@ Rules:
             },
             json={
                 "model": "claude-sonnet-4-20250514",
-                "max_tokens": 400,
+                "max_tokens": 4096,
                 "system": system_prompt,
                 "messages": messages,
+                "tools": [{"type": "web_search_20250305"}],
             },
-            timeout=20,
+            timeout=30,
         )
         data = r.json()
         if data.get("error"):
             return {"error": data["error"].get("message", "API error")}
+        # Extract text blocks from the response (skip tool_use/search blocks)
         answer = "".join(
             b.get("text", "") for b in data.get("content", [])
+            if b.get("type") == "text"
         ).strip()
         return {"answer": answer}
     except Exception as e:
