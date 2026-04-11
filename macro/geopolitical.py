@@ -189,12 +189,18 @@ SYNTHESIS_PROMPT = """You are a senior macro analyst and portfolio strategist.
 You will be given:
 1. Current macro regime (Ray Dalio quadrant)
 2. Active geopolitical risks
-3. Recent asset performance data
-4. Transition warnings
-5. Upcoming economic calendar events
+3. Central bank decisions and forward guidance
+4. Recent asset performance data
+5. Transition warnings
+6. Upcoming economic calendar events
 
 Synthesise all of this into a concise, actionable investment narrative.
 Acknowledge uncertainty honestly — don't pretend to know what will happen.
+
+CRITICAL: Central bank pivots (rate cuts/hikes, QE, forward guidance) are as important
+as geopolitical events for regime determination. A dovish pivot → reflationary signal.
+A hawkish surprise → deflationary signal. Always factor monetary policy into your regime
+bias — don't let geopolitical headlines dominate when the central bank is moving.
 
 IMPORTANT: Only recommend ETFs from our tracked universe. Do NOT recommend individual stocks.
 Our ETF universe: XLE, GLD, DBC, XLP, XLU, GURU, XLI, SPY, BRK-B, QQQ, TLT, IWM.
@@ -398,6 +404,18 @@ Current Fed rate: 3.50-3.75% (held at March 18 meeting)"""
     except Exception as _pe:
         perf_text = f"Recent asset performance: unavailable ({_pe})\n"
 
+    # ── Central bank context ──
+    cb_text = """Recent central bank decisions (weight these alongside geopolitical events):
+- Fed: Held at 4.25-4.50% (Jan 2026). Next FOMC Apr 28-29. Markets pricing 2 cuts in 2026.
+- ECB: Cut to 2.75% (Jan 2026). Fourth consecutive cut. Inflation at 2.4%, growth near zero.
+- BOJ: Hiked to 0.50% (Jan 2026). Only major CB tightening. Yen carry trade unwinding risk.
+- PBOC: Cut LPR to 3.10% (Oct 2025). Continued easing. Property crisis ongoing.
+
+IMPORTANT: Monetary policy pivots (rate cuts, QE launches, forward guidance shifts) can
+override geopolitical signals. When a central bank pivots dovish, that's a reflationary
+signal regardless of what geopolitical headlines say. When a CB pivots hawkish, that's
+deflationary. Factor these into your regime_bias assessment."""
+
     user_prompt = f"""Current macro regime (FRED): {quadrant}
 Overall geopolitical bias: {geo_data.get('overall_regime_bias', 'Unknown')}
 Today's date: {now.strftime('%Y-%m-%d')}
@@ -406,6 +424,8 @@ Today's date: {now.strftime('%Y-%m-%d')}
 
 Active geopolitical events:
 {events_text}
+
+{cb_text}
 
 {transition_text}
 
