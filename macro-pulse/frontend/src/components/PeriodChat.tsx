@@ -39,14 +39,22 @@ export default function PeriodChat({ context }: { context: PeriodContext }) {
     if (!question.trim() || loading) return;
     const q = question.trim();
     setInput("");
-    setMessages((prev) => [...prev, { role: "user", text: q }]);
+    const updatedMessages = [...messages, { role: "user" as const, text: q }];
+    setMessages(updatedMessages);
     setLoading(true);
 
     try {
       const res = await fetch(apiUrl("/api/chat/period"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q, context }),
+        body: JSON.stringify({
+          question: q,
+          context,
+          history: updatedMessages.map((m) => ({
+            role: m.role,
+            content: m.text,
+          })),
+        }),
       });
       const data = await res.json();
       const answer = data.answer || data.error || "No response.";

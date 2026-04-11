@@ -516,17 +516,22 @@ async def chat_period(body: dict):
     """Answer a user question about a specific regime period.
 
     Expects:
-      question: str — the user's question
+      question: str — the user's latest question
       context: dict — period data (start, end, regime, aiRegime, bestRegime,
                        allRegimeReturns, periodAnalysis, region)
+      history: list — prior [{role, content}] messages for multi-turn context
 
-    Calls Claude Sonnet with the period data pre-loaded so it gives grounded,
-    specific answers rather than generic macro textbook responses.
+    Two-step flow:
+      1. Quick web search for the question + period context → real-world snippets
+      2. Claude Sonnet answers with the period data + search results + history
     """
     import requests as _req
+    import re as _re
+    import json as _json
 
     question = (body.get("question") or "").strip()
     ctx = body.get("context") or {}
+    history = body.get("history") or []
     if not question:
         return {"error": "No question provided"}
 
@@ -544,7 +549,41 @@ async def chat_period(body: dict):
     returns = ctx.get("allRegimeReturns") or {}
     analysis = ctx.get("periodAnalysis") or {}
 
-    returns_str = ", ".join(f"{k}: {v:.1f}%" for k, v in returns.items() if v is not None)
+    returns_str = ", ".join(
+        f"{k}: {v:.1f}%" for k, v in returns.items() if v is not None
+    )
+
+    # ── Step 1: Web search for real-world context ──
+    search_snippets = ""
+    try:
+        region_label = "United States" if region == "US" else "Europe"
+        search_query = f"{question} {region_label} {start} {end} economy markets"
+        sr = _req.get(
+            "https://api.duckduckgo.com/",
+            params={"q": search_query, "format": "json", "no_html": 1, "skip_disambig": 1},
+            timeout=5,
+        )
+        search_data = sr.json()
+        snippets = []
+        # Abstract
+        if search_data.get("Abstract"):
+            snippets.append(search_data["Abstract"][:300])
+        # Related topics
+        for topic in (search_data.get("RelatedTopics") or [])[:4]:
+            if isinstance(topic, dict) and topic.get("Text"):
+                snippets.append(topic["Text"][:200])
+        if snippets:
+            search_snippets = "\n".join(f"- {s}" for s in snippets)
+    except Exception:
+        pass  # Search is best-effort — don't fail the chat
+
+    # ── Step 2: Build system prompt + messages ──
+    search_block = ""
+    if search_snippets:
+        search_block = f"""
+
+Web search results (use these for specific details the pre-generated analysis doesn't cover):
+{search_snippets}"""
 
     system_prompt = f"""You are an expert macro investment analyst answering questions about a specific historical regime period on the World Order View platform.
 
@@ -558,14 +597,24 @@ Pre-generated analysis:
 - Event: {analysis.get('event', 'N/A')}
 - {data_source} reading: {analysis.get('why_data', 'N/A')}
 - AI reading: {analysis.get('why_ai', 'N/A')}
-- Winner mechanism: {analysis.get('winner_dynamic', 'N/A')}
+- Winner mechanism: {analysis.get('winner_dynamic', 'N/A')}{search_block}
 
 Rules:
-- Answer in 2-4 sentences max. Be specific to THIS period — no generic textbook answers.
-- Reference actual events, policies, dates, and numbers from this period.
-- If the user asks about something outside this period, briefly answer but redirect to what happened here.
+- Answer in 2-4 sentences max. Be specific to THIS period — name events, policies, dates, numbers.
+- Use your training knowledge AND the search results above to give detailed, specific answers.
+- If the search results contain relevant information, incorporate specific names, dates, and facts.
+- If you genuinely don't know a specific detail, say so briefly and offer what you DO know about the period.
 - Never give investment advice. Say "historically" and "during this period" not "you should".
 - Keep the tone direct and analytical — no fluff."""
+
+    # Build message list from conversation history
+    messages = []
+    for msg in history[:-1]:  # Everything except the latest (which is the current question)
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": question})
 
     try:
         r = _req.post(
@@ -577,16 +626,18 @@ Rules:
             },
             json={
                 "model": "claude-sonnet-4-20250514",
-                "max_tokens": 300,
+                "max_tokens": 400,
                 "system": system_prompt,
-                "messages": [{"role": "user", "content": question}],
+                "messages": messages,
             },
-            timeout=15,
+            timeout=20,
         )
         data = r.json()
         if data.get("error"):
             return {"error": data["error"].get("message", "API error")}
-        answer = "".join(b.get("text", "") for b in data.get("content", [])).strip()
+        answer = "".join(
+            b.get("text", "") for b in data.get("content", [])
+        ).strip()
         return {"answer": answer}
     except Exception as e:
         return {"error": str(e)}
