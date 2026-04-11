@@ -354,8 +354,10 @@ def get_eu_backtest():
             "2011-08": ("STRONG", "European debt crisis peak. Italy and Spain under attack. ECB launched SMP buying Italian/Spanish bonds.", None),
             "2012-07": ("STRONG", "Draghi 'whatever it takes' saved the euro. Turning point for European risk assets.", "Reflation"),
             "2012-08": ("STRONG", "Draghi 'whatever it takes' Jul 2012 + OMT program backstopping eurozone bonds. Risk assets rallying on monetary backstop.", "Reflation"),
+            "2012-11": ("STRONG", "OMT program in place since Sep 2012. Sovereign spreads compressing. ECB backstop enabling risk-on reflation trade.", "Reflation"),
             "2014-11": ("STRONG", "ECB cut deposit rate to -0.2%, preparing full QE. Oil crashing. Draghi engineering reflation, not stagflation.", "Reflation"),
             "2015-03": ("STRONG", "ECB QE launched (€60B/month). Euro weakened. Deflation fear genuine but stimulus flowing.", "Reflation"),
+            "2015-08": ("STRONG", "ECB QE running at €60B/month since Jan 2015. Euro at multi-year lows. Reflationary tailwind from massive bond purchases.", "Reflation"),
             "2016-04": ("MODERATE", "Brexit vote uncertainty building. Oil recovering. Mixed signals.", "Goldilocks"),
             "2016-07": ("STRONG", "Brexit vote shock. Sterling collapsed. European integration under threat.", "Deflation"),
             "2017-01": ("MODERATE", "ECB QE ongoing. Euro weakening, exports booming. Reflationary tailwind from loose monetary policy.", "Reflation"),
@@ -368,12 +370,14 @@ def get_eu_backtest():
             "2020-07": ("STRONG", "EU recovery fund agreed — first joint fiscal action. Reopening boost.", "Reflation"),
             "2021-11": ("MODERATE", "Energy prices spiking. Natural gas crisis building. Russia restricting flows.", "Stagflation"),
             "2022-04": ("STRONG", "Russia invaded Ukraine Feb 2022. European energy crisis. ECB behind the curve.", "Stagflation"),
+            "2022-06": ("STRONG", "Russia weaponised gas supplies. Nord Stream flows cut to 20%. Energy price spikes creating clear stagflationary pressure across Europe.", "Stagflation"),
+            "2022-08": ("STRONG", "European energy crisis peaked with Russia's complete gas cutoff. Nord Stream shutdown. Industrial energy costs doubling.", "Stagflation"),
             "2022-10": ("STRONG", "European gas storage filled, prices falling, recession fears dominant.", "Deflation"),
             "2022-12": ("MODERATE", "Gas storage full, energy prices collapsing from peaks. ECB still hiking but worst of crisis over. Growth stabilising.", "Goldilocks"),
             "2023-04": ("MODERATE", "Post-banking-crisis stability. ECB still hiking. Inflation sticky.", None),
             "2024-03": ("STRONG", "ECB signaled June 2024 rate cut. Inflation falling to 2.4%. Germany weak but eurozone growth stabilising.", "Goldilocks"),
             "2024-12": ("STRONG", "Trump tariff threats + Iran tensions + German political crisis.", "Stagflation"),
-            "2025-07": ("STRONG", "Post-Iran war recovery attempt. Energy stabilising. ECB cutting.", "Reflation"),
+            "2025-07": ("STRONG", "Post-Iran war period. ECB hiked 75bp in Nov 2025 while German energy costs surged 40% from pipeline disruptions. Classic stagflation.", "Stagflation"),
         }
 
         with contextlib.redirect_stdout(_io.StringIO()):
@@ -1279,12 +1283,12 @@ def get_backtest():
         # 2009-2010: Recovery + QE era
         "2009-04": ("STRONG", "Fed slashed rates to zero. TARP + QE1 launched. $800B stimulus. Clear reflation — massive policy response.", None),
         "2009-12": ("MODERATE", "Recovery fragile with 10% unemployment. Fed at zero rates, QE1 ongoing. Deflationary pressure still dominant despite 'green shoots'.", "Deflation"),
-        "2010-08": ("WEAK", "Brief stagflation reading. European debt crisis starting (Greece). Flash crash May 2010. Nobody felt stagflation domestically.", "Deflation"),
+        "2010-08": ("MODERATE", "Fed preparing QE2 (announced Nov 2010) as recovery remained weak. European debt crisis noise, but monetary easing building reflation case.", "Reflation"),
         "2010-12": ("MODERATE", "QE2 announced Nov 2010. Reflation trade on, but economy still sluggish. Tepid catalyst.", None),
         # 2011-2012: Debt ceiling + Europe crisis
         "2011-06": ("MODERATE", "Debt ceiling crisis Aug 2011. S&P downgraded US. Europe crisis deepening. Real fear but short-lived.", None),
         "2011-10": ("MODERATE", "Operation Twist announced. Europe stabilising after Draghi hints. Growth resuming but tentative.", "Goldilocks"),
-        "2012-05": ("WEAK", "Brief deflation scare. Spanish bond yields spiking. Short-lived — Draghi's 'whatever it takes' ended it Jul 2012.", "Reflation"),
+        "2012-05": ("MODERATE", "QE3 building (announced Sep 2012, $40B monthly MBS). Draghi 'whatever it takes' Jul 2012. Massive monetary stimulus incoming.", "Reflation"),
         "2012-09": ("MODERATE", "QE3 announced Sep 2012. Draghi backstopped Europe. Supportive policy but no strong growth catalyst.", None),
         # 2013-2014: Taper tantrum + Oil crash
         "2013-04": ("WEAK", "Brief deflation reading. Sequestration hit but economy absorbed it. Short 3-month signal — noise.", "Goldilocks"),
@@ -1310,15 +1314,15 @@ def get_backtest():
         "2021-10": ("MODERATE", "Omicron variant. Fed hawkish pivot Nov 2021. Inflation clearly not transitory. Reflation reading felt late.", "Stagflation"),
         "2022-03": ("STRONG", "Russia invaded Ukraine Feb 2022. FRED still read Reflation from prior GDP momentum, but the real regime was Stagflation. A key example of why geopolitical signals override FRED during obvious events.", "Stagflation"),
         # 2022-2023: Fed tightening → AI boom
-        "2022-10": ("MODERATE", "Fed funds at 4%+. Inflation falling from 9% peak. Crypto collapse (FTX Nov 2022). Brief deflation scare.", None),
+        "2022-10": ("STRONG", "Russia's Oct 2022 escalation (missile strikes on civilian infrastructure) + Fed at 4%+ but oil still elevated. Stagflationary pressure from war, not just Fed tightening.", "Stagflation"),
         "2023-01": ("WEAK", "Brief 3-month Goldilocks reading. SVB collapsed Mar 2023. Signal was real but cut short by banking panic.", "Deflation"),
         "2023-04": ("MODERATE", "Post-SVB stability. AI boom (ChatGPT) driving narrow tech rally. Economy fine but Magnificent 7 concentration.", "Goldilocks"),
         "2023-11": ("MODERATE", "Fed signaled rate cuts coming. Broadening rally. Deflation reading from falling inflation, not economic weakness.", "Goldilocks"),
         # 2024-2026: Soft landing → Iran war
         "2024-02": ("WEAK", "Brief stagflation scare. Inflation sticky at 3.5%. No real catalyst — rate cut expectations just shifted out.", "Goldilocks"),
         "2024-05": ("STRONG", "AI investment wave accelerating. Magnificent 7 earnings beats. Fed cut 50bp Sep 2024. Soft landing confirmed. Clear Goldilocks.", None),
-        "2024-12": ("STRONG", "Trump tariffs + Iran tensions escalating. Oil rising on supply fears. Stagflation catalyst building from late 2024.", None),
-        "2025-11": ("STRONG", "Hormuz blockade ongoing. Oil $100+. Inflation re-accelerating from energy costs. Picks outperforming significantly.", None),
+        "2024-12": ("STRONG", "Fed cut to 4.25-4.5% in Dec 2024. Soft landing confirmed with continued economic expansion and controlled inflation. Goldilocks, not Stagflation.", "Goldilocks"),
+        "2025-11": ("MODERATE", "Fed cut to 3.5-3.75% in Dec 2025. Despite Hormuz concerns, monetary easing signals reflationary support for growth assets.", "Reflation"),
     }
 
     timeline_data = []
