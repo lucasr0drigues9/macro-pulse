@@ -591,14 +591,14 @@ Rules:
             headers={
                 "Content-Type": "application/json",
                 "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
+                "anthropic-version": "2025-03-26",
             },
             json={
                 "model": "claude-sonnet-4-20250514",
                 "max_tokens": 4096,
                 "system": system_prompt,
                 "messages": messages,
-                "tools": [{"type": "web_search_20250305"}],
+                "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": 2}],
             },
             timeout=30,
         )
