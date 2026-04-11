@@ -10,7 +10,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Macro Pulse — Live Regime Tracker",
+  title: "World Order View — Live Regime Tracker",
   description:
     "Track economic regimes in real time using Ray Dalio's four-season framework. Free macro investing dashboard with live FRED data, geopolitical AI synthesis, and ETF allocation recommendations.",
   icons: {

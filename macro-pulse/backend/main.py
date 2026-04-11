@@ -1,5 +1,5 @@
 """
-Macro Pulse — FastAPI backend
+World Order View — FastAPI backend
 Wraps the existing Python CLI tool into REST endpoints.
 """
 
@@ -124,7 +124,7 @@ async def lifespan(app):
     task.cancel()
 
 
-app = FastAPI(title="Macro Pulse API", version="0.3.0", lifespan=lifespan)
+app = FastAPI(title="World Order View API", version="0.3.0", lifespan=lifespan)
 
 
 @app.get("/api/version")
@@ -505,7 +505,7 @@ def create_audience():
     if not _resend.api_key:
         return {"error": "No RESEND_API_KEY"}
     try:
-        audience = _resend.Audiences.create({"name": "Macro Pulse Subscribers"})
+        audience = _resend.Audiences.create({"name": "World Order View Subscribers"})
         return {"ok": True, "audience": audience}
     except Exception as e:
         return {"error": str(e)}

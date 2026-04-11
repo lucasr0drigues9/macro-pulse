@@ -32,7 +32,7 @@ export default function Newsletter() {
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
       <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Weekly Macro Pulse</h2>
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Weekly World Order View</h2>
         <p className="text-sm text-[#888] mb-6 max-w-lg mx-auto">
           Every Tuesday — the full regime update, this week&apos;s key releases, live trigger status,
           and current allocation. Written by the tool, edited for humans.
@@ -55,7 +55,7 @@ export default function Newsletter() {
                 disabled={phase === "submitting"}
                 className="px-6 py-2 bg-[#222] hover:bg-[#333] text-sm text-[#e0e0e0] rounded transition-colors disabled:opacity-50"
               >
-                {phase === "submitting" ? "Sending…" : "Send me the weekly pulse"}
+                {phase === "submitting" ? "Sending…" : "Send me the weekly briefing"}
               </button>
             </form>
             {phase === "error" && errorMessage && (
@@ -87,12 +87,12 @@ export default function Newsletter() {
           <div className="max-w-md mx-auto py-2 text-left">
             <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
             <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
-              <li>Check your spam / promotions folder for &quot;Welcome to Macro Pulse&quot;</li>
+              <li>Check your spam / promotions folder for &quot;Welcome to World Order View&quot;</li>
               <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts so future alerts land in your inbox</li>
               <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> directly and we&apos;ll sort it out</li>
             </ul>
             <p className="text-[10px] text-[#555] text-center">
-              You&apos;re still subscribed — first pulse lands next Tuesday morning either way.
+              You&apos;re still subscribed — first briefing lands next Tuesday morning either way.
             </p>
           </div>
         )}
@@ -106,7 +106,7 @@ export default function Newsletter() {
 
         {showPreview && (
           <div className="mt-4 p-4 rounded bg-[#0a0a0a] border border-[#181818] text-left text-xs text-[#888] max-w-md mx-auto">
-            <div className="text-[#555] mb-2">Subject: Weekly Macro Pulse — April 1, 2026</div>
+            <div className="text-[#555] mb-2">Subject: Weekly World Order View — April 1, 2026</div>
             <div className="space-y-2 leading-relaxed">
               <p className="font-bold text-[#e0e0e0]">Current Regime: Stagflation (4th month)</p>
               <p>FRED says Reflation. Geopolitical says Stagflation. We go with geo — it&apos;s more current.</p>

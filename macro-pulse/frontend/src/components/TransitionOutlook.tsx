@@ -276,7 +276,7 @@ export default function TransitionOutlook() {
           <div className="max-w-md mx-auto py-2 text-left">
             <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
             <ul className="text-xs text-[#888] space-y-1.5 list-disc list-inside">
-              <li>Check spam / promotions for &quot;Welcome to Macro Pulse&quot;</li>
+              <li>Check spam / promotions for &quot;Welcome to World Order View&quot;</li>
               <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts</li>
               <li>Still nothing? Email us directly</li>
             </ul>

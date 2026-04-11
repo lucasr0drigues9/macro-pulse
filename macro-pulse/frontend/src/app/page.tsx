@@ -560,7 +560,7 @@ export default function LobbyPage() {
       {/* What this is */}
       <section className="px-4 py-8 max-w-4xl mx-auto">
         <p className="text-xs text-[#555] leading-relaxed">
-          Macro Pulse maps Ray Dalio&apos;s investment framework into six systematic tools — tracking the current economic regime, US overextension, European rebuilding, China&apos;s rise, emerging market opportunities, and the global alliance map. Built to surface actionable investment insights from the most important macro transition of the next decade.
+          World Order View maps Ray Dalio&apos;s investment framework into six systematic tools — tracking the current economic regime, US overextension, European rebuilding, China&apos;s rise, emerging market opportunities, and the global alliance map. Built to surface actionable investment insights from the most important macro transition of the next decade.
         </p>
       </section>
 
@@ -640,7 +640,7 @@ export default function LobbyPage() {
             <div className="max-w-md mx-auto py-2 text-left">
               <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
               <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
-                <li>Check your spam / promotions folder for &quot;Welcome to Macro Pulse&quot;</li>
+                <li>Check your spam / promotions folder for &quot;Welcome to World Order View&quot;</li>
                 <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts so future alerts land in your inbox</li>
                 <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> directly and we&apos;ll sort it out</li>
               </ul>
@@ -655,7 +655,7 @@ export default function LobbyPage() {
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
         <p className="text-xs text-[#555]">
-          Macro Pulse — Tracking the world order transition
+          World Order View — Tracking the world order transition
         </p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
           This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. All analysis is generated systematically from public data. Past performance does not guarantee future results.

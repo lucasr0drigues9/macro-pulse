@@ -125,7 +125,7 @@ export default function SubscribeForm({
         <div className="max-w-md mx-auto py-2 text-left">
           <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
           <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
-            <li>Check your spam / promotions folder for &quot;Welcome to Macro Pulse&quot;</li>
+            <li>Check your spam / promotions folder for &quot;Welcome to World Order View&quot;</li>
             <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts so future alerts land in your inbox</li>
             <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> directly and we&apos;ll sort it out</li>
           </ul>

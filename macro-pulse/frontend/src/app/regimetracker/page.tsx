@@ -40,7 +40,7 @@ export default function RegimeTracker() {
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
         <p className="text-xs text-[#555]">
-          Macro Pulse — Economic regime tracker
+          World Order View — Economic regime tracker
         </p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
           This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. All analysis is generated systematically from public economic data. Past performance does not guarantee future results.

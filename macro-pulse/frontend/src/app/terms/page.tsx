@@ -10,7 +10,7 @@ export default function Terms() {
         <section>
           <h2 className="text-base font-bold text-[#e0e0e0] mb-2">1. Acceptance of Terms</h2>
           <p>
-            By accessing and using Macro Pulse, you acknowledge that this is an educational and
+            By accessing and using World Order View, you acknowledge that this is an educational and
             informational platform. All content, including regime classifications, allocation outputs,
             backtested performance data, and position sizing calculations, is provided for educational
             purposes only and does not constitute personalised financial advice.
@@ -40,7 +40,7 @@ export default function Terms() {
         <section>
           <h2 className="text-base font-bold text-[#e0e0e0] mb-2">4. Limitation of Liability</h2>
           <p>
-            Macro Pulse and its creators shall not be liable for any losses, damages, or expenses
+            World Order View and its creators shall not be liable for any losses, damages, or expenses
             arising from your use of this site or any investment decisions made based on its content.
             Past performance, whether backtested or live, does not guarantee future results.
           </p>
@@ -68,7 +68,7 @@ export default function Terms() {
         <section>
           <h2 className="text-base font-bold text-[#e0e0e0] mb-2">7. Intellectual Property</h2>
           <p>
-            The presentation, code, and analysis methodology of Macro Pulse are original work.
+            The presentation, code, and analysis methodology of World Order View are original work.
             The underlying macro framework is based on publicly documented research by Ray Dalio
             and Bridgewater Associates. ETF data is provided by public APIs.
           </p>

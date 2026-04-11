@@ -22,7 +22,7 @@ export default function Nav() {
     <nav className="border-b border-[#181818] px-4 py-3">
       <div className="max-w-5xl mx-auto flex items-center justify-between">
         <Link href="/" className="text-sm font-bold text-[#e0e0e0] tracking-wider hover:text-white">
-          MACRO PULSE
+          WORLD ORDER VIEW
         </Link>
 
         {/* Desktop */}

@@ -1468,7 +1468,7 @@ export default function EuropePage() {
             <div className="max-w-md mx-auto py-2 text-left">
               <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
               <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
-                <li>Check your spam / promotions folder for &quot;Welcome to Macro Pulse&quot;</li>
+                <li>Check your spam / promotions folder for &quot;Welcome to World Order View&quot;</li>
                 <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts so future alerts land in your inbox</li>
                 <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> directly and we&apos;ll sort it out</li>
               </ul>
@@ -1484,7 +1484,7 @@ export default function EuropePage() {
           Companies listed are for research and educational purposes only. This is not a recommendation to buy or sell any security. European strategic autonomy is a long-term structural thesis with significant execution risks. Past performance does not guarantee future results.
         </p>
         <div className="flex gap-4 justify-center mt-3">
-          <a href="/" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Back to Macro Pulse</a>
+          <a href="/" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Back to World Order View</a>
           <a href="/disclaimer" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Disclaimer</a>
         </div>
         <p className="text-xs text-[#555] mt-4">

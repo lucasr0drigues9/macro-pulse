@@ -57,7 +57,7 @@ function ConfirmedInner() {
               href="/"
               className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors"
             >
-              Back to Macro Pulse →
+              Back to World Order View →
             </Link>
           </div>
         )}
@@ -84,7 +84,7 @@ function ConfirmedInner() {
               href="/"
               className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors"
             >
-              Back to Macro Pulse →
+              Back to World Order View →
             </Link>
           </div>
         )}
