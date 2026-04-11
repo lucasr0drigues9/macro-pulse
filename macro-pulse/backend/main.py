@@ -591,7 +591,7 @@ Rules:
             headers={
                 "Content-Type": "application/json",
                 "x-api-key": api_key,
-                "anthropic-version": "2025-03-26",
+                "anthropic-version": "2023-06-01",
             },
             json={
                 "model": "claude-sonnet-4-20250514",
