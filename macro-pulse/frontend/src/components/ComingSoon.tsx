@@ -116,7 +116,7 @@ export default function ComingSoon() {
             <p className="text-sm text-[#22c55e] mb-2">You&apos;re on the waitlist.</p>
             <p className="text-xs text-[#888] mb-3 leading-relaxed max-w-md mx-auto">
               We just sent a welcome email to <b className="text-[#e0e0e0]">{email}</b> from{" "}
-              <span className="text-[#e0e0e0]">alerts@macro-pulse.io</span>. Open it and click
+              <span className="text-[#e0e0e0]">hello@worldorderview.com</span>. Open it and click
               the <b className="text-[#22c55e]">&quot;Confirm I got this email ✓&quot;</b> button.
             </p>
             <button type="button" onClick={handleMissing} className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2 transition-colors">Didn&apos;t arrive?</button>
@@ -128,7 +128,7 @@ export default function ComingSoon() {
             <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
             <ul className="text-xs text-[#888] space-y-1.5 list-disc list-inside">
               <li>Check spam / promotions for &quot;Welcome to World Order View&quot;</li>
-              <li>Add <b className="text-[#e0e0e0]">alerts@macro-pulse.io</b> to your contacts</li>
+              <li>Add <b className="text-[#e0e0e0]">hello@worldorderview.com</b> to your contacts</li>
               <li>Still nothing? Email us directly</li>
             </ul>
           </div>

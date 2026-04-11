@@ -73,10 +73,10 @@ function ConfirmedInner() {
               the button inside it directly. If you think something is wrong,
               email{" "}
               <a
-                href="mailto:alerts@macro-pulse.io"
+                href="mailto:hello@worldorderview.com"
                 className="text-[#e0e0e0] underline underline-offset-2"
               >
-                alerts@macro-pulse.io
+                hello@worldorderview.com
               </a>
               .
             </p>

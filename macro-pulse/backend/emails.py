@@ -14,8 +14,8 @@ logger = logging.getLogger("macro_pulse.emails")
 logging.basicConfig(level=logging.INFO)
 
 RESEND_KEY = os.getenv("RESEND_API_KEY", "")
-FROM_EMAIL = os.getenv("FROM_EMAIL", "World Order View <onboarding@resend.dev>")
-SITE_URL = os.getenv("SITE_URL", "https://macro-pulse.io")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "World Order View <hello@worldorderview.com>")
+SITE_URL = os.getenv("SITE_URL", "https://worldorderview.com")
 AUDIENCE_ID = os.getenv("RESEND_AUDIENCE_ID", "")
 ADMIN_ALERT_EMAIL = os.getenv("ADMIN_ALERT_EMAIL", "lucasrodrigues12000@gmail.com")
 
