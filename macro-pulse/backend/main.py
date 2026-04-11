@@ -511,6 +511,87 @@ def create_audience():
         return {"error": str(e)}
 
 
+@app.post("/api/chat/period")
+async def chat_period(body: dict):
+    """Answer a user question about a specific regime period.
+
+    Expects:
+      question: str — the user's question
+      context: dict — period data (start, end, regime, aiRegime, bestRegime,
+                       allRegimeReturns, periodAnalysis, region)
+
+    Calls Claude Sonnet with the period data pre-loaded so it gives grounded,
+    specific answers rather than generic macro textbook responses.
+    """
+    import requests as _req
+
+    question = (body.get("question") or "").strip()
+    ctx = body.get("context") or {}
+    if not question:
+        return {"error": "No question provided"}
+
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return {"error": "AI not configured"}
+
+    region = ctx.get("region", "US")
+    data_source = "FRED" if region == "US" else "Eurostat"
+    start = ctx.get("start", "?")
+    end = ctx.get("end", "?")
+    regime = ctx.get("regime", "?")
+    ai_regime = ctx.get("aiRegime", regime)
+    best = ctx.get("bestRegime", "?")
+    returns = ctx.get("allRegimeReturns") or {}
+    analysis = ctx.get("periodAnalysis") or {}
+
+    returns_str = ", ".join(f"{k}: {v:.1f}%" for k, v in returns.items() if v is not None)
+
+    system_prompt = f"""You are an expert macro investment analyst answering questions about a specific historical regime period on the World Order View platform.
+
+Period: {start} to {end}, {region}
+{data_source} data called: {regime}
+AI geopolitical layer called: {ai_regime}
+Best-performing regime basket: {best}
+Returns by basket: {returns_str}
+
+Pre-generated analysis:
+- Event: {analysis.get('event', 'N/A')}
+- {data_source} reading: {analysis.get('why_data', 'N/A')}
+- AI reading: {analysis.get('why_ai', 'N/A')}
+- Winner mechanism: {analysis.get('winner_dynamic', 'N/A')}
+
+Rules:
+- Answer in 2-4 sentences max. Be specific to THIS period — no generic textbook answers.
+- Reference actual events, policies, dates, and numbers from this period.
+- If the user asks about something outside this period, briefly answer but redirect to what happened here.
+- Never give investment advice. Say "historically" and "during this period" not "you should".
+- Keep the tone direct and analytical — no fluff."""
+
+    try:
+        r = _req.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 300,
+                "system": system_prompt,
+                "messages": [{"role": "user", "content": question}],
+            },
+            timeout=15,
+        )
+        data = r.json()
+        if data.get("error"):
+            return {"error": data["error"].get("message", "API error")}
+        answer = "".join(b.get("text", "") for b in data.get("content", [])).strip()
+        return {"answer": answer}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}

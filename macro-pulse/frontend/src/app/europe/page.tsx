@@ -7,6 +7,7 @@ import { subscribeEmail } from "@/lib/subscribe";
 type EuropeSignupPhase = "idle" | "submitting" | "awaiting_confirm" | "missing" | "error";
 const EUROPE_SIGNUP_SOURCE = "europe";
 import Nav from "@/components/Nav";
+import PeriodChat from "@/components/PeriodChat";
 import {
   SECTORS, COMPANIES, CATALYSTS, REGIME_FIT_EMOJI, RISK_COLORS,
   type Company,
@@ -1098,6 +1099,17 @@ export default function EuropePage() {
                             </div>
                             );
                           })()}
+
+                          <PeriodChat context={{
+                            region: "EU",
+                            start: p.start,
+                            end: p.end,
+                            regime: p.regime,
+                            aiRegime: p.aiRegime,
+                            bestRegime: bestReg,
+                            allRegimeReturns: p.allRegimeReturns,
+                            periodAnalysis: p.periodAnalysis,
+                          }} />
                         </div>
                         );
                       })()}

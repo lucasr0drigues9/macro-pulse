@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
+import PeriodChat from "@/components/PeriodChat";
 
 type TimelineEntry = {
   regime: RegimeName; start: string; end: string; months: number;
@@ -367,6 +368,17 @@ export default function RegimeHistory() {
                           </div>
                           );
                         })()}
+
+                        <PeriodChat context={{
+                          region: "US",
+                          start: period.start,
+                          end: period.end,
+                          regime: period.regime,
+                          aiRegime: period.aiRegime,
+                          bestRegime: bestReg,
+                          allRegimeReturns: period.allRegimeReturns,
+                          periodAnalysis: period.periodAnalysis,
+                        }} />
                       </div>
                       );
                     })()}
