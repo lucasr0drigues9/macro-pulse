@@ -376,7 +376,7 @@ type EuBacktestEntry = {
   aiPicksReturn?: number | null;
   aiDiffersFromFred?: boolean;
   aiCorrect?: boolean | null;
-  doubleMiss?: { event: string; blind_spot: string; winner_dynamic: string } | null;
+  periodAnalysis?: { event: string; why_data: string; why_ai: string; winner_dynamic: string } | null;
 };
 type EuBacktest = { totalRegimes: number; yearRange: string; timeline: EuBacktestEntry[]; regimeBreakdown: Record<string, number> };
 
@@ -1065,28 +1065,39 @@ export default function EuropePage() {
                             )}
                           </div>
 
-                          {/* Post-mortem for double-miss periods */}
-                          {!p.frameworkCorrect && !p.aiCorrect && p.doubleMiss && (
-                            <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#ef444425]">
-                              <div className="text-[9px] text-[#ef4444] uppercase tracking-wider mb-2">
-                                Post-mortem — why both layers missed
+                          {/* Period interpretation — shows for every period with analysis */}
+                          {p.periodAnalysis && (() => {
+                            const pa = p.periodAnalysis!;
+                            const bothRight = p.frameworkCorrect && p.aiCorrect;
+                            const borderColor = bothRight ? "#22c55e25" : !p.frameworkCorrect && !p.aiCorrect ? "#ef444425" : "#eab30825";
+                            const labelColor = bothRight ? "#22c55e" : !p.frameworkCorrect && !p.aiCorrect ? "#ef4444" : "#eab308";
+                            const label = bothRight ? "Why this period played out as expected" : !p.frameworkCorrect && !p.aiCorrect ? "Post-mortem — why both layers missed" : "What drove this period";
+                            return (
+                            <div className="mt-2 p-2 rounded bg-[#0a0a0a]" style={{ border: `1px solid ${borderColor}` }}>
+                              <div className="text-[9px] uppercase tracking-wider mb-2" style={{ color: labelColor }}>
+                                {label}
                               </div>
                               <div className="space-y-1.5">
                                 <div className="text-[10px] leading-relaxed">
                                   <span className="text-[#e0e0e0] font-bold">What happened: </span>
-                                  <span className="text-[#888]">{p.doubleMiss.event}</span>
+                                  <span className="text-[#888]">{pa.event}</span>
                                 </div>
                                 <div className="text-[10px] leading-relaxed">
-                                  <span className="text-[#e0e0e0] font-bold">Blind spot: </span>
-                                  <span className="text-[#888]">{p.doubleMiss.blind_spot}</span>
+                                  <span className="text-[#e0e0e0] font-bold">Eurostat data: </span>
+                                  <span className="text-[#888]">{pa.why_data}</span>
+                                </div>
+                                <div className="text-[10px] leading-relaxed">
+                                  <span className="text-[#e0e0e0] font-bold">AI geo: </span>
+                                  <span className="text-[#888]">{pa.why_ai}</span>
                                 </div>
                                 <div className="text-[10px] leading-relaxed">
                                   <span className="text-[#e0e0e0] font-bold">Why {bestReg} won: </span>
-                                  <span className="text-[#888]">{p.doubleMiss.winner_dynamic}</span>
+                                  <span className="text-[#888]">{pa.winner_dynamic}</span>
                                 </div>
                               </div>
                             </div>
-                          )}
+                            );
+                          })()}
                         </div>
                         );
                       })()}

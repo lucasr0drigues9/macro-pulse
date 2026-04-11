@@ -18,7 +18,7 @@ type TimelineEntry = {
   aiPicksReturn?: number | null;
   aiDiffersFromFred?: boolean;
   aiCorrect?: boolean;
-  doubleMiss?: { event: string; blind_spot: string; winner_dynamic: string } | null;
+  periodAnalysis?: { event: string; why_data: string; why_ai: string; winner_dynamic: string } | null;
 };
 type BacktestData = {
   totalRegimes: number; yearRange: string;
@@ -334,28 +334,39 @@ export default function RegimeHistory() {
                           )}
                         </div>
 
-                        {/* Post-mortem for double-miss periods */}
-                        {!period.frameworkCorrect && !period.aiCorrect && period.doubleMiss && (
-                          <div className="mt-2 p-2 rounded bg-[#0a0a0a] border border-[#ef444425]">
-                            <div className="text-[9px] text-[#ef4444] uppercase tracking-wider mb-2">
-                              Post-mortem — why both layers missed
+                        {/* Period interpretation — shows for every period with analysis */}
+                        {period.periodAnalysis && (() => {
+                          const pa = period.periodAnalysis!;
+                          const bothRight = period.frameworkCorrect && period.aiCorrect;
+                          const borderColor = bothRight ? "#22c55e25" : !period.frameworkCorrect && !period.aiCorrect ? "#ef444425" : "#eab30825";
+                          const labelColor = bothRight ? "#22c55e" : !period.frameworkCorrect && !period.aiCorrect ? "#ef4444" : "#eab308";
+                          const label = bothRight ? "Why this period played out as expected" : !period.frameworkCorrect && !period.aiCorrect ? "Post-mortem — why both layers missed" : "What drove this period";
+                          return (
+                          <div className="mt-2 p-2 rounded bg-[#0a0a0a]" style={{ border: `1px solid ${borderColor}` }}>
+                            <div className="text-[9px] uppercase tracking-wider mb-2" style={{ color: labelColor }}>
+                              {label}
                             </div>
                             <div className="space-y-1.5">
                               <div className="text-[10px] leading-relaxed">
                                 <span className="text-[#e0e0e0] font-bold">What happened: </span>
-                                <span className="text-[#888]">{period.doubleMiss.event}</span>
+                                <span className="text-[#888]">{pa.event}</span>
                               </div>
                               <div className="text-[10px] leading-relaxed">
-                                <span className="text-[#e0e0e0] font-bold">Blind spot: </span>
-                                <span className="text-[#888]">{period.doubleMiss.blind_spot}</span>
+                                <span className="text-[#e0e0e0] font-bold">FRED data: </span>
+                                <span className="text-[#888]">{pa.why_data}</span>
+                              </div>
+                              <div className="text-[10px] leading-relaxed">
+                                <span className="text-[#e0e0e0] font-bold">AI geo: </span>
+                                <span className="text-[#888]">{pa.why_ai}</span>
                               </div>
                               <div className="text-[10px] leading-relaxed">
                                 <span className="text-[#e0e0e0] font-bold">Why {bestReg} won: </span>
-                                <span className="text-[#888]">{period.doubleMiss.winner_dynamic}</span>
+                                <span className="text-[#888]">{pa.winner_dynamic}</span>
                               </div>
                             </div>
                           </div>
-                        )}
+                          );
+                        })()}
                       </div>
                       );
                     })()}
