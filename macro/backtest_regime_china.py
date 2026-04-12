@@ -19,32 +19,33 @@ os.makedirs(CACHE_DIR, exist_ok=True)
 # Based on proxy indicators, World Bank data, and known economic events.
 # Each entry: (start_date, end_date, regime, context)
 CHINA_REGIME_HISTORY = [
-    ("2010-01", "2011-06", "Reflation", "Post-GFC stimulus. 4 trillion yuan package driving infrastructure boom. GDP growth 10%+."),
-    ("2011-07", "2012-09", "Stagflation", "Inflation above 6% from stimulus overshoot. PBOC tightening. Property curbs introduced."),
-    ("2012-10", "2013-12", "Goldilocks", "Inflation controlled at 2-3%. Growth stabilising at 7.5%. New leadership under Xi Jinping."),
-    ("2014-01", "2015-06", "Deflation", "PPI negative for 3+ years. Manufacturing overcapacity. Shadow banking cleanup."),
-    ("2015-07", "2015-12", "Deflation", "Stock market crash (Jun-Aug 2015). Yuan devaluation Aug 2015. Capital flight."),
-    ("2016-01", "2016-12", "Reflation", "Massive stimulus. Property boom. Supply-side reform cutting steel/coal overcapacity."),
-    ("2017-01", "2018-03", "Goldilocks", "Growth 6.8%, inflation 2%. Deleveraging campaign. Tech sector thriving."),
-    ("2018-04", "2019-03", "Stagflation", "US-China trade war begins. Tariffs imposed. PPI rising while growth slowing."),
-    ("2019-04", "2019-12", "Deflation", "Trade war escalation. Manufacturing PMI below 50. PPI turned negative."),
-    ("2020-01", "2020-06", "Deflation", "COVID-19 origin. Wuhan lockdown. GDP -6.8% Q1 2020. Deepest contraction ever."),
-    ("2020-07", "2021-06", "Reflation", "First to recover from COVID. Exports booming. PPI surging. Commodity super-cycle."),
-    ("2021-07", "2022-03", "Stagflation", "Evergrande crisis. Property sector collapse begins. PPI above 10% while growth slowing."),
-    ("2022-04", "2022-12", "Deflation", "Zero-COVID lockdowns. Shanghai lockdown Apr-Jun. Consumer confidence collapsed."),
-    ("2023-01", "2023-06", "Reflation", "COVID reopening Dec 2022. Initial reopening bounce. Pent-up demand."),
-    ("2023-07", "2024-09", "Deflation", "Reopening fizzled. Property crisis deepened. CPI near zero, PPI negative. Youth unemployment crisis."),
-    ("2024-10", "2026-03", "Deflation", "Property prices -8.5% YoY. PPI -2.8%. Consumer deflation. PBOC cutting but insufficient."),
-    ("2026-04", "2026-12", "Stagflation", "Hormuz closure cut shadow fleet oil supply. Energy costs rising while economy still deflating."),
+    ("2010-01", "2011-06", "Stagflation", "Post-GFC stimulus overshoot. GDP 10%+ but CPI hit 6.5%. Food inflation crisis. PBOC hiked 5 times. Property bubble inflating."),
+    ("2011-07", "2012-09", "Deflation", "PBOC tightening hit growth. Eurozone crisis killed export demand. PPI turned negative. Manufacturing overcapacity exposed."),
+    ("2012-10", "2013-12", "Goldilocks", "Inflation controlled at 2-3%. Growth stabilising at 7.5%. New leadership under Xi Jinping. Moderate stimulus."),
+    ("2014-01", "2015-06", "Goldilocks", "Growth 7% with low inflation. Despite PPI negative (manufacturing overcapacity), broad economy fine. Tech sector booming. Equity bull market."),
+    ("2015-07", "2015-12", "Deflation", "Stock market crash (Jun-Aug 2015). Yuan devaluation Aug 2015. Capital flight $500B+. PBOC burned reserves defending yuan."),
+    ("2016-01", "2016-12", "Reflation", "Massive stimulus. Property boom. Supply-side reform cutting steel/coal overcapacity. PPI turned positive."),
+    ("2017-01", "2018-03", "Goldilocks", "Growth 6.8%, inflation 2%. Deleveraging campaign. Tech sector thriving. MSCI added China A-shares."),
+    ("2018-04", "2019-03", "Deflation", "US-China trade war began. Tariffs crushed export demand. PMI fell below 50. Growth slowed to 6.2%. PBOC cut RRR 4 times."),
+    ("2019-04", "2019-12", "Deflation", "Trade war escalation. Manufacturing PMI below 50. PPI turned negative. Phase 1 deal signed Dec 2019."),
+    ("2020-01", "2020-06", "Deflation", "COVID-19 origin. Wuhan lockdown. GDP -6.8% Q1 2020. Deepest contraction ever. Massive fiscal response."),
+    ("2020-07", "2021-06", "Reflation", "First to recover from COVID. Exports booming. PPI surging to +9%. Commodity super-cycle. Property prices rising."),
+    ("2021-07", "2022-03", "Stagflation", "Evergrande crisis. Property sector collapse begins. PPI above 10% while growth slowing sharply. Regulatory crackdown on tech."),
+    ("2022-04", "2022-12", "Deflation", "Zero-COVID lockdowns. Shanghai lockdown Apr-Jun. Consumer confidence collapsed. Youth unemployment 20%+."),
+    ("2023-01", "2023-06", "Deflation", "COVID reopening Dec 2022. Brief bounce fizzled within weeks. Property crisis accelerated. CPI near zero."),
+    ("2023-07", "2024-09", "Deflation", "Prolonged deflation. Property prices -5% YoY. PPI negative 18 months. Youth unemployment crisis. Consumer confidence at record lows."),
+    ("2024-10", "2026-03", "Deflation", "Property prices -8.5% YoY. PPI -2.8%. Consumer deflation. PBOC cutting but insufficient. Stimulus announced but below expectations."),
+    ("2026-04", "2026-12", "Stagflation", "Hormuz closure cut shadow fleet oil supply to China. Energy costs rising while economy still deflating. First US-China confrontation point."),
 ]
 
 # ETF baskets for China regime backtesting
-# Mix of China-exposed ETFs and global China proxies
+# China-specific: what performs when China is in each regime
+# Key insight: use China-exposed assets, not generic global baskets
 CHINA_BACKTEST_ETFS = {
-    "Stagflation": ["GLD", "XLE", "DBC"],
-    "Reflation":   ["FXI", "DBC", "EEM"],
-    "Goldilocks":  ["FXI", "KWEB", "EEM"],
-    "Deflation":   ["GLD", "TLT", "XLP"],
+    "Stagflation": ["GLD", "DBC", "XLE"],          # Real assets hedge China stagflation spillover
+    "Reflation":   ["FXI", "EEM", "DBC"],           # Chinese equities + EM + commodities on China demand
+    "Goldilocks":  ["FXI", "KWEB", "EEM"],           # Chinese tech + broad equities on growth + low inflation
+    "Deflation":   ["TLT", "GLD", "XLP"],            # Bonds + gold + defensives when China drags global growth
 }
 
 ALL_TICKERS = list(set(t for picks in CHINA_BACKTEST_ETFS.values() for t in picks))
