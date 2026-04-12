@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { regimeData as fallback, REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
 import { useMode } from "@/lib/mode";
+import SectionChat from "@/components/SectionChat";
 
 type RegimeData = typeof fallback & { earlyRotation?: { targetRegime: string; totalPct: number; positions: { ticker: string; name: string; weight: number }[] } | null };
 
@@ -177,6 +178,16 @@ export default function RegimeIndicator() {
           <div className="text-xs text-[#555] mt-2">Starter positions before regime confirmation. Higher risk, earlier entry.</div>
         </div>
       )}
+
+      <SectionChat
+        context="Current regime indicator section. Shows the confirmed US economic regime (FRED data + AI geopolitical layer), how many consecutive months, whether FRED and geo signals agree or diverge, and any early transition warnings. The user wants to understand what the current signal means for their positioning."
+        label="Ask about the current regime"
+        suggestions={[
+          "Why are FRED and geo signals diverging?",
+          "What would change this regime?",
+          "How reliable is this signal historically?",
+        ]}
+      />
     </section>
   );
 }

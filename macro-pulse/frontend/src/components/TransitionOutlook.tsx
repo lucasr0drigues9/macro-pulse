@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
 import { subscribeEmail } from "@/lib/subscribe";
+import SectionChat from "@/components/SectionChat";
 
 type Phase = "idle" | "submitting" | "awaiting_confirm" | "missing" | "error";
 const SOURCE = "transition_outlook";
@@ -229,6 +230,16 @@ export default function TransitionOutlook() {
           </div>
         </div>
       )}
+
+      <SectionChat
+        context="Transition outlook section. Shows probability of transitioning from the current US regime to each of the other three regimes, with confirmation signals and UCITS ETF opportunities for each scenario. Duration stats for the current regime. The user wants to know what's coming next and when to rotate."
+        label="Ask about transitions"
+        suggestions={[
+          "What's the most likely next regime?",
+          "Should I start positioning for the transition now?",
+          "How long do regimes typically last?",
+        ]}
+      />
 
       {/* Email signup */}
       <div className="mt-8 p-4 rounded-lg bg-[#111] border border-[#222] text-center">

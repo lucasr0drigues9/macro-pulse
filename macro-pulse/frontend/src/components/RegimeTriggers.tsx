@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { triggersData as fallback } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
 import { subscribeEmail } from "@/lib/subscribe";
+import SectionChat from "@/components/SectionChat";
 
 type Phase = "idle" | "submitting" | "awaiting_confirm" | "missing" | "error";
 const SOURCE = "regime_triggers";
@@ -93,6 +94,16 @@ export default function RegimeTriggers() {
           );
         })}
       </div>
+
+      <SectionChat
+        context="Regime change triggers section. Shows live thresholds (oil price, Hormuz transits, CPI, VIX, yield curve, unemployment) that would shift the current US economic regime. Status: crisis/watch/stable. The user wants to understand which triggers are closest to firing and what would happen."
+        label="Ask about these triggers"
+        suggestions={[
+          "Which trigger is closest to firing?",
+          "What happens to my portfolio if oil hits $120?",
+          "How often do triggers give false signals?",
+        ]}
+      />
 
       {/* Email capture */}
       <div className="mt-10 p-6 rounded-lg bg-[#111] border border-[#222]">

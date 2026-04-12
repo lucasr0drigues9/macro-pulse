@@ -852,6 +852,77 @@ Rules: 2-4 sentences max. Name events, dates, numbers. Use web_search for specif
         return {"error": str(e)}
 
 
+@app.post("/api/chat/general")
+async def chat_general(body: dict):
+    """General-purpose AI chat for any section of the site.
+
+    Expects:
+      question: str
+      context: str — describes what section/page the user is looking at
+      history: list — prior [{role, content}] messages
+    """
+    import requests as _req
+
+    question = (body.get("question") or "").strip()
+    context = body.get("context") or ""
+    history = body.get("history") or []
+    if not question:
+        return {"error": "No question provided"}
+
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return {"error": "AI not configured"}
+
+    system_prompt = f"""You are an expert macro investment analyst on the World Order View platform.
+You help users understand the tools, data, and investment framework on the site.
+
+Section context: {context}
+
+Rules:
+- 2-4 sentences max. Be specific and helpful.
+- Reference the Ray Dalio four-season framework (Stagflation, Goldilocks, Reflation, Deflation) when relevant.
+- Use web_search for current data or events the user asks about.
+- Plain English. No jargon without explanation.
+- Never give personalised investment advice. Frame as "historically" or "the framework suggests".
+- If the user asks how to use the tool, explain the specific section they're looking at."""
+
+    messages = []
+    for msg in history[-6:-1]:
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        if role in ("user", "assistant") and content:
+            messages.append({"role": role, "content": content})
+    messages.append({"role": "user", "content": question})
+
+    try:
+        r = _req.post(
+            "https://api.anthropic.com/v1/messages",
+            headers={
+                "Content-Type": "application/json",
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+            },
+            json={
+                "model": "claude-sonnet-4-20250514",
+                "max_tokens": 1024,
+                "system": system_prompt,
+                "messages": messages,
+                "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": 1}],
+            },
+            timeout=30,
+        )
+        data = r.json()
+        if data.get("error"):
+            return {"error": data["error"].get("message", "API error")}
+        answer = "".join(
+            b.get("text", "") for b in data.get("content", [])
+            if b.get("type") == "text"
+        ).strip()
+        return {"answer": answer}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}

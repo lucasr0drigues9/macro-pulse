@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { REGIME_COLORS, playbookData, type RegimeName } from "@/lib/mockData";
+import SectionChat from "@/components/SectionChat";
 
 const seasons: { name: RegimeName; desc: string }[] = [
   { name: "Stagflation", desc: "Defend — energy, gold, commodities outperform" },
@@ -92,7 +93,17 @@ export default function Welcome() {
         })}
       </div>
 
-      <div className="text-center">
+      <SectionChat
+        context="Welcome section of the US Regime Tracker on World Order View. This page uses Ray Dalio's four-season framework (Stagflation, Goldilocks, Reflation, Deflation) to detect the current US economic regime using FRED data and an AI geopolitical layer. Below this section: live regime signal, asset performance, portfolio allocation, weekly calendar, triggers, transition outlook, and 19-year backtest history."
+        label="Ask about this tool"
+        suggestions={[
+          "How does this regime tracker work?",
+          "What's the difference between the four seasons?",
+          "How should I use this page?",
+        ]}
+      />
+
+      <div className="text-center mt-6">
         <span className="text-xs text-[#555]">See current regime ↓</span>
       </div>
     </section>

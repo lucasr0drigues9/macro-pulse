@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { allocationData as fallback, REGIME_COLORS, type RegimeName } from "@/lib/mockData";
 import { apiUrl } from "@/lib/api";
+import SectionChat from "@/components/SectionChat";
 
 type Overweight = {
   ticker: string; name: string; weight: number; conviction: number;
@@ -129,6 +130,16 @@ export default function PortfolioAllocation() {
           <span className="text-[#e0e0e0] font-bold">Buying tip:</span> All regime picks have the same macro tailwind. Prioritise the ones marked <span className="text-[#22c55e]">Still attractive</span> — same thesis, better entry price. ETFs marked <span className="text-[#ef4444]">Extended</span> may still perform but offer less upside from current levels. Allocation updates automatically when the regime changes.
         </p>
       </div>
+
+      <SectionChat
+        context="Portfolio allocation section. Shows the ETF weights for the current US regime, with conviction scores and price assessments (still attractive / fairly valued / extended). Overweight = ETFs that benefit from the current regime. Underweight = ETFs that underperform. Cash target shown. The user wants to understand why specific ETFs are weighted the way they are."
+        label="Ask about this allocation"
+        suggestions={[
+          "Why is this ETF weighted higher than others?",
+          "What would make me rotate out of these picks?",
+          "How does the cash target change across regimes?",
+        ]}
+      />
 
       <p className="mt-4 text-xs text-[#333] text-center italic">
         This is a systematic framework output, not personalised financial advice. Always do your own research.
