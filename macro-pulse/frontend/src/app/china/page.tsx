@@ -65,8 +65,8 @@ function IndicatorCard({ ind }: { ind: ProxyIndicator }) {
   );
 }
 
-type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean; growth: string; inflation: string; confidence: string; consecutiveMonths: number };
-type Allocation = { regime: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string }[]; underweight: { ticker: string; name: string; reason: string }[] };
+type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean; growth: string; inflation: string; confidence: string; consecutiveMonths: number; periodStart?: string };
+type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
 
@@ -125,7 +125,7 @@ export default function ChinaPage() {
             {r.regime}
           </div>
           <div className="mt-2 text-sm text-[#888]">
-            Month {r.consecutiveMonths} · Confidence: {r.confidence}
+            Month {r.consecutiveMonths} · Since {r.periodStart || "—"} · Confidence: {r.confidence}
           </div>
           <div className="mt-2 flex justify-center gap-6 text-xs">
             <span className="text-[#555]">Growth: <span style={{ color: r.growth === "falling" ? "#ef4444" : "#22c55e" }}>{r.growth}</span></span>
@@ -204,7 +204,10 @@ export default function ChinaPage() {
         <section className="px-4 py-8 max-w-5xl mx-auto">
           <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">China Regime Allocation</h2>
           <p className="text-xs text-[#555] mb-4">
-            ETF positioning for the current Chinese {allocation.regime} regime — {allocation.cashTarget}% cash due to higher uncertainty.
+            ETF positioning for China {allocation.regime} — {allocation.cashTarget}% cash due to higher uncertainty.
+            {allocation.periodStart && (
+              <span className="text-[#888]"> Returns shown since regime started ({allocation.periodStart}).</span>
+            )}
           </p>
           <div className="space-y-2 mb-4">
             {allocation.overweight.map((etf) => (
@@ -217,7 +220,14 @@ export default function ChinaPage() {
                   <span className="text-xs text-[#888]">{etf.name}</span>
                   <p className="text-[10px] text-[#555] mt-0.5">{etf.rationale}</p>
                 </div>
-                <span className="text-xs text-[#555] shrink-0">Conviction: {etf.conviction}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  {typeof etf.returnSinceRegime === "number" && (
+                    <span className={`text-sm font-bold ${etf.returnSinceRegime >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                      {etf.returnSinceRegime >= 0 ? "+" : ""}{etf.returnSinceRegime}%
+                    </span>
+                  )}
+                  <span className="text-[10px] text-[#555]">Conv: {etf.conviction}</span>
+                </div>
               </div>
             ))}
             <div className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-2">
@@ -231,9 +241,14 @@ export default function ChinaPage() {
               <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-2">Avoid during China {allocation.regime}</div>
               <div className="space-y-1">
                 {allocation.underweight.map((u) => (
-                  <div key={u.ticker} className="text-xs">
-                    <span className="text-[#e0e0e0] font-bold">{u.ticker}</span>{" "}
-                    <span className="text-[#555]">{u.name}</span>{" "}
+                  <div key={u.ticker} className="flex items-center gap-2 text-xs">
+                    <span className="text-[#e0e0e0] font-bold">{u.ticker}</span>
+                    <span className="text-[#555]">{u.name}</span>
+                    {typeof u.returnSinceRegime === "number" && (
+                      <span className={`font-bold ${u.returnSinceRegime >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                        {u.returnSinceRegime >= 0 ? "+" : ""}{u.returnSinceRegime}%
+                      </span>
+                    )}
                     <span className="text-[#333]">— {u.reason}</span>
                   </div>
                 ))}

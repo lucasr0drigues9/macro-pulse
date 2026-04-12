@@ -767,6 +767,19 @@ def get_china_regime():
 
     confirmed = geo_regime if lag_warning else proxy_regime
 
+    # Calculate regime start date
+    # For geo override: use the event date if available, otherwise estimate
+    from datetime import datetime as _dt, timedelta as _td
+    if lag_warning:
+        # Geo regime just started — approximate from now
+        regime_start = _dt.now().strftime("%Y-%m-01")
+        months = 1
+    else:
+        # Proxy regime — count back from consecutive months
+        now = _dt.now()
+        start = now - _td(days=months * 30)
+        regime_start = start.strftime("%Y-%m-01")
+
     return {
         "regime": confirmed,
         "proxyRegime": proxy_regime,
@@ -777,40 +790,48 @@ def get_china_regime():
         "inflation": inflation,
         "confidence": confidence,
         "consecutiveMonths": months,
+        "periodStart": regime_start,
     }
 
 
 @app.get("/api/china/allocation")
 def get_china_allocation():
-    """China portfolio allocation — ETF weights for current China regime."""
+    """China portfolio allocation — ETF weights + live returns since regime start."""
     try:
         from china_api_config import CHINA_REGIME_ETFS
+        import yfinance as yf
+        from datetime import datetime as _dt
 
-        # Get current China regime
-        regime = "Deflation"  # default
-        try:
-            from china import get_china_data, assess_china
-            import contextlib, io as _io
-            with contextlib.redirect_stdout(_io.StringIO()):
-                data = get_china_data()
-                result = assess_china(data)
-            regime = result["quadrant"]["name"]
-        except Exception:
-            pass
+        # Get confirmed regime from the regime endpoint (uses geo layer)
+        regime_data = get_china_regime()
+        regime = regime_data.get("regime", "Deflation")
+        period_start = regime_data.get("periodStart", "2024-10-01")
 
         picks = CHINA_REGIME_ETFS.get(regime, [])
         total_conviction = sum(e["conviction"] for e in picks) or 1
-        cash_target = 20  # Higher cash for China due to uncertainty
+        cash_target = 20
+
+        # Fetch live returns for each ETF since regime start
+        def _get_return(ticker: str) -> float | None:
+            try:
+                h = yf.Ticker(ticker).history(start=period_start)
+                if len(h) >= 2:
+                    return round((float(h["Close"].iloc[-1]) - float(h["Close"].iloc[0])) / float(h["Close"].iloc[0]) * 100, 1)
+            except Exception:
+                pass
+            return None
 
         overweight = []
         for etf in picks:
             weight = round(etf["conviction"] / total_conviction * (100 - cash_target))
+            ret = _get_return(etf["ticker"])
             overweight.append({
                 "ticker": etf["ticker"],
                 "name": etf["name"],
                 "weight": weight,
                 "conviction": etf["conviction"],
                 "rationale": etf["note"],
+                "returnSinceRegime": ret,
             })
 
         pick_tickers = {e["ticker"] for e in picks}
@@ -822,14 +843,17 @@ def get_china_allocation():
                 if etf["ticker"] not in pick_tickers and not any(
                     u["ticker"] == etf["ticker"] for u in underweight
                 ):
+                    ret = _get_return(etf["ticker"])
                     underweight.append({
                         "ticker": etf["ticker"],
                         "name": etf["name"],
                         "reason": f"Underperforms during China {regime}.",
+                        "returnSinceRegime": ret,
                     })
 
         return {
             "regime": regime,
+            "periodStart": period_start,
             "cashTarget": cash_target,
             "overweight": overweight,
             "underweight": underweight,
@@ -900,19 +924,10 @@ def get_china_transition():
     try:
         from china_api_config import CHINA_REGIME_ETFS, CHINA_TRANSITION_GUIDANCE
 
-        # Get current regime
-        regime = "Deflation"
-        months = 18
-        try:
-            from china import get_china_data, assess_china
-            import contextlib, io as _io
-            with contextlib.redirect_stdout(_io.StringIO()):
-                data = get_china_data()
-                result = assess_china(data)
-            regime = result["quadrant"]["name"]
-            months = result.get("consecutive_months", 1)
-        except Exception:
-            pass
+        # Use confirmed regime from geo layer
+        regime_data = get_china_regime()
+        regime = regime_data.get("regime", "Deflation")
+        months = regime_data.get("consecutiveMonths", 1)
 
         outlook = []
         for target in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
