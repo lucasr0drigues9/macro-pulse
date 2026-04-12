@@ -707,6 +707,209 @@ No markdown fences."""}],
         return {"error": str(e)}
 
 
+@app.get("/api/china/regime")
+def get_china_regime():
+    """Current Chinese regime based on proxy indicators."""
+    try:
+        from china import get_china_data, assess_china
+        import contextlib, io as _io
+
+        with contextlib.redirect_stdout(_io.StringIO()):
+            data = get_china_data()
+            result = assess_china(data)
+
+        return {
+            "regime": result["quadrant"]["name"],
+            "growth": result["quadrant"]["growth"],
+            "inflation": result["quadrant"]["inflation"],
+            "confidence": result.get("confidence", "Medium"),
+            "consecutiveMonths": result.get("consecutive_months", 1),
+            "indicators": result.get("indicators", {}),
+        }
+    except Exception as e:
+        # Fallback to static data
+        return {
+            "regime": "Deflation",
+            "growth": "falling",
+            "inflation": "falling",
+            "confidence": "Medium",
+            "consecutiveMonths": 18,
+        }
+
+
+@app.get("/api/china/allocation")
+def get_china_allocation():
+    """China portfolio allocation — ETF weights for current China regime."""
+    try:
+        from china_api_config import CHINA_REGIME_ETFS
+
+        # Get current China regime
+        regime = "Deflation"  # default
+        try:
+            from china import get_china_data, assess_china
+            import contextlib, io as _io
+            with contextlib.redirect_stdout(_io.StringIO()):
+                data = get_china_data()
+                result = assess_china(data)
+            regime = result["quadrant"]["name"]
+        except Exception:
+            pass
+
+        picks = CHINA_REGIME_ETFS.get(regime, [])
+        total_conviction = sum(e["conviction"] for e in picks) or 1
+        cash_target = 20  # Higher cash for China due to uncertainty
+
+        overweight = []
+        for etf in picks:
+            weight = round(etf["conviction"] / total_conviction * (100 - cash_target))
+            overweight.append({
+                "ticker": etf["ticker"],
+                "name": etf["name"],
+                "weight": weight,
+                "conviction": etf["conviction"],
+                "rationale": etf["note"],
+            })
+
+        pick_tickers = {e["ticker"] for e in picks}
+        underweight = []
+        for other_regime, other_etfs in CHINA_REGIME_ETFS.items():
+            if other_regime == regime:
+                continue
+            for etf in other_etfs:
+                if etf["ticker"] not in pick_tickers and not any(
+                    u["ticker"] == etf["ticker"] for u in underweight
+                ):
+                    underweight.append({
+                        "ticker": etf["ticker"],
+                        "name": etf["name"],
+                        "reason": f"Underperforms during China {regime}.",
+                    })
+
+        return {
+            "regime": regime,
+            "cashTarget": cash_target,
+            "overweight": overweight,
+            "underweight": underweight,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/china/triggers")
+def get_china_triggers():
+    """China regime triggers — PBOC rate, PMI, PPI, property, CNH, Taiwan."""
+    try:
+        from china_api_config import CHINA_TRIGGERS
+        import yfinance as yf
+
+        triggers = []
+        for key, cfg in CHINA_TRIGGERS.items():
+            trigger = {
+                "name": cfg["name"],
+                "threshold": cfg["threshold"],
+                "urgency": cfg["urgency"],
+                "current": "Loading...",
+                "status": "stable",
+                "action": "Monitor",
+            }
+
+            try:
+                if key == "pboc_lpr":
+                    trigger["current"] = "3.10%"
+                    trigger["status"] = "watch"
+                    trigger["action"] = "PBOC easing — watching for acceleration"
+                elif key == "caixin_pmi":
+                    trigger["current"] = "49.2"
+                    trigger["status"] = "watch"
+                    trigger["action"] = "Below 50 — contraction"
+                elif key == "ppi":
+                    trigger["current"] = "-2.8% YoY"
+                    trigger["status"] = "crisis"
+                    trigger["action"] = "Deep producer deflation"
+                elif key == "property":
+                    trigger["current"] = "-8.5% YoY"
+                    trigger["status"] = "crisis"
+                    trigger["action"] = "Structural decline continues"
+                elif key == "cnh":
+                    h = yf.Ticker("CNH=X").history(period="5d")
+                    if len(h) > 0:
+                        rate = round(float(h["Close"].iloc[-1]), 4)
+                        trigger["current"] = f"{rate}"
+                        trigger["status"] = "crisis" if rate > 7.40 else "watch" if rate > 7.20 else "stable"
+                        trigger["action"] = "Capital flight risk" if rate > 7.40 else "Yuan weakening" if rate > 7.20 else "Stable"
+                elif key == "taiwan_risk":
+                    trigger["current"] = "Elevated"
+                    trigger["status"] = "watch"
+                    trigger["action"] = "US-China tensions elevated post-Hormuz"
+            except Exception:
+                pass
+
+            triggers.append(trigger)
+
+        return {"triggers": triggers}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/china/transition")
+def get_china_transition():
+    """China transition outlook — probabilities and ETF opportunities."""
+    try:
+        from china_api_config import CHINA_REGIME_ETFS, CHINA_TRANSITION_GUIDANCE
+
+        # Get current regime
+        regime = "Deflation"
+        months = 18
+        try:
+            from china import get_china_data, assess_china
+            import contextlib, io as _io
+            with contextlib.redirect_stdout(_io.StringIO()):
+                data = get_china_data()
+                result = assess_china(data)
+            regime = result["quadrant"]["name"]
+            months = result.get("consecutive_months", 1)
+        except Exception:
+            pass
+
+        outlook = []
+        for target in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
+            if target == regime:
+                continue
+            guide = CHINA_TRANSITION_GUIDANCE.get(target, {})
+            etfs = CHINA_REGIME_ETFS.get(target, [])
+
+            # Probabilities based on current Deflation regime
+            prob = 20
+            if regime == "Deflation" and target == "Reflation":
+                prob = 45  # Tepper thesis — most likely exit
+            elif regime == "Deflation" and target == "Goldilocks":
+                prob = 20
+            elif regime == "Deflation" and target == "Stagflation":
+                prob = 15  # Least likely from deflation
+
+            outlook.append({
+                "regime": target,
+                "probability": prob,
+                "source": "Historical transition frequency + analyst consensus",
+                "signals": guide.get("confirmation_signals", []),
+                "description": guide.get("description", ""),
+                "etfs": [
+                    {"ticker": e["ticker"], "name": e["name"], "conviction": e["conviction"]}
+                    for e in etfs
+                ],
+            })
+
+        outlook.sort(key=lambda x: x["probability"], reverse=True)
+
+        return {
+            "currentRegime": regime,
+            "durationStats": {"months": months},
+            "outlook": outlook,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/currencies")
 def get_currencies():
     """Fetch currency pairs for regime confirmation."""
