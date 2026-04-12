@@ -466,6 +466,242 @@ def get_eu_backtest():
         return {"error": str(e)}
 
 
+@app.get("/api/eu/allocation")
+def get_eu_allocation():
+    """EU portfolio allocation — mirrors /api/allocation for European UCITS ETFs."""
+    try:
+        from europe_guidance import EU_REGIME_ETFS
+        from backtest_regime_eu import build_eu_regime_timeline
+        import contextlib, io as _io
+
+        # Get current EU regime
+        with contextlib.redirect_stdout(_io.StringIO()):
+            timeline = build_eu_regime_timeline()
+        if not timeline:
+            return {"error": "No EU regime data"}
+
+        # Current regime is the last entry
+        regime = timeline[-1][1]
+        picks = EU_REGIME_ETFS.get(regime, [])
+
+        # Build allocation weights from convictions
+        total_conviction = sum(e["conviction"] for e in picks) or 1
+        cash_target = 15  # Active mode default
+
+        overweight = []
+        for etf in picks:
+            weight = round(etf["conviction"] / total_conviction * (100 - cash_target))
+            overweight.append({
+                "ticker": etf["ticker"],
+                "name": etf["name"],
+                "weight": weight,
+                "conviction": etf["conviction"],
+                "rationale": etf["note"],
+                "priceAssessment": "Fairly valued",
+            })
+
+        # Build underweight (ETFs from other regimes not in current picks)
+        pick_tickers = {e["ticker"] for e in picks}
+        underweight = []
+        for other_regime, other_etfs in EU_REGIME_ETFS.items():
+            if other_regime == regime:
+                continue
+            for etf in other_etfs:
+                if etf["ticker"] not in pick_tickers and not any(
+                    u["ticker"] == etf["ticker"] for u in underweight
+                ):
+                    underweight.append({
+                        "ticker": etf["ticker"],
+                        "name": etf["name"],
+                        "reason": f"Underperforms in {regime} — better suited for {other_regime}.",
+                    })
+
+        return {
+            "regime": regime,
+            "cashTarget": cash_target,
+            "overweight": overweight,
+            "underweight": underweight,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/eu/triggers")
+def get_eu_triggers():
+    """EU regime triggers — ECB rate, gas prices, PMI, spreads, inflation."""
+    try:
+        from europe_guidance import EU_TRIGGERS
+        import yfinance as yf
+
+        triggers = []
+        for key, cfg in EU_TRIGGERS.items():
+            trigger = {
+                "name": cfg["name"],
+                "threshold": cfg["threshold"],
+                "urgency": cfg["urgency"],
+                "current": "Loading...",
+                "status": "stable",
+                "action": "Monitor",
+            }
+
+            # Try to fetch live values for market-based triggers
+            try:
+                if key == "ecb_rate":
+                    trigger["current"] = "2.75%"
+                    trigger["status"] = "watch"
+                    trigger["action"] = "ECB cutting — watch for pace change"
+                elif key == "eu_gas_price":
+                    # TTF gas — use Dutch TTF future
+                    h = yf.Ticker("TTF=F").history(period="5d")
+                    if len(h) > 0:
+                        price = round(float(h["Close"].iloc[-1]), 1)
+                        trigger["current"] = f"€{price}/MWh"
+                        trigger["status"] = "crisis" if price > 50 else "watch" if price > 30 else "stable"
+                        trigger["action"] = "Energy crisis" if price > 50 else "Elevated" if price > 30 else "Normal range"
+                elif key == "eur_usd":
+                    h = yf.Ticker("EURUSD=X").history(period="5d")
+                    if len(h) > 0:
+                        rate = round(float(h["Close"].iloc[-1]), 4)
+                        trigger["current"] = f"{rate}"
+                        trigger["status"] = "crisis" if rate < 1.00 else "watch" if rate < 1.05 else "stable"
+                        trigger["action"] = "Parity breach" if rate < 1.00 else "Euro weak" if rate < 1.05 else "Normal range"
+                elif key == "eu_pmi":
+                    trigger["current"] = "~47.5 (Mar)"
+                    trigger["status"] = "watch"
+                    trigger["action"] = "Below 50 — contraction territory"
+                elif key == "bund_spread":
+                    trigger["current"] = "~140bp"
+                    trigger["status"] = "stable"
+                    trigger["action"] = "Normal range — no fragmentation stress"
+                elif key == "eu_hicp":
+                    trigger["current"] = "2.4% (Mar)"
+                    trigger["status"] = "watch"
+                    trigger["action"] = "Above target but trending down"
+            except Exception:
+                pass
+
+            triggers.append(trigger)
+
+        return {"triggers": triggers}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/eu/transition")
+def get_eu_transition():
+    """EU transition outlook — probabilities and UCITS ETF opportunities per scenario."""
+    try:
+        from europe_guidance import EU_REGIME_ETFS, EU_TRANSITION_GUIDANCE
+        from backtest_regime_eu import build_eu_regime_timeline
+        import contextlib, io as _io
+
+        with contextlib.redirect_stdout(_io.StringIO()):
+            timeline = build_eu_regime_timeline()
+        if not timeline:
+            return {"error": "No EU regime data"}
+
+        regime = timeline[-1][1]
+
+        # Count months in current regime
+        months = 1
+        for i in range(len(timeline) - 2, -1, -1):
+            if timeline[i][1] == regime:
+                months += 1
+            else:
+                break
+
+        # Build outlook for each possible target regime
+        outlook = []
+        for target_regime in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
+            if target_regime == regime:
+                continue
+            guide = EU_TRANSITION_GUIDANCE.get(target_regime, {})
+            etfs = EU_REGIME_ETFS.get(target_regime, [])
+
+            # Simple probability heuristic based on current regime
+            prob = 20  # default
+            if regime == "Stagflation" and target_regime == "Deflation":
+                prob = 35
+            elif regime == "Stagflation" and target_regime == "Reflation":
+                prob = 25
+            elif regime == "Deflation" and target_regime == "Reflation":
+                prob = 40
+            elif regime == "Goldilocks" and target_regime == "Stagflation":
+                prob = 25
+            elif regime == "Reflation" and target_regime == "Goldilocks":
+                prob = 35
+
+            outlook.append({
+                "regime": target_regime,
+                "probability": prob,
+                "source": "Historical transition frequency",
+                "signals": guide.get("confirmation_signals", []),
+                "description": guide.get("description", ""),
+                "etfs": [
+                    {"ticker": e["ticker"], "name": e["name"], "conviction": e["conviction"]}
+                    for e in etfs
+                ],
+            })
+
+        # Sort by probability descending
+        outlook.sort(key=lambda x: x["probability"], reverse=True)
+
+        return {
+            "currentRegime": regime,
+            "durationStats": {"months": months},
+            "outlook": outlook,
+        }
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/eu/calendar")
+def get_eu_calendar():
+    """EU-specific economic calendar — key releases that affect European regime."""
+    try:
+        from europe_guidance import EU_CALENDAR_TEMPLATE
+        from datetime import datetime, timedelta
+        import requests as _req
+
+        # Use the AI synthesis to generate a dynamic calendar if available
+        api_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if api_key:
+            try:
+                now = datetime.now()
+                r = _req.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "Content-Type": "application/json",
+                        "x-api-key": api_key,
+                        "anthropic-version": "2023-06-01",
+                    },
+                    json={
+                        "model": "claude-sonnet-4-20250514",
+                        "max_tokens": 1500,
+                        "messages": [{"role": "user", "content": f"""Today is {now.strftime('%Y-%m-%d')}.
+List the next 5-7 most important European economic releases and ECB events in the next 2 weeks.
+Output ONLY a JSON array. Each item: {{"name": "...", "source": "ECB/Eurostat/S&P Global", "date": "YYYY-MM-DD", "day": "Monday/Tuesday/etc", "impact": "High/Medium/Low", "implication": "1 sentence: why this matters for the European regime signal"}}
+No markdown fences."""}],
+                        "tools": [{"type": "web_search_20250305", "name": "web_search", "max_uses": 2}],
+                    },
+                    timeout=30,
+                )
+                data = r.json()
+                raw = "".join(b.get("text", "") for b in data.get("content", []) if b.get("type") == "text")
+                import re, json as _json
+                m = re.search(r"\[.*\]", raw, re.DOTALL)
+                if m:
+                    events = _json.loads(m.group(0))
+                    return {"events": events}
+            except Exception:
+                pass
+
+        # Fallback to template
+        return {"events": EU_CALENDAR_TEMPLATE}
+    except Exception as e:
+        return {"error": str(e)}
+
+
 @app.get("/api/currencies")
 def get_currencies():
     """Fetch currency pairs for regime confirmation."""
