@@ -8,6 +8,7 @@ type EuropeSignupPhase = "idle" | "submitting" | "awaiting_confirm" | "missing" 
 const EUROPE_SIGNUP_SOURCE = "europe";
 import Nav from "@/components/Nav";
 import PeriodChat from "@/components/PeriodChat";
+import SectionChat from "@/components/SectionChat";
 import {
   SECTORS, COMPANIES, CATALYSTS, REGIME_FIT_EMOJI, RISK_COLORS,
   type Company,
@@ -399,6 +400,12 @@ export default function EuropePage() {
   const [expandedTimelineIdx, setExpandedTimelineIdx] = useState<number | null>(null);
   const [europeInterpretation, setEuropeInterpretation] = useState<string | null>(null);
 
+  // EU guidance layer state
+  const [euAllocation, setEuAllocation] = useState<{ regime: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string }[]; underweight: { ticker: string; name: string; reason: string }[] } | null>(null);
+  const [euTriggers, setEuTriggers] = useState<{ name: string; current: string; threshold: string; status: string; action: string; urgency: string }[]>([]);
+  const [euTransition, setEuTransition] = useState<{ currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] } | null>(null);
+  const [euCalendar, setEuCalendar] = useState<{ name: string; source: string; date?: string; day?: string; impact: string; implication: string }[]>([]);
+
   useEffect(() => {
     fetch(apiUrl(`/api/returns?tickers=${EU_TICKERS.join(",")}`))
       .then((r) => r.json())
@@ -419,6 +426,23 @@ export default function EuropePage() {
     fetch(apiUrl("/api/interpretation"))
       .then((r) => r.json())
       .then((d) => { if (d.europeInterpretation) setEuropeInterpretation(d.europeInterpretation); })
+      .catch(() => {});
+    // EU guidance layer
+    fetch(apiUrl("/api/eu/allocation"))
+      .then((r) => r.json())
+      .then((d) => { if (!d.error) setEuAllocation(d); })
+      .catch(() => {});
+    fetch(apiUrl("/api/eu/triggers"))
+      .then((r) => r.json())
+      .then((d) => { if (d.triggers) setEuTriggers(d.triggers); })
+      .catch(() => {});
+    fetch(apiUrl("/api/eu/transition"))
+      .then((r) => r.json())
+      .then((d) => { if (!d.error) setEuTransition(d); })
+      .catch(() => {});
+    fetch(apiUrl("/api/eu/calendar"))
+      .then((r) => r.json())
+      .then((d) => { if (d.events) setEuCalendar(d.events); })
       .catch(() => {});
   }, []);
 
@@ -895,6 +919,173 @@ export default function EuropePage() {
       </section>
         );
       })()}
+
+      {/* EU Portfolio Allocation */}
+      {euAllocation && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European Allocation</h2>
+          <p className="text-xs text-[#555] mb-4">
+            UCITS ETF weights for the current European regime — conviction-proportional with {euAllocation.cashTarget}% cash.
+          </p>
+          <div className="space-y-2 mb-4">
+            {euAllocation.overweight.map((etf) => (
+              <div key={etf.ticker} className="p-3 rounded-lg bg-[#111] border border-[#222] flex flex-col sm:flex-row sm:items-center gap-2">
+                <div className="flex items-center gap-2 sm:w-48">
+                  <span className="text-sm font-bold text-[#22c55e]">{etf.weight}%</span>
+                  <span className="text-sm font-bold text-[#e0e0e0]">{etf.ticker}</span>
+                </div>
+                <div className="flex-1">
+                  <span className="text-xs text-[#888]">{etf.name}</span>
+                  <p className="text-[10px] text-[#555] mt-0.5">{etf.rationale}</p>
+                </div>
+                <span className="text-xs text-[#555] shrink-0">Conviction: {etf.conviction}</span>
+              </div>
+            ))}
+            <div className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-2">
+              <span className="text-sm font-bold text-[#eab308]">{euAllocation.cashTarget}%</span>
+              <span className="text-sm text-[#888]">Cash</span>
+              <span className="text-xs text-[#555] ml-auto">Regime uncertainty buffer</span>
+            </div>
+          </div>
+          {euAllocation.underweight.length > 0 && (
+            <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818]">
+              <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-2">Underweight in {euAllocation.regime}</div>
+              <div className="space-y-1">
+                {euAllocation.underweight.map((u) => (
+                  <div key={u.ticker} className="text-xs">
+                    <span className="text-[#e0e0e0] font-bold">{u.ticker}</span>{" "}
+                    <span className="text-[#555]">{u.name}</span>{" "}
+                    <span className="text-[#333]">— {u.reason}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          <SectionChat
+            context="European portfolio allocation section. Shows UCITS ETF weights for the current EU regime with conviction scores. Overweight = ETFs that benefit from the current European regime. Underweight = ETFs suited for other regimes."
+            label="Ask about EU allocation"
+            suggestions={["Why these ETFs?", "How does this compare to the US allocation?", "What would change this?"]}
+          />
+        </section>
+      )}
+
+      {/* EU Calendar */}
+      {euCalendar.length > 0 && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European Calendar</h2>
+          <p className="text-xs text-[#555] mb-4">Upcoming releases that affect the European regime signal</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {euCalendar.map((evt) => {
+              const impactColor = evt.impact === "High" ? "#ef4444" : evt.impact === "Medium" ? "#eab308" : "#22c55e";
+              return (
+                <div key={evt.name} className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="flex items-start justify-between mb-1">
+                    <h3 className="text-xs font-bold text-[#e0e0e0] leading-tight">{evt.name}</h3>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded ml-2 shrink-0" style={{ color: impactColor, backgroundColor: impactColor + "20" }}>
+                      {evt.impact}
+                    </span>
+                  </div>
+                  {evt.date && <div className="text-[10px] text-[#555] mb-1">{evt.day ? `${evt.day}, ` : ""}{evt.date} · {evt.source}</div>}
+                  {!evt.date && <div className="text-[10px] text-[#555] mb-1">{evt.source}</div>}
+                  <p className="text-[10px] text-[#888] leading-relaxed">{evt.implication}</p>
+                </div>
+              );
+            })}
+          </div>
+          <SectionChat
+            context="European economic calendar. Shows upcoming ECB decisions, Eurostat releases, PMI data, and other events that affect the European regime signal."
+            label="Ask about upcoming events"
+            suggestions={["Which event matters most?", "How will ECB rate decision affect positioning?", "What's the market expecting?"]}
+          />
+        </section>
+      )}
+
+      {/* EU Triggers */}
+      {euTriggers.length > 0 && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European Regime Triggers</h2>
+          <p className="text-xs text-[#555] mb-4">Live thresholds that would shift the European regime signal</p>
+          <div className="space-y-2">
+            {euTriggers.map((t) => {
+              const statusColor = t.status === "crisis" ? "#ef4444" : t.status === "watch" ? "#eab308" : "#22c55e";
+              const statusLabel = t.status === "crisis" ? "CRISIS" : t.status === "watch" ? "WATCH" : "STABLE";
+              return (
+                <div key={t.name} className="p-3 rounded-lg bg-[#111] border border-[#222] flex flex-col sm:flex-row sm:items-center gap-2">
+                  <div className="flex items-center gap-2 sm:w-56">
+                    <span className="text-xs px-1.5 py-0.5 rounded" style={{ color: statusColor, backgroundColor: statusColor + "20" }}>{statusLabel}</span>
+                    <span className="text-sm font-bold text-[#e0e0e0]">{t.name}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-xs text-[#888]">Current: <span className="text-[#e0e0e0]">{t.current}</span></div>
+                    <div className="text-[10px] text-[#555] mt-0.5">{t.threshold}</div>
+                  </div>
+                  <div className="text-xs text-[#555] sm:text-right sm:max-w-[180px]">{t.action}</div>
+                </div>
+              );
+            })}
+          </div>
+          <SectionChat
+            context="European regime triggers. Shows ECB deposit rate, TTF gas price, Eurozone PMI, Italy-Germany spread, EUR/USD, and HICP inflation. Each has a threshold that would shift the European regime signal."
+            label="Ask about EU triggers"
+            suggestions={["Which trigger is closest to firing?", "How does the ECB rate affect the regime?", "What if gas prices spike again?"]}
+          />
+        </section>
+      )}
+
+      {/* EU Transition Outlook */}
+      {euTransition && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">European Transition Radar</h2>
+          <p className="text-xs text-[#555] mb-1">
+            When triggers fire, these are the UCITS ETFs to watch — ranked by transition probability
+          </p>
+          <p className="text-xs text-[#888] mb-4">
+            Current regime: <span className="font-bold" style={{ color: EU_REGIME_COLORS[euTransition.currentRegime] || "#888" }}>{euTransition.currentRegime}</span> — Month {euTransition.durationStats.months}
+          </p>
+          <div className="space-y-4">
+            {euTransition.outlook.map((o) => {
+              const color = EU_REGIME_COLORS[o.regime] || "#888";
+              return (
+                <div key={o.regime} className="rounded-lg border overflow-hidden" style={{ borderColor: color + "30" }}>
+                  <div className="px-4 py-3 flex items-center justify-between" style={{ backgroundColor: color + "10" }}>
+                    <div>
+                      <span className="text-sm font-bold" style={{ color }}>{o.regime}</span>
+                      <span className="text-xs text-[#555] ml-2">{o.probability}% probability</span>
+                    </div>
+                  </div>
+                  <div className="px-4 py-3">
+                    <p className="text-xs text-[#888] mb-2">{o.description}</p>
+                    {o.signals.length > 0 && (
+                      <div className="mb-2">
+                        <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Confirmation signals</div>
+                        {o.signals.map((s, i) => (
+                          <div key={i} className="text-[10px] text-[#888]">• {s}</div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">ETFs to watch</div>
+                    <div className="flex flex-wrap gap-2">
+                      {o.etfs.map((e) => (
+                        <span key={e.ticker} className="text-xs px-2 py-1 rounded bg-[#0a0a0a] border border-[#222]">
+                          <span className="font-bold text-[#e0e0e0]">{e.ticker}</span>{" "}
+                          <span className="text-[#555]">{e.name}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <SectionChat
+            context="European transition outlook. Shows probability of transitioning from the current EU regime to each alternative, with confirmation signals and UCITS ETF opportunities per scenario."
+            label="Ask about EU transitions"
+            suggestions={["What's the most likely next EU regime?", "When should I start rotating?", "How does Europe's transition differ from the US?"]}
+          />
+        </section>
+      )}
+
+      <div className="border-t border-[#181818]" />
 
       {/* EU Regime History */}
       {euBacktest && (
