@@ -481,7 +481,7 @@ def get_eu_allocation():
             return {"error": "No EU regime data"}
 
         # Current regime is the last entry
-        regime = timeline[-1][1]
+        regime = timeline[-1]["regime"] if isinstance(timeline[-1], dict) else timeline[-1][1]
         picks = EU_REGIME_ETFS.get(regime, [])
 
         # Build allocation weights from convictions
@@ -601,12 +601,15 @@ def get_eu_transition():
         if not timeline:
             return {"error": "No EU regime data"}
 
-        regime = timeline[-1][1]
+        def _get_regime(entry):
+            return entry["regime"] if isinstance(entry, dict) else entry[1]
+
+        regime = _get_regime(timeline[-1])
 
         # Count months in current regime
         months = 1
         for i in range(len(timeline) - 2, -1, -1):
-            if timeline[i][1] == regime:
+            if _get_regime(timeline[i]) == regime:
                 months += 1
             else:
                 break
