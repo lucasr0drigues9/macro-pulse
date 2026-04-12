@@ -5,10 +5,11 @@ import Nav from "@/components/Nav";
 import SubscribeForm from "@/components/SubscribeForm";
 import SectionChat from "@/components/SectionChat";
 import WorldOrderPosition from "@/components/WorldOrderPosition";
+import PeriodChat from "@/components/PeriodChat";
 import { apiUrl } from "@/lib/api";
 import {
   ACCENT, proxyIndicators, strategicCards,
-  directETFs, proxyPlays, taiwanHedges, type ProxyIndicator,
+  type ProxyIndicator,
 } from "@/lib/chinaData";
 
 const REGIME_COLORS: Record<string, string> = {
@@ -69,18 +70,23 @@ type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; g
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
+type BacktestEntry = { regime: string; start: string; end: string; months: number; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null };
+type ChinaBacktest = { totalRegimes: number; yearRange: string; timeline: BacktestEntry[]; regimeBreakdown: Record<string, number> };
 
 export default function ChinaPage() {
   const [regime, setRegime] = useState<ChinaRegime | null>(null);
   const [allocation, setAllocation] = useState<Allocation | null>(null);
   const [triggers, setTriggers] = useState<Trigger[]>([]);
   const [transition, setTransition] = useState<TransitionData | null>(null);
+  const [backtest, setBacktest] = useState<ChinaBacktest | null>(null);
+  const [expandedTimeline, setExpandedTimeline] = useState<number | null>(null);
 
   useEffect(() => {
     fetch(apiUrl("/api/china/regime")).then((r) => r.json()).then((d) => { if (!d.error) setRegime(d); }).catch(() => {});
     fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setAllocation(d); }).catch(() => {});
     fetch(apiUrl("/api/china/triggers")).then((r) => r.json()).then((d) => { if (d.triggers) setTriggers(d.triggers); }).catch(() => {});
     fetch(apiUrl("/api/china/transition")).then((r) => r.json()).then((d) => { if (!d.error) setTransition(d); }).catch(() => {});
+    fetch(apiUrl("/api/china/backtest")).then((r) => r.json()).then((d) => { if (!d.error) setBacktest(d); }).catch(() => {});
   }, []);
 
   const r = regime || { regime: "Deflation", proxyRegime: "Deflation", geoRegime: "Deflation", geoContext: "", lagWarning: false, growth: "falling", inflation: "falling", confidence: "Medium", consecutiveMonths: 18 };
@@ -403,115 +409,122 @@ export default function ChinaPage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* How to Position — Three Approaches */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">How to Position on China</h2>
-        <p className="text-xs text-[#555] mb-2">Three approaches with different risk profiles — honest about what can go wrong</p>
-        <p className="text-xs text-[#888] mb-6">
-          The regime allocation above shows the framework&apos;s systematic picks. Below are the specific vehicles — from direct exposure (highest risk) to proxy plays (lower risk) to Taiwan hedges (tail risk insurance).
-        </p>
-
-        {/* Direct China ETFs */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-6 rounded" style={{ backgroundColor: "#ef4444" }} />
-            <h3 className="text-sm font-bold text-[#e0e0e0]">Approach 1 — Direct China Exposure</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef444420] text-[#ef4444]">HIGH RISK</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {directETFs.map((etf) => (
-              <div key={etf.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                <div className="flex justify-between items-center mb-2">
-                  <div>
-                    <span className="text-sm font-bold text-[#e0e0e0]">{etf.ticker}</span>
-                    <span className="text-xs text-[#555] ml-2">{etf.name}</span>
-                  </div>
-                  <span className={`text-sm font-bold ${etf.return1y >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                    {etf.return1y >= 0 ? "+" : ""}{etf.return1y}%
-                  </span>
-                </div>
-                <p className="text-xs text-[#888] leading-relaxed">{etf.note}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 p-3 rounded-lg bg-[#1a0000] border border-[#ef444430]">
-            <p className="text-xs text-[#ef4444] font-bold mb-1">Risk disclosure</p>
-            <p className="text-[10px] text-[#888] leading-relaxed">
-              Direct China ETFs carry <b className="text-[#ef4444]">regulatory risk</b> (US-listed Chinese ADRs face delisting threats under the HFCAA),{" "}
-              <b className="text-[#ef4444]">geopolitical risk</b> (Taiwan conflict would destroy shareholder value overnight), and{" "}
-              <b className="text-[#ef4444]">data reliability risk</b> (companies report under Chinese accounting standards with limited auditor access).
-              Position sizing should reflect these additional risks — most frameworks suggest capping direct China at 5-10% of portfolio.
-            </p>
-          </div>
-        </div>
-
-        {/* Proxy Plays */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-6 rounded" style={{ backgroundColor: "#eab308" }} />
-            <h3 className="text-sm font-bold text-[#e0e0e0]">Approach 2 — Proxy Plays</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#eab30820] text-[#eab308]">MODERATE RISK</span>
-          </div>
-          <p className="text-xs text-[#555] mb-3">
-            Get China exposure without the regulatory and political risks of holding Chinese equities directly.
-            These assets move with Chinese demand but are domiciled in safer jurisdictions.
+      {/* China Regime History */}
+      {backtest && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">
+            {backtest.totalRegimes} Regimes. {backtest.yearRange}. Every China Call.
+          </h2>
+          <p className="text-xs text-[#555] mb-2">
+            Historical regime timeline based on proxy indicators — same four-quadrant framework applied to China&apos;s real economy.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {proxyPlays.map((p) => (
-              <div key={p.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                <div className="flex justify-between items-center mb-2">
-                  <div>
-                    <span className="text-sm font-bold text-[#e0e0e0]">{p.ticker}</span>
-                    <span className="text-xs text-[#555] ml-2">{p.name}</span>
-                  </div>
-                  <span className={`text-sm font-bold ${p.return1y >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                    {p.return1y >= 0 ? "+" : ""}{p.return1y}%
-                  </span>
-                </div>
-                <p className="text-xs text-[#888] leading-relaxed">{p.note}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Taiwan Hedges */}
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1 h-6 rounded" style={{ backgroundColor: "#3b82f6" }} />
-            <h3 className="text-sm font-bold text-[#e0e0e0]">Approach 3 — Taiwan Scenario Hedges</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#3b82f620] text-[#3b82f6]">TAIL RISK</span>
-          </div>
-          <p className="text-xs text-[#555] mb-3">
-            Assets that historically benefit from military escalation scenarios. Not a bet on conflict — insurance against the tail risk that Dalio estimates at 30-40% probability by 2028.
+          <p className="text-xs text-[#888] mb-4">
+            China&apos;s data is less reliable than US/EU, so this timeline uses curated periods from known economic events rather than monthly data feeds. Click any period to see how all 4 regime baskets actually performed.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {taiwanHedges.map((h) => (
-              <div key={h.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
-                <div className="mb-1">
-                  <span className="text-sm font-bold text-[#e0e0e0]">{h.ticker}</span>
-                  <span className="text-xs text-[#555] ml-2">{h.name}</span>
-                </div>
-                <p className="text-xs text-[#888] leading-relaxed">{h.case}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 p-3 rounded bg-[#111] border border-[#222]">
-            <p className="text-[10px] text-[#555] leading-relaxed">
-              These are not predictions. They are historical patterns from previous geopolitical conflicts applied to the Taiwan risk scenario. The Hormuz closure is a live test case — the same assets that hedge Taiwan risk (gold, defence, energy) are already performing in the current environment.
-            </p>
-          </div>
-        </div>
 
-        <SectionChat
-          context="How to position on China section. Three approaches: Direct exposure (FXI, KWEB, MCHI — high risk from delistings, Taiwan, data), Proxy plays (DBC, EEM, copper miners — China demand exposure without Chinese equity risk), and Taiwan hedges (GLD, XLE, LMT, RTX — tail risk insurance). Current regime: Deflation. Hormuz closure creates additional complexity."
-          label="Ask about China positioning"
-          suggestions={[
-            "Which approach has the best risk-reward right now?",
-            "How does the Hormuz closure change China positioning?",
-            "What would make direct China ETFs attractive again?",
-          ]}
-        />
-      </section>
+          {/* Regime breakdown */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+            {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((reg) => {
+              const count = backtest.regimeBreakdown[reg] || 0;
+              const color = REGIME_COLORS[reg] || "#888";
+              return (
+                <div key={reg} className="p-3 rounded-lg border text-center" style={{ borderColor: color + "30", backgroundColor: color + "10" }}>
+                  <div className="text-xs text-[#888] mb-1">{reg}</div>
+                  <div className="text-lg font-bold" style={{ color }}>{count}</div>
+                  <div className="text-xs text-[#555]">periods</div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Timeline */}
+          <div className="space-y-2">
+            {backtest.timeline.map((p, i) => {
+              const color = REGIME_COLORS[p.regime] || "#888";
+              const isOpen = expandedTimeline === i;
+              return (
+                <div key={i}>
+                  <div
+                    className="p-3 rounded-lg bg-[#111] border border-[#222] flex flex-col sm:flex-row sm:items-center gap-2 cursor-pointer hover:bg-[#151515] transition-colors"
+                    onClick={() => setExpandedTimeline(isOpen ? null : i)}
+                  >
+                    <div className="flex items-center gap-2 sm:w-36">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                      <span className="text-sm font-bold" style={{ color }}>{p.regime}</span>
+                    </div>
+                    <div className="text-xs text-[#888] sm:w-40">
+                      {p.start} → {p.end} ({p.months}mo)
+                    </div>
+                    <div className="flex-1 text-xs">
+                      Picks:{" "}
+                      {p.picksReturn !== null ? (
+                        <span className="font-bold" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                          {p.picksReturn >= 0 ? "+" : ""}{p.picksReturn.toFixed(1)}%
+                        </span>
+                      ) : <span className="text-[#333]">N/A</span>}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs">
+                      {p.frameworkCorrect === true && <span className="text-[#22c55e]">✓ Correct</span>}
+                      {p.frameworkCorrect === false && <span className="text-[#ef4444]">✗ {p.bestRegime} won</span>}
+                      <span className="text-[#333] text-[10px]">{isOpen ? "▲" : "▼"}</span>
+                    </div>
+                  </div>
+
+                  {isOpen && (
+                    <div className="mx-3 p-3 rounded-b-lg border border-t-0 border-[#222] text-xs bg-[#0a0a0a]">
+                      <p className="text-[#888] mb-3">{p.signalContext || "No additional context."}</p>
+
+                      {/* All 4 baskets */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
+                        {(["Stagflation", "Goldilocks", "Reflation", "Deflation"] as const).map((reg) => {
+                          const ret = p.allRegimeReturns?.[reg];
+                          const rColor = REGIME_COLORS[reg] || "#555";
+                          const isBest = p.bestRegime === reg;
+                          const isCalled = p.regime === reg;
+                          return (
+                            <div key={reg} className="p-1.5 rounded" style={{
+                              backgroundColor: isBest ? "#22c55e10" : "#0a0a0a",
+                              border: isBest ? "1px solid #22c55e40" : "1px solid #1a1a1a",
+                            }}>
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <span className="text-[10px] font-bold" style={{ color: rColor }}>{reg}</span>
+                                {isCalled && <span className="text-[8px] text-[#555]">[called]</span>}
+                                {isBest && <span className="text-[8px] text-[#22c55e]">★</span>}
+                              </div>
+                              <div className="text-xs font-bold" style={{ color: ret == null ? "#333" : ret >= 0 ? "#22c55e" : "#ef4444" }}>
+                                {ret == null ? "—" : `${ret >= 0 ? "+" : ""}${ret.toFixed(1)}%`}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <div className="text-[10px]" style={{ color: p.frameworkCorrect ? "#22c55e" : "#eab308" }}>
+                        {p.frameworkCorrect
+                          ? `✓ Framework called ${p.regime} and those picks had the best return`
+                          : `⚠ Framework called ${p.regime} but ${p.bestRegime} picks outperformed`}
+                      </div>
+
+                      <PeriodChat context={{
+                        region: "US",
+                        start: p.start,
+                        end: p.end,
+                        regime: p.regime,
+                        bestRegime: p.bestRegime || undefined,
+                        allRegimeReturns: p.allRegimeReturns,
+                      }} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          <p className="mt-4 text-xs text-[#333] text-center italic">
+            China regime timeline based on proxy indicators and known economic events. ETF returns are real but regime classifications carry lower confidence than US/EU backtests.
+          </p>
+        </section>
+      )}
 
       <div className="border-t border-[#181818]" />
 

@@ -862,6 +862,31 @@ def get_china_allocation():
         return {"error": str(e)}
 
 
+@app.get("/api/china/backtest")
+def get_china_backtest():
+    """China regime history — curated timeline with ETF basket returns."""
+    try:
+        from backtest_regime_china import build_china_backtest
+        periods = build_china_backtest()
+
+        periods.reverse()  # Most recent first
+
+        regime_counts = {}
+        for p in periods:
+            r = p["regime"]
+            regime_counts[r] = regime_counts.get(r, 0) + 1
+
+        return {
+            "totalRegimes": len(periods),
+            "yearRange": "2010-2026",
+            "timeline": periods,
+            "regimeBreakdown": regime_counts,
+        }
+    except Exception as e:
+        import traceback
+        return {"error": str(e), "trace": traceback.format_exc()[-500:]}
+
+
 @app.get("/api/china/triggers")
 def get_china_triggers():
     """China regime triggers — PBOC rate, PMI, PPI, property, CNH, Taiwan."""
