@@ -7,7 +7,9 @@ import WeeklyCalendar from "@/components/WeeklyCalendar";
 import RegimeTriggers from "@/components/RegimeTriggers";
 import TransitionOutlook from "@/components/TransitionOutlook";
 import RegimeHistory from "@/components/RegimeHistory";
+import WorldOrderPosition from "@/components/WorldOrderPosition";
 import Nav from "@/components/Nav";
+import { usStrategicCards } from "@/lib/usOverextensionData";
 
 export default function RegimeTracker() {
   return (
@@ -33,6 +35,20 @@ export default function RegimeTracker() {
 
       <div className="border-t border-[#181818]" />
       <TransitionOutlook />
+
+      <div className="border-t border-[#181818]" />
+      <WorldOrderPosition
+        title="US in the World Order Transition"
+        subtitle="Four dimensions of America's position as the declining incumbent power"
+        cards={usStrategicCards}
+        accent="#f97316"
+        chatContext="US position in Ray Dalio's world order transition. Covers military overextension (750+ bases, 3 active theaters + Hormuz), dollar reserve status erosion (58% from 72%), debt trajectory ($36.2T, interest > defence spending), and internal polarisation. The US is in Stage 5 of Dalio's big cycle — great power conflict."
+        chatSuggestions={[
+          "How does the Hormuz closure fit Dalio's framework?",
+          "Is the dollar losing reserve status?",
+          "What historical empires show similar patterns?",
+        ]}
+      />
 
       <div className="border-t border-[#181818]" />
       <RegimeHistory />

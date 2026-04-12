@@ -355,3 +355,30 @@ export const RISK_COLORS: Record<string, string> = {
   "Moderate-Aggressive": "#e08030",
   "Aggressive": "#ef4444",
 };
+
+export const europeStrategicCards = [
+  {
+    title: "Strategic Autonomy Acceleration",
+    content: "Europe is building independence across defence, energy, and technology at unprecedented pace. Defence spending commitments jumped from 1.5% to 2.5%+ GDP across NATO Europe after Ukraine. The EU Defence Industrial Strategy (March 2024) created a framework for joint procurement. This is the most significant shift in European defence posture since NATO's founding.",
+    keyMetric: "Defence spending: 1.5% → 2.5%+ GDP",
+    status: "Accelerating",
+  },
+  {
+    title: "Energy Independence",
+    content: "Russian gas share of EU imports fell from 40% (2021) to ~8% (2025). LNG terminals built at emergency speed. Renewables now >40% of EU electricity generation. But the Hormuz closure exposed the remaining vulnerability: 20% of global oil transits the strait. Europe's energy security is no longer about Russia — it's about the Middle East chokepoint and US naval willingness to keep it open.",
+    keyMetric: "Russian gas: 40% → 8% of EU imports",
+    status: "Progressing",
+  },
+  {
+    title: "Technology Sovereignty",
+    content: "EU Chips Act (€43B) aims to double European semiconductor market share to 20% by 2030. ASML (Netherlands) already controls 100% of EUV lithography — the most critical chokepoint in global tech. SAP dominates enterprise software. Airbus competes with Boeing. But AI capability gap vs US/China is widening — no European hyperscaler in the global top 10.",
+    keyMetric: "ASML: 100% EUV lithography monopoly",
+    status: "Mixed",
+  },
+  {
+    title: "EU as Third Pole",
+    content: "Dalio's framework positions the EU as the key swing actor in the US-China transition. Europe's choice of alignment determines the balance of power. Currently tilting US on security (NATO) but increasingly independent on trade (China is EU's largest trade partner for goods). The strategic ambiguity is deliberate — it maximises leverage. European defence stocks (EUAD +820% since Ukraine invasion) are pricing in this structural shift.",
+    keyMetric: "EUAD ETF: +820% since Feb 2022",
+    status: "Pivoting",
+  },
+];

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Nav from "@/components/Nav";
 import SubscribeForm from "@/components/SubscribeForm";
 import SectionChat from "@/components/SectionChat";
+import WorldOrderPosition from "@/components/WorldOrderPosition";
 import { apiUrl } from "@/lib/api";
 import {
   ACCENT, proxyIndicators, strategicCards,
@@ -70,7 +71,6 @@ type Trigger = { name: string; current: string; threshold: string; status: strin
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
 
 export default function ChinaPage() {
-  const [expandedStrat, setExpandedStrat] = useState<number | null>(null);
   const [regime, setRegime] = useState<ChinaRegime | null>(null);
   const [allocation, setAllocation] = useState<Allocation | null>(null);
   const [triggers, setTriggers] = useState<Trigger[]>([]);
@@ -299,45 +299,18 @@ export default function ChinaPage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* Strategic Position */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">China in the World Order Transition</h2>
-        <p className="text-xs text-[#555] mb-6">Three dimensions of China&apos;s strategic trajectory</p>
-        <div className="space-y-3">
-          {strategicCards.map((card, i) => {
-            const isOpen = expandedStrat === i;
-            const statusColor = card.status === "Elevated" ? "#ef4444" : card.status === "Accelerating" ? "#eab308" : "#22c55e";
-            return (
-              <div key={card.title} className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
-                <button
-                  onClick={() => setExpandedStrat(isOpen ? null : i)}
-                  className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-[#151515] transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-[#e0e0e0]">{card.title}</span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: statusColor, backgroundColor: statusColor + "20" }}>{card.status}</span>
-                  </div>
-                  <span className="text-[#555] text-sm">{isOpen ? "−" : "+"}</span>
-                </button>
-                {isOpen && (
-                  <div className="px-4 pb-4 border-t border-[#222]">
-                    <p className="text-xs text-[#888] mt-3 leading-relaxed">{card.content}</p>
-                    <div className="mt-3 text-xs">
-                      <span className="text-[#555]">Key metric: </span>
-                      <span style={{ color: ACCENT }} className="font-bold">{card.keyMetric}</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        <SectionChat
-          context="China's strategic position in the world order: Taiwan risk, De-dollarisation progress, and technology self-sufficiency. Three dimensions of how China is positioning as a rising power challenging US dominance."
-          label="Ask about China's strategic position"
-          suggestions={["How does the Hormuz closure affect China?", "Is de-dollarisation accelerating?", "What's the Taiwan invasion probability?"]}
-        />
-      </section>
+      <WorldOrderPosition
+        title="China in the World Order Transition"
+        subtitle="Three dimensions of China's strategic trajectory as the rising challenger"
+        cards={strategicCards}
+        accent={ACCENT}
+        chatContext="China's strategic position in the world order: Alliance expansion (Russia, Iran, BRICS+, BRI 140+ countries), Economic decoupling (CIPS $20T+, yuan 4.7% of trade), and Taiwan risk (Dalio 30-40% conflict probability). China is the rising power in Dalio's framework, challenging US dominance."
+        chatSuggestions={[
+          "How does the Hormuz closure affect China?",
+          "Is de-dollarisation accelerating?",
+          "What's the Taiwan invasion probability?",
+        ]}
+      />
 
       <div className="border-t border-[#181818]" />
 

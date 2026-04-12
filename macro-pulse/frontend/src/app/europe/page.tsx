@@ -11,8 +11,9 @@ import PeriodChat from "@/components/PeriodChat";
 import SectionChat from "@/components/SectionChat";
 import {
   SECTORS, COMPANIES, CATALYSTS, REGIME_FIT_EMOJI, RISK_COLORS,
-  type Company,
+  europeStrategicCards, type Company,
 } from "@/lib/europeData";
+import WorldOrderPosition from "@/components/WorldOrderPosition";
 
 const SCORECARD = [
   { sector: "Defence", progress: 80, note: "Spending committed, contracts flowing", color: SECTORS.defence.color },
@@ -1084,6 +1085,21 @@ export default function EuropePage() {
           />
         </section>
       )}
+
+      <div className="border-t border-[#181818]" />
+
+      <WorldOrderPosition
+        title="Europe in the World Order Transition"
+        subtitle="Four dimensions of Europe's position as the emerging third pole"
+        cards={europeStrategicCards}
+        accent="#3b82f6"
+        chatContext="Europe's position in Dalio's world order transition. Covers strategic autonomy acceleration (defence spending 1.5% → 2.5%+ GDP), energy independence (Russian gas 40% → 8%), technology sovereignty (ASML 100% EUV monopoly, EU Chips Act €43B), and the EU as third pole between US and China. European defence stocks (EUAD +820% since Ukraine) are pricing in this structural shift."
+        chatSuggestions={[
+          "Is Europe becoming a third superpower?",
+          "How does Hormuz closure affect European energy?",
+          "Which European companies benefit most from autonomy?",
+        ]}
+      />
 
       <div className="border-t border-[#181818]" />
 
