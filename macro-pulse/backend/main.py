@@ -2500,12 +2500,27 @@ No markdown fences. Only the JSON object."""
             if b.get("type") == "text"
         ).strip()
 
-        # Parse JSON from response
+        # Parse JSON from response — try multiple strategies
         import re
-        m = re.search(r"\{.*\}", raw_text, re.DOTALL)
-        if not m:
-            return {"error": "Failed to parse briefing", "raw": raw_text[:500]}
-        briefing = _json.loads(m.group(0))
+        briefing = None
+        # Try: find outermost { ... } by matching balanced braces
+        depth = 0
+        start_idx = None
+        for i, ch in enumerate(raw_text):
+            if ch == "{":
+                if depth == 0:
+                    start_idx = i
+                depth += 1
+            elif ch == "}":
+                depth -= 1
+                if depth == 0 and start_idx is not None:
+                    try:
+                        briefing = _json.loads(raw_text[start_idx:i + 1])
+                        break
+                    except _json.JSONDecodeError:
+                        start_idx = None
+        if not briefing:
+            return {"error": "Failed to parse briefing", "raw": raw_text[:1000]}
 
         stories = briefing.get("stories", [])
         trigger_moves = briefing.get("trigger_moves", [])
