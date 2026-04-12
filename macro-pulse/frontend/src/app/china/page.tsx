@@ -299,6 +299,42 @@ export default function ChinaPage() {
 
       <div className="border-t border-[#181818]" />
 
+      {/* US vs China Regime Comparison */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Two Economies. Two Regimes.</h2>
+        <p className="text-xs text-[#555] mb-6">When US and Chinese regimes diverge, specific opportunities emerge.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div className="p-4 rounded-lg border border-[#222]" style={{ backgroundColor: "#ef444410", borderColor: "#ef444430" }}>
+            <div className="text-xs text-[#555] uppercase tracking-wider mb-2">US Regime (FRED + Geo)</div>
+            <div className="text-2xl font-bold text-[#ef4444]">Stagflation</div>
+            <div className="text-xs text-[#555] mt-1">Growth: slowing · Inflation: rising (energy-driven)</div>
+            <div className="text-xs text-[#888] mt-2">Picks: XLE, GLD, DBC, XLP, XLU</div>
+          </div>
+          <div className="p-4 rounded-lg border border-[#222]" style={{ backgroundColor: regimeColor + "10", borderColor: regimeColor + "30" }}>
+            <div className="text-xs text-[#555] uppercase tracking-wider mb-2">China Regime (Proxy)</div>
+            <div className="text-2xl font-bold" style={{ color: regimeColor }}>{r.regime}</div>
+            <div className="text-xs text-[#555] mt-1">Growth: {r.growth} · Inflation: {r.inflation}</div>
+            <div className="text-xs text-[#888] mt-2">Month {r.consecutiveMonths} · Confidence: {r.confidence}</div>
+          </div>
+        </div>
+
+        <div className="p-3 rounded bg-[#111] border border-[#eab30830]" style={{ backgroundColor: "#eab30810" }}>
+          <div className="text-xs text-[#eab308] font-bold mb-1">Regime divergence detected</div>
+          <p className="text-xs text-[#888] leading-relaxed">
+            US in Stagflation (energy-driven from Hormuz closure) while China in {r.regime} (property crisis, demand collapse). Historical pattern: when the world&apos;s two largest economies are both stressed but for different reasons, real assets (GLD, DBC) outperform both countries&apos; equities. The Hormuz full closure adds a new dimension — China&apos;s shadow fleet supply route is cut, potentially forcing a direct confrontation.
+          </p>
+        </div>
+
+        <SectionChat
+          context="US vs China regime comparison. US in Stagflation (Hormuz-driven energy crisis). China in Deflation (property crisis). Divergence creates opportunities in real assets. The Hormuz full closure cuts China's shadow fleet oil supply from Iran."
+          label="Ask about the divergence"
+          suggestions={["What assets benefit from this divergence?", "Has this combination happened before?", "What resolves the divergence?"]}
+        />
+      </section>
+
+      <div className="border-t border-[#181818]" />
+
       <WorldOrderPosition
         title="China in the World Order Transition"
         subtitle="Three dimensions of China's strategic trajectory as the rising challenger"
@@ -314,63 +350,114 @@ export default function ChinaPage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* Investable Assets */}
+      {/* How to Position — Three Approaches */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">How to Position on China</h2>
-        <p className="text-xs text-[#555] mb-6">Direct exposure, proxy plays, and hedges — with honest risk assessment</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <h3 className="text-xs uppercase tracking-wider text-[#ef4444] font-bold mb-3">Direct China ETFs</h3>
-            <div className="space-y-2">
-              {directETFs.map((etf) => (
-                <div key={etf.ticker} className="p-3 rounded bg-[#111] border border-[#222]">
-                  <div className="flex justify-between items-center mb-1">
+        <p className="text-xs text-[#555] mb-2">Three approaches with different risk profiles — honest about what can go wrong</p>
+        <p className="text-xs text-[#888] mb-6">
+          The regime allocation above shows the framework&apos;s systematic picks. Below are the specific vehicles — from direct exposure (highest risk) to proxy plays (lower risk) to Taiwan hedges (tail risk insurance).
+        </p>
+
+        {/* Direct China ETFs */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-6 rounded" style={{ backgroundColor: "#ef4444" }} />
+            <h3 className="text-sm font-bold text-[#e0e0e0]">Approach 1 — Direct China Exposure</h3>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef444420] text-[#ef4444]">HIGH RISK</span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {directETFs.map((etf) => (
+              <div key={etf.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
                     <span className="text-sm font-bold text-[#e0e0e0]">{etf.ticker}</span>
-                    <span className={`text-xs font-bold ${etf.return1y >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                      {etf.return1y >= 0 ? "+" : ""}{etf.return1y}%
-                    </span>
+                    <span className="text-xs text-[#555] ml-2">{etf.name}</span>
                   </div>
-                  <div className="text-[10px] text-[#555]">{etf.name}</div>
-                  <div className="text-[10px] text-[#333] mt-1">{etf.note}</div>
+                  <span className={`text-sm font-bold ${etf.return1y >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                    {etf.return1y >= 0 ? "+" : ""}{etf.return1y}%
+                  </span>
                 </div>
-              ))}
-            </div>
-            <div className="mt-3 p-2 rounded bg-[#1a0000] border border-[#ef444430]">
-              <p className="text-[10px] text-[#ef4444] leading-relaxed">
-                Direct China ETFs carry regulatory risk (US delistings), geopolitical risk (Taiwan), and data reliability risk.
-              </p>
-            </div>
+                <p className="text-xs text-[#888] leading-relaxed">{etf.note}</p>
+              </div>
+            ))}
           </div>
-          <div>
-            <h3 className="text-xs uppercase tracking-wider text-[#eab308] font-bold mb-3">Proxy Plays</h3>
-            <div className="space-y-2">
-              {proxyPlays.map((p) => (
-                <div key={p.ticker} className="p-3 rounded bg-[#111] border border-[#222]">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-bold text-[#e0e0e0]">{p.ticker}</span>
-                    <span className={`text-xs font-bold ${p.return1y >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                      {p.return1y >= 0 ? "+" : ""}{p.return1y}%
-                    </span>
-                  </div>
-                  <div className="text-[10px] text-[#555]">{p.name}</div>
-                  <div className="text-[10px] text-[#333] mt-1">{p.note}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <h3 className="text-xs uppercase tracking-wider text-[#3b82f6] font-bold mb-3">Taiwan Scenario Hedges</h3>
-            <div className="space-y-2">
-              {taiwanHedges.map((h) => (
-                <div key={h.ticker} className="p-3 rounded bg-[#111] border border-[#222]">
-                  <span className="text-sm font-bold text-[#e0e0e0]">{h.ticker}</span>
-                  <span className="text-[10px] text-[#555] ml-2">{h.name}</span>
-                  <p className="text-[10px] text-[#333] mt-1">{h.case}</p>
-                </div>
-              ))}
-            </div>
+          <div className="mt-3 p-3 rounded-lg bg-[#1a0000] border border-[#ef444430]">
+            <p className="text-xs text-[#ef4444] font-bold mb-1">Risk disclosure</p>
+            <p className="text-[10px] text-[#888] leading-relaxed">
+              Direct China ETFs carry <b className="text-[#ef4444]">regulatory risk</b> (US-listed Chinese ADRs face delisting threats under the HFCAA),{" "}
+              <b className="text-[#ef4444]">geopolitical risk</b> (Taiwan conflict would destroy shareholder value overnight), and{" "}
+              <b className="text-[#ef4444]">data reliability risk</b> (companies report under Chinese accounting standards with limited auditor access).
+              Position sizing should reflect these additional risks — most frameworks suggest capping direct China at 5-10% of portfolio.
+            </p>
           </div>
         </div>
+
+        {/* Proxy Plays */}
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-6 rounded" style={{ backgroundColor: "#eab308" }} />
+            <h3 className="text-sm font-bold text-[#e0e0e0]">Approach 2 — Proxy Plays</h3>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#eab30820] text-[#eab308]">MODERATE RISK</span>
+          </div>
+          <p className="text-xs text-[#555] mb-3">
+            Get China exposure without the regulatory and political risks of holding Chinese equities directly.
+            These assets move with Chinese demand but are domiciled in safer jurisdictions.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {proxyPlays.map((p) => (
+              <div key={p.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
+                <div className="flex justify-between items-center mb-2">
+                  <div>
+                    <span className="text-sm font-bold text-[#e0e0e0]">{p.ticker}</span>
+                    <span className="text-xs text-[#555] ml-2">{p.name}</span>
+                  </div>
+                  <span className={`text-sm font-bold ${p.return1y >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                    {p.return1y >= 0 ? "+" : ""}{p.return1y}%
+                  </span>
+                </div>
+                <p className="text-xs text-[#888] leading-relaxed">{p.note}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Taiwan Hedges */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-6 rounded" style={{ backgroundColor: "#3b82f6" }} />
+            <h3 className="text-sm font-bold text-[#e0e0e0]">Approach 3 — Taiwan Scenario Hedges</h3>
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#3b82f620] text-[#3b82f6]">TAIL RISK</span>
+          </div>
+          <p className="text-xs text-[#555] mb-3">
+            Assets that historically benefit from military escalation scenarios. Not a bet on conflict — insurance against the tail risk that Dalio estimates at 30-40% probability by 2028.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {taiwanHedges.map((h) => (
+              <div key={h.ticker} className="p-4 rounded-lg bg-[#111] border border-[#222]">
+                <div className="mb-1">
+                  <span className="text-sm font-bold text-[#e0e0e0]">{h.ticker}</span>
+                  <span className="text-xs text-[#555] ml-2">{h.name}</span>
+                </div>
+                <p className="text-xs text-[#888] leading-relaxed">{h.case}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-3 p-3 rounded bg-[#111] border border-[#222]">
+            <p className="text-[10px] text-[#555] leading-relaxed">
+              These are not predictions. They are historical patterns from previous geopolitical conflicts applied to the Taiwan risk scenario. The Hormuz closure is a live test case — the same assets that hedge Taiwan risk (gold, defence, energy) are already performing in the current environment.
+            </p>
+          </div>
+        </div>
+
+        <SectionChat
+          context="How to position on China section. Three approaches: Direct exposure (FXI, KWEB, MCHI — high risk from delistings, Taiwan, data), Proxy plays (DBC, EEM, copper miners — China demand exposure without Chinese equity risk), and Taiwan hedges (GLD, XLE, LMT, RTX — tail risk insurance). Current regime: Deflation. Hormuz closure creates additional complexity."
+          label="Ask about China positioning"
+          suggestions={[
+            "Which approach has the best risk-reward right now?",
+            "How does the Hormuz closure change China positioning?",
+            "What would make direct China ETFs attractive again?",
+          ]}
+        />
       </section>
 
       <div className="border-t border-[#181818]" />
