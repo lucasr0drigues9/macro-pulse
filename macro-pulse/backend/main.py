@@ -523,7 +523,8 @@ def get_eu_allocation():
             "underweight": underweight,
         }
     except Exception as e:
-        return {"error": str(e)}
+        import traceback
+        return {"error": str(e), "type": type(e).__name__, "trace": traceback.format_exc()[-500:]}
 
 
 @app.get("/api/eu/triggers")
@@ -652,7 +653,8 @@ def get_eu_transition():
             "outlook": outlook,
         }
     except Exception as e:
-        return {"error": str(e)}
+        import traceback
+        return {"error": str(e), "type": type(e).__name__, "trace": traceback.format_exc()[-500:]}
 
 
 @app.get("/api/eu/calendar")
