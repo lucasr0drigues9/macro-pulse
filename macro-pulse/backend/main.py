@@ -2434,12 +2434,14 @@ async def cron_daily_briefing(request: Request):
     # Ask Claude with web search to find today's top macro/geo stories
     prompt = f"""Today is {date_str}. Current US regime: {regime}.
 
-Known context:
+MANDATORY STORIES — these are confirmed events our platform is tracking.
+Include ALL of them in your output as stories (use web search to add latest details):
 {geo_events_ctx}
+
 Current triggers:
 {triggers_ctx}
 
-Search for the most important macro and geopolitical news from the last 24 hours.
+THEN search for additional macro and geopolitical news from the last 24 hours.
 Focus on:
 - Central bank decisions or speeches (Fed, ECB, BOJ, PBOC)
 - Geopolitical escalations or de-escalations
@@ -2451,6 +2453,8 @@ Focus on:
 Filter through the World Order View lens: only include stories that affect
 regime signals, the US-China power transition, European autonomy, or
 emerging market positioning.
+
+IMPORTANT: The mandatory stories above MUST appear first, then add 2-4 more from web search.
 
 Output ONLY a JSON object:
 {{
