@@ -404,12 +404,27 @@ Current Fed rate: 3.50-3.75% (held at March 18 meeting)"""
     except Exception as _pe:
         perf_text = f"Recent asset performance: unavailable ({_pe})\n"
 
-    # ── Central bank context ──
+    # ── Central bank + breaking geopolitical context ──
     cb_text = """Recent central bank decisions (weight these alongside geopolitical events):
 - Fed: Held at 4.25-4.50% (Jan 2026). Next FOMC Apr 28-29. Markets pricing 2 cuts in 2026.
 - ECB: Cut to 2.75% (Jan 2026). Fourth consecutive cut. Inflation at 2.4%, growth near zero.
 - BOJ: Hiked to 0.50% (Jan 2026). Only major CB tightening. Yen carry trade unwinding risk.
 - PBOC: Cut LPR to 3.10% (Oct 2025). Continued easing. Property crisis ongoing.
+
+CRITICAL BREAKING EVENT (April 12, 2026):
+Trump announced permanent closure of Strait of Hormuz to ALL shipping — including
+Iran's shadow fleet tankers that were still transiting to China. Prior to this, the
+"blockade" was selective: Western-aligned ships stopped but Iranian shadow fleet
+continued exporting crude to China (~6 transits/day were almost entirely Iran→China).
+
+This changes everything:
+- China loses its shadow fleet oil supply route from Iran
+- First direct US-China confrontation point — China may challenge the blockade militarily
+- Oil prices likely to spike further as even the residual Iran→China flow stops
+- Accelerates the Dalio world order transition: US using naval dominance to force
+  economic compliance, China's response will define whether this is a cold or hot conflict
+- De-dollarisation accelerates as China sees US weaponising global shipping lanes
+- European energy crisis deepens — zero Hormuz transit means zero Middle East crude
 
 IMPORTANT: Monetary policy pivots (rate cuts, QE launches, forward guidance shifts) can
 override geopolitical signals. When a central bank pivots dovish, that's a reflationary
@@ -612,7 +627,7 @@ def get_triggers(geo_data, quadrant, oil_price=None, hormuz_count=None, cpi=None
     prompt = f"""Current macro regime: {quadrant}
 Geopolitical bias: {geo_data.get('overall_regime_bias','Unknown')}
 Oil price: ${oil_price if oil_price else 'unknown'}
-Hormuz transits: {hormuz_count if hormuz_count else 'unknown'}/day (normal=138)
+Hormuz transits: {hormuz_count if hormuz_count else 'unknown'}/day (normal=138) — US announced permanent full closure Apr 12 2026, targeting Iran shadow fleet to China. Prior 6/day were almost all Iran→China shadow tankers.
 CPI monthly: {cpi if cpi else 'unknown'}%
 
 Active events:
