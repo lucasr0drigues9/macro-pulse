@@ -42,9 +42,8 @@ def _seed_cache_on_startup():
         os.makedirs(cache_dir, exist_ok=True)
         for filename, content in SEED_DATA.items():
             fpath = os.path.join(cache_dir, filename)
-            if not os.path.exists(fpath):
-                with open(fpath, "w") as f:
-                    json.dump(content, f)
+            with open(fpath, "w") as f:
+                json.dump(content, f)
 
 _seed_cache_on_startup()
 
