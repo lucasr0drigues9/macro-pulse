@@ -65,7 +65,7 @@ function IndicatorCard({ ind }: { ind: ProxyIndicator }) {
   );
 }
 
-type ChinaRegime = { regime: string; growth: string; inflation: string; confidence: string; consecutiveMonths: number };
+type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean; growth: string; inflation: string; confidence: string; consecutiveMonths: number };
 type Allocation = { regime: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string }[]; underweight: { ticker: string; name: string; reason: string }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
@@ -83,8 +83,13 @@ export default function ChinaPage() {
     fetch(apiUrl("/api/china/transition")).then((r) => r.json()).then((d) => { if (!d.error) setTransition(d); }).catch(() => {});
   }, []);
 
-  const r = regime || { regime: "Deflation", growth: "falling", inflation: "falling", confidence: "Medium", consecutiveMonths: 18 };
+  const r = regime || { regime: "Deflation", proxyRegime: "Deflation", geoRegime: "Deflation", geoContext: "", lagWarning: false, growth: "falling", inflation: "falling", confidence: "Medium", consecutiveMonths: 18 };
   const regimeColor = REGIME_COLORS[r.regime] || "#888";
+  const proxyRegime = r.proxyRegime || r.regime;
+  const geoRegime = r.geoRegime || r.regime;
+  const proxyColor = REGIME_COLORS[proxyRegime] || "#888";
+  const geoColor = REGIME_COLORS[geoRegime] || "#888";
+  const signalsDiverge = proxyRegime !== geoRegime;
 
   return (
     <main className="min-h-screen">
@@ -128,11 +133,44 @@ export default function ChinaPage() {
           </div>
         </div>
 
-        <div className="mt-4 p-3 rounded bg-[#111] border border-[#222]">
-          <p className="text-xs text-[#eab308] leading-relaxed">
-            This regime signal is based on proxy indicators, not official data. Confidence is lower than the US regime signal. Use as directional guidance only.
-          </p>
+        {/* Dual signal display — Proxy Data vs AI Geo */}
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Proxy Data Signal</div>
+            <div className="text-lg font-bold" style={{ color: proxyColor }}>{proxyRegime}</div>
+            <div className="text-[10px] text-[#555] mt-1">Li Keqiang index, Caixin PMI, PPI, property, ports</div>
+          </div>
+          <div className="p-3 rounded-lg border" style={{
+            backgroundColor: signalsDiverge ? geoColor + "10" : "#111",
+            borderColor: signalsDiverge ? geoColor + "40" : "#222",
+          }}>
+            <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: signalsDiverge ? "#eab308" : "#555" }}>
+              AI Geopolitical Signal {signalsDiverge && "⚡"}
+            </div>
+            <div className="text-lg font-bold" style={{ color: geoColor }}>{geoRegime}</div>
+            <div className="text-[10px] text-[#555] mt-1">
+              {r.geoContext || "No override — agrees with proxy data"}
+            </div>
+          </div>
         </div>
+
+        {signalsDiverge && (
+          <div className="mt-3 p-3 rounded bg-[#111] border border-[#eab30840]" style={{ backgroundColor: "#eab30810" }}>
+            <p className="text-xs text-[#eab308] font-bold mb-1">Signals diverging — geopolitical events moving faster than proxy data</p>
+            <p className="text-xs text-[#888] leading-relaxed">
+              Proxy indicators lag by weeks to months. When a major event happens (Hormuz closure, PBOC emergency action, Taiwan escalation),
+              the AI geo layer detects the regime shift before proxy data catches up. The confirmed regime above uses the more current signal.
+            </p>
+          </div>
+        )}
+
+        {!signalsDiverge && (
+          <div className="mt-3 p-3 rounded bg-[#111] border border-[#222]">
+            <p className="text-xs text-[#eab308] leading-relaxed">
+              Both signals agree on {proxyRegime}. Proxy indicators and geopolitical analysis point in the same direction — but confidence is still lower than the US tracker due to Chinese data opacity.
+            </p>
+          </div>
+        )}
 
         <SectionChat
           context="Current China regime signal. Shows the regime based on proxy indicators (not official data). Current reading and growth/inflation direction."

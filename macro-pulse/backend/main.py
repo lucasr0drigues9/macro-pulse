@@ -709,17 +709,68 @@ No markdown fences."""}],
 
 @app.get("/api/china/regime")
 def get_china_regime():
-    """Current Chinese regime based on proxy indicators."""
+    """Current Chinese regime based on proxy indicators + AI geo layer.
+
+    The proxy data gives the base regime. The AI geo layer can override
+    when geopolitical events (Hormuz, PBOC emergency actions, Taiwan
+    escalations) move faster than monthly proxy indicators.
+    """
     try:
         from china import get_china_data, assess_china
-        import contextlib, io as _io
+        import contextlib, io as _io, json as _cjson
 
         with contextlib.redirect_stdout(_io.StringIO()):
             data = get_china_data()
             result = assess_china(data)
 
+        proxy_regime = result["quadrant"]["name"]
+
+        # ── AI geopolitical layer for China ──
+        # Load geo events and determine if they override the proxy signal
+        geo_regime = proxy_regime  # default: agree with proxy
+        geo_context = ""
+        lag_warning = False
+
+        try:
+            geo_path = os.path.join(MACRO, ".macro_cache", "geopolitical.json")
+            if os.path.exists(geo_path):
+                with open(geo_path) as _gf:
+                    geo = _cjson.load(_gf)
+                events = geo.get("events", [])
+
+                # Check for China-relevant events
+                china_events = []
+                for evt in events:
+                    desc = (evt.get("description", "") + " " + evt.get("title", "")).lower()
+                    if any(kw in desc for kw in [
+                        "china", "chinese", "pboc", "beijing", "taiwan",
+                        "hormuz", "shadow fleet", "yuan", "cnh", "brics",
+                    ]):
+                        china_events.append(evt)
+
+                if china_events:
+                    # Determine AI regime from the most severe China event
+                    top_event = china_events[0]
+                    event_regime = top_event.get("regime_push", "")
+                    severity = top_event.get("severity", "LOW")
+
+                    if severity in ("HIGH", "CRITICAL") and event_regime:
+                        geo_regime = event_regime
+                        geo_context = top_event.get("title", "")
+                        if geo_regime != proxy_regime:
+                            lag_warning = True
+        except Exception:
+            pass
+
+        # Determine confirmed regime (geo overrides proxy when diverging)
+        confirmed = geo_regime if lag_warning else proxy_regime
+
         return {
-            "regime": result["quadrant"]["name"],
+            "regime": confirmed,
+            "proxyRegime": proxy_regime,
+            "geoRegime": geo_regime,
+            "geoContext": geo_context,
+            "lagWarning": lag_warning,
             "growth": result["quadrant"]["growth"],
             "inflation": result["quadrant"]["inflation"],
             "confidence": result.get("confidence", "Medium"),
@@ -730,6 +781,10 @@ def get_china_regime():
         # Fallback to static data
         return {
             "regime": "Deflation",
+            "proxyRegime": "Deflation",
+            "geoRegime": "Deflation",
+            "geoContext": "",
+            "lagWarning": False,
             "growth": "falling",
             "inflation": "falling",
             "confidence": "Medium",
