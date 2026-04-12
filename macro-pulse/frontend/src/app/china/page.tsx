@@ -506,7 +506,7 @@ export default function ChinaPage() {
                       </div>
 
                       <PeriodChat context={{
-                        region: "US",
+                        region: "China",
                         start: p.start,
                         end: p.end,
                         regime: p.regime,

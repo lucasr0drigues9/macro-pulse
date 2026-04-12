@@ -4,7 +4,7 @@ import { useState } from "react";
 import { apiUrl } from "@/lib/api";
 
 type PeriodContext = {
-  region: "US" | "EU";
+  region: "US" | "EU" | "China";
   start: string;
   end: string;
   regime: string;
