@@ -701,33 +701,111 @@ No markdown fences."""}],
 
 @app.get("/api/china/regime")
 def get_china_regime():
-    """Current Chinese regime based on proxy indicators + AI geo layer.
+    """Current Chinese regime based on LIVE market proxies + AI geo layer.
 
-    The proxy data gives the base regime. The AI geo layer can override
-    when geopolitical events (Hormuz, PBOC emergency actions, Taiwan
-    escalations) move faster than monthly proxy indicators.
+    Growth = copper futures 3-month momentum + FXI 3-month momentum
+    Inflation = FRED China CPI YoY
+    Yuan (CNH) direction as supplementary signal
     """
     import json as _cjson
+    import requests as _req
 
-    # ── Step 1: Get proxy regime ──
+    # ── Step 1: Get LIVE proxy regime from market data ──
     proxy_regime = "Deflation"
     growth = "falling"
     inflation = "falling"
     confidence = "Medium"
     months = 18
+    indicators = {}
+
     try:
-        from china import get_china_data, assess_china
-        import contextlib, io as _io
-        with contextlib.redirect_stdout(_io.StringIO()):
-            data = get_china_data()
-            result = assess_china(data)
-        proxy_regime = result["quadrant"]["name"]
-        growth = result["quadrant"]["growth"]
-        inflation = result["quadrant"]["inflation"]
-        confidence = result.get("confidence", "Medium")
-        months = result.get("consecutive_months", 1)
+        # Copper 3-month momentum (China demand proxy)
+        copper_mom = None
+        try:
+            r = _req.get("https://query2.finance.yahoo.com/v8/finance/chart/HG=F",
+                        params={"interval": "1d", "range": "6mo"},
+                        headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+            closes = r.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
+            valid = [c for c in closes if c is not None]
+            if len(valid) >= 60:
+                copper_mom = round((valid[-1] - valid[-63]) / valid[-63] * 100, 1) if len(valid) >= 63 else round((valid[-1] - valid[0]) / valid[0] * 100, 1)
+                indicators["copper"] = {"value": round(valid[-1], 2), "momentum3m": copper_mom}
+        except Exception:
+            pass
+
+        # FXI 3-month momentum (market sentiment on China)
+        fxi_mom = None
+        try:
+            r = _req.get("https://query2.finance.yahoo.com/v8/finance/chart/FXI",
+                        params={"interval": "1d", "range": "6mo"},
+                        headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+            closes = r.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
+            valid = [c for c in closes if c is not None]
+            if len(valid) >= 60:
+                fxi_mom = round((valid[-1] - valid[-63]) / valid[-63] * 100, 1) if len(valid) >= 63 else round((valid[-1] - valid[0]) / valid[0] * 100, 1)
+                indicators["fxi"] = {"value": round(valid[-1], 2), "momentum3m": fxi_mom}
+        except Exception:
+            pass
+
+        # USD/CNH (yuan direction)
+        try:
+            r = _req.get("https://query2.finance.yahoo.com/v8/finance/chart/CNH=X",
+                        params={"interval": "1d", "range": "3mo"},
+                        headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+            closes = r.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
+            valid = [c for c in closes if c is not None]
+            if len(valid) >= 20:
+                cnh_now = valid[-1]
+                cnh_prev = valid[-21] if len(valid) >= 21 else valid[0]
+                indicators["cnh"] = {"value": round(cnh_now, 4), "change1m": round((cnh_now - cnh_prev) / cnh_prev * 100, 2)}
+        except Exception:
+            pass
+
+        # China CPI from FRED (monthly, lagged but real)
+        cpi_val = None
+        try:
+            FRED_KEY = os.getenv("FRED_API_KEY", "")
+            if FRED_KEY:
+                r = _req.get("https://api.stlouisfed.org/fred/series/observations", params={
+                    "series_id": "CPALTT01CNM659N", "api_key": FRED_KEY,
+                    "file_type": "json", "sort_order": "desc", "limit": 3,
+                }, timeout=10)
+                obs = [o for o in r.json().get("observations", []) if o["value"] != "."]
+                if obs:
+                    cpi_val = float(obs[0]["value"])
+                    indicators["cpi"] = {"value": cpi_val, "date": obs[0]["date"]}
+        except Exception:
+            pass
+
+        # Compute regime from live data
+        # Growth: average of copper + FXI momentum. Both negative = falling, both positive = rising
+        if copper_mom is not None and fxi_mom is not None:
+            growth_composite = (copper_mom + fxi_mom) / 2
+            growth = "rising" if growth_composite > 0 else "falling"
+            confidence = "Medium" if abs(growth_composite) > 3 else "Low"
+        elif copper_mom is not None:
+            growth = "rising" if copper_mom > 0 else "falling"
+            confidence = "Low"
+        else:
+            growth = "falling"
+            confidence = "Low"
+
+        # Inflation: CPI YoY. Below 0 = falling (deflation). Above 1% = rising.
+        if cpi_val is not None:
+            inflation = "rising" if cpi_val > 1.0 else "falling"
+        else:
+            inflation = "falling"
+
+        QUADRANTS = {
+            ("rising", "falling"):  "Goldilocks",
+            ("rising", "rising"):   "Reflation",
+            ("falling", "rising"):  "Stagflation",
+            ("falling", "falling"): "Deflation",
+        }
+        proxy_regime = QUADRANTS[(growth, inflation)]
+
     except Exception:
-        pass  # Fall through to geo layer with defaults
+        pass
 
     # ── Step 2: AI geopolitical layer ──
     geo_regime = proxy_regime
@@ -758,20 +836,15 @@ def get_china_regime():
     except Exception:
         pass
 
-    confirmed = geo_regime if lag_warning else proxy_regime
+    # Geo layer is informational — does NOT override the live proxy data.
+    # The proxy regime is derived from real market data (copper, FXI, CPI).
+    # The geo layer shows what events COULD shift the regime if they materialise.
+    confirmed = proxy_regime
 
-    # Calculate regime start date
-    # For geo override: use the event date if available, otherwise estimate
     from datetime import datetime as _dt, timedelta as _td
-    if lag_warning:
-        # Geo regime just started — approximate from now
-        regime_start = _dt.now().strftime("%Y-%m-01")
-        months = 1
-    else:
-        # Proxy regime — count back from consecutive months
-        now = _dt.now()
-        start = now - _td(days=months * 30)
-        regime_start = start.strftime("%Y-%m-01")
+    now = _dt.now()
+    start = now - _td(days=months * 30)
+    regime_start = start.strftime("%Y-%m-01")
 
     return {
         "regime": confirmed,

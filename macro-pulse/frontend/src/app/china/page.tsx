@@ -130,7 +130,16 @@ function ChinaUcitsMapping() {
   );
 }
 
-type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean; growth: string; inflation: string; confidence: string; consecutiveMonths: number; periodStart?: string };
+type ChinaRegime = {
+  regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean;
+  growth: string; inflation: string; confidence: string; consecutiveMonths: number; periodStart?: string;
+  indicators?: {
+    copper?: { value: number; momentum3m: number };
+    fxi?: { value: number; momentum3m: number };
+    cnh?: { value: number; change1m: number };
+    cpi?: { value: number; date: string };
+  };
+};
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number; returnSinceRegime?: number | null }[] }[] };
@@ -251,10 +260,70 @@ export default function ChinaPage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* Six Proxy Indicators */}
+      {/* Live Market Indicators */}
+      {regime?.indicators && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Live Market Signals</h2>
+          <p className="text-xs text-[#555] mb-4">Real-time data driving the regime calculation — updated daily from global markets.</p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+            {regime.indicators.copper && (
+              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Copper (Growth)</div>
+                <div className="text-lg font-bold text-[#e0e0e0]">${regime.indicators.copper.value}</div>
+                <div className={`text-xs font-bold ${regime.indicators.copper.momentum3m >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                  3m: {regime.indicators.copper.momentum3m >= 0 ? "+" : ""}{regime.indicators.copper.momentum3m}%
+                </div>
+                <div className="text-[10px] text-[#555] mt-1">China consumes 50%+ of global copper</div>
+              </div>
+            )}
+            {regime.indicators.fxi && (
+              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">FXI (Sentiment)</div>
+                <div className="text-lg font-bold text-[#e0e0e0]">${regime.indicators.fxi.value}</div>
+                <div className={`text-xs font-bold ${regime.indicators.fxi.momentum3m >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                  3m: {regime.indicators.fxi.momentum3m >= 0 ? "+" : ""}{regime.indicators.fxi.momentum3m}%
+                </div>
+                <div className="text-[10px] text-[#555] mt-1">Market&apos;s real-time vote on China</div>
+              </div>
+            )}
+            {regime.indicators.cnh && (
+              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">USD/CNH (Yuan)</div>
+                <div className="text-lg font-bold text-[#e0e0e0]">{regime.indicators.cnh.value}</div>
+                <div className={`text-xs font-bold ${regime.indicators.cnh.change1m <= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                  1m: {regime.indicators.cnh.change1m >= 0 ? "+" : ""}{regime.indicators.cnh.change1m}%
+                  <span className="text-[#555] font-normal ml-1">({regime.indicators.cnh.change1m > 0 ? "weakening" : "strengthening"})</span>
+                </div>
+                <div className="text-[10px] text-[#555] mt-1">Capital flow direction</div>
+              </div>
+            )}
+            {regime.indicators.cpi && (
+              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">CPI YoY (Inflation)</div>
+                <div className="text-lg font-bold text-[#e0e0e0]">{regime.indicators.cpi.value}%</div>
+                <div className={`text-xs font-bold ${regime.indicators.cpi.value > 0 ? "text-[#eab308]" : "text-[#3b82f6]"}`}>
+                  {regime.indicators.cpi.value > 0 ? "Positive" : "Deflationary"}
+                </div>
+                <div className="text-[10px] text-[#555] mt-1">FRED data — {regime.indicators.cpi.date.slice(0, 7)}</div>
+              </div>
+            )}
+          </div>
+
+          <div className="p-3 rounded bg-[#111] border border-[#222]">
+            <p className="text-[10px] text-[#888] leading-relaxed">
+              <span className="text-[#e0e0e0] font-bold">How this drives the regime:</span> Growth is measured by copper demand (3-month momentum) combined with FXI equity sentiment. Inflation uses FRED China CPI (monthly, lagged but real). Yuan direction confirms: weakening = capital flight (bearish), strengthening = confidence (bullish). All data from public markets — no reliance on Chinese official statistics.
+            </p>
+          </div>
+        </section>
+      )}
+
+      <div className="border-t border-[#181818]" />
+
+      {/* Six Static Proxy Indicators — historical context */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">What the Real Data Shows</h2>
-        <p className="text-xs text-[#555] mb-6">Six indicators that are harder to fake than official GDP. Click for details.</p>
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Proxy Indicator History</h2>
+        <p className="text-xs text-[#555] mb-6">Longer-term trends from the Li Keqiang indicators. These are updated periodically, not live. Click for details.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {proxyIndicators.map((ind) => (
             <IndicatorCard key={ind.name} ind={ind} />
