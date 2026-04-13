@@ -8,7 +8,6 @@ const links = [
   { href: "/", label: "Home", enabled: true },
   { href: "/regimetracker", label: "Regime Tracker", enabled: true },
   { href: "/world-order", label: "World Order", enabled: true },
-  { href: "/us-overextension", label: "US Overextension", enabled: true },
   { href: "/europe", label: "Europe", enabled: true },
   { href: "/china", label: "China", enabled: true },
   { href: "/emerging-markets", label: "Emerging Markets", enabled: true },

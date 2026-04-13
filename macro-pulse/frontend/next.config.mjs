@@ -8,6 +8,15 @@ const nextConfig = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        source: "/us-overextension",
+        destination: "/world-order",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
