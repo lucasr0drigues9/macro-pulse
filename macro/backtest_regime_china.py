@@ -35,7 +35,7 @@ CHINA_REGIME_HISTORY = [
     ("2023-01", "2023-06", "Deflation", "COVID reopening Dec 2022. Brief bounce fizzled within weeks. Property crisis accelerated. CPI near zero."),
     ("2023-07", "2024-09", "Deflation", "Prolonged deflation. Property prices -5% YoY. PPI negative 18 months. Youth unemployment crisis. Consumer confidence at record lows."),
     ("2024-10", "2026-03", "Deflation", "Property prices -8.5% YoY. PPI -2.8%. Consumer deflation. PBOC cutting but insufficient. Stimulus announced but below expectations."),
-    ("2026-04", "2026-12", "Stagflation", "Hormuz closure cut shadow fleet oil supply to China. Energy costs rising while economy still deflating. First US-China confrontation point."),
+    ("2026-04", "now", "Stagflation", "Hormuz closure cut shadow fleet oil supply to China. Energy costs rising while economy still deflating. First US-China confrontation point."),
 ]
 
 # ETF baskets for China regime backtesting
@@ -139,7 +139,11 @@ def build_china_backtest():
     periods = []
     for start, end, regime, context in CHINA_REGIME_HISTORY:
         start_date = f"{start}-01"
-        end_date = f"{end}-01"
+        if end == "now":
+            end_date = datetime.now().strftime("%Y-%m-01")
+            end = datetime.now().strftime("%Y-%m")
+        else:
+            end_date = f"{end}-01"
 
         # Compute returns for all 4 baskets
         all_returns = {}
@@ -169,11 +173,23 @@ def build_china_backtest():
         except Exception:
             months = 1
 
+        # Mark current period — returns not yet meaningful
+        is_current = start_date == end_date or months <= 1
+
+        if is_current:
+            # Zero out returns — too early to score
+            all_returns = {k: None for k in all_returns}
+            best = None
+            framework_correct = None
+            ai_correct = None
+            ai_picks_return = None
+
         periods.append({
             "regime": regime,
             "start": start,
-            "end": end,
+            "end": "present" if is_current else end,
             "months": months,
+            "current": is_current,
             "signalStrength": sig[0],
             "signalContext": sig[1] if sig[1] else context,
             "picksReturn": all_returns.get(regime),

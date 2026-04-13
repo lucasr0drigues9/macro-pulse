@@ -70,7 +70,7 @@ type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; g
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
-type BacktestEntry = { regime: string; start: string; end: string; months: number; signalStrength?: string; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null; aiRegime?: string; aiPicksReturn?: number | null; aiDiffersFromProxy?: boolean; aiCorrect?: boolean | null };
+type BacktestEntry = { regime: string; start: string; end: string; months: number; current?: boolean; signalStrength?: string; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null; aiRegime?: string; aiPicksReturn?: number | null; aiDiffersFromProxy?: boolean; aiCorrect?: boolean | null };
 type ChinaBacktest = { totalRegimes: number; yearRange: string; timeline: BacktestEntry[]; regimeBreakdown: Record<string, number> };
 
 export default function ChinaPage() {
@@ -469,16 +469,23 @@ export default function ChinaPage() {
                       {p.start} → {p.end} ({p.months}mo)
                     </div>
                     <div className="flex-1 text-xs">
-                      Picks:{" "}
-                      {p.picksReturn !== null ? (
-                        <span className="font-bold" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
-                          {p.picksReturn >= 0 ? "+" : ""}{p.picksReturn.toFixed(1)}%
-                        </span>
-                      ) : <span className="text-[#333]">N/A</span>}
+                      {p.current ? (
+                        <span className="text-[#eab308]">Active — too early to score</span>
+                      ) : (
+                        <>
+                          Picks:{" "}
+                          {p.picksReturn !== null ? (
+                            <span className="font-bold" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                              {p.picksReturn >= 0 ? "+" : ""}{p.picksReturn.toFixed(1)}%
+                            </span>
+                          ) : <span className="text-[#333]">N/A</span>}
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      {p.frameworkCorrect === true && <span className="text-[#22c55e]">✓ Correct</span>}
-                      {p.frameworkCorrect === false && <span className="text-[#ef4444]">✗ {p.bestRegime} won</span>}
+                      {!p.current && p.frameworkCorrect === true && <span className="text-[#22c55e]">✓ Correct</span>}
+                      {!p.current && p.frameworkCorrect === false && <span className="text-[#ef4444]">✗ {p.bestRegime} won</span>}
+                      {p.current && <span className="text-[#eab308]">Live</span>}
                       <span className="text-[#333] text-[10px]">{isOpen ? "▲" : "▼"}</span>
                     </div>
                   </div>
