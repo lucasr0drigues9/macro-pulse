@@ -18,12 +18,14 @@ export default function HomePage() {
   const [usAlloc, setUsAlloc] = useState<RegimeAllocation | null>(null);
   const [euAlloc, setEuAlloc] = useState<RegimeAllocation | null>(null);
   const [cnAlloc, setCnAlloc] = useState<RegimeAllocation | null>(null);
+  const [usPerformance, setUsPerformance] = useState<{ assets: { ticker: string; name: string; returnPct: number; category: string }[]; regimeStartDate: string } | null>(null);
   const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
 
   useEffect(() => {
     fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUsAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/eu/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setEuAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setCnAlloc(d); }).catch(() => {});
+    fetch(apiUrl("/api/performance")).then((r) => r.json()).then((d) => { if (d.assets) setUsPerformance(d); }).catch(() => {});
     fetch(apiUrl("/api/interpretation")).then((r) => r.json()).then((d) => { if (d.interpretation || d.situation) setAiInterpretation(d.interpretation || d.situation); }).catch(() => {});
   }, []);
 
@@ -85,10 +87,116 @@ export default function HomePage() {
         </p>
       </section>
 
+      {/* ══ GLOBAL REGIME SIGNAL ══ */}
+      {usAlloc && euAlloc && cnAlloc && (() => {
+        const regimes = [
+          { label: "US", regime: usAlloc.regime, start: usPerformance?.regimeStartDate || usAlloc.periodStart },
+          { label: "EU", regime: euAlloc.regime, start: euAlloc.periodStart },
+          { label: "CN", regime: cnAlloc.regime, start: cnAlloc.periodStart },
+        ];
+        // Find the dominant regime
+        const regimeCounts: Record<string, number> = {};
+        for (const r of regimes) {
+          regimeCounts[r.regime] = (regimeCounts[r.regime] || 0) + 1;
+        }
+        const dominant = Object.entries(regimeCounts).sort((a, b) => b[1] - a[1])[0];
+        const dominantRegime = dominant[0];
+        const dominantCount = dominant[1];
+        const dominantColor = REGIME_COLORS[dominantRegime] || "#888";
+        const allSame = dominantCount === 3;
+        const majority = dominantCount >= 2;
+
+        // Find the oldest regime start for the dominant signal (that's where returns actually come from)
+        const dominantStarts = regimes
+          .filter((r) => r.regime === dominantRegime && r.start)
+          .map((r) => r.start!)
+          .sort();
+        const oldestStart = dominantStarts[0];
+
+        // Get returns from US performance since dominant regime start (most liquid market)
+        const picks = usPerformance?.assets?.filter((a) => a.category === "pick").slice(0, 5) || [];
+
+        const conviction = allSame ? "Maximum" : majority ? "High" : "Mixed";
+        const convictionColor = allSame ? "#22c55e" : majority ? "#eab308" : "#ef4444";
+
+        return (
+          <section className="px-4 py-8 max-w-5xl mx-auto">
+            <div className="p-4 rounded-lg border" style={{ borderColor: dominantColor + "40", backgroundColor: dominantColor + "08" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="text-xs text-[#555] uppercase tracking-wider">Global Regime Signal</div>
+                  <div className="text-2xl font-bold mt-1" style={{ color: dominantColor }}>{dominantRegime}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs" style={{ color: convictionColor }}>{conviction} conviction</div>
+                  <div className="text-xs text-[#555]">{dominantCount} of 3 economies aligned</div>
+                </div>
+              </div>
+
+              {/* Three regime badges */}
+              <div className="flex gap-2 mb-4">
+                {regimes.map((r) => {
+                  const color = REGIME_COLORS[r.regime] || "#555";
+                  const matches = r.regime === dominantRegime;
+                  return (
+                    <div key={r.label} className="flex-1 p-2 rounded text-center" style={{
+                      backgroundColor: matches ? color + "15" : "#111",
+                      border: `1px solid ${matches ? color + "40" : "#222"}`,
+                    }}>
+                      <div className="text-[10px] text-[#555]">{r.label}</div>
+                      <div className="text-xs font-bold" style={{ color }}>{r.regime}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Returns since dominant regime started */}
+              {picks.length > 0 && oldestStart && (
+                <div>
+                  <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">
+                    Top picks performance since {dominantRegime} started ({oldestStart.slice(0, 7)})
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {picks.map((p) => (
+                      <div key={p.ticker} className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-[#e0e0e0]">{p.ticker}</span>
+                        <span className={`text-xs font-bold ${p.returnPct >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                          {p.returnPct >= 0 ? "+" : ""}{p.returnPct}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Interaction explanation */}
+              <div className="mt-3 text-[10px] text-[#888] leading-relaxed">
+                {allSame && (
+                  <span>All three economies in {dominantRegime} — strongest possible signal. Capital flows are unidirectional. These returns reflect the full global alignment.</span>
+                )}
+                {majority && !allSame && (() => {
+                  const outlier = regimes.find((r) => r.regime !== dominantRegime);
+                  return (
+                    <span>{dominantCount} of 3 in {dominantRegime}. {outlier?.label} diverging with {outlier?.regime} — {
+                      outlier?.regime === "Deflation" ? "deflationary pressure from that economy may moderate the global signal but doesn't reverse it." :
+                      outlier?.regime === "Goldilocks" ? "growth in that economy supports risk assets alongside the dominant signal." :
+                      "the divergence creates cross-currents but the majority signal dominates capital flows."
+                    }</span>
+                  );
+                })()}
+                {!majority && (
+                  <span>Three different regimes — no dominant signal. Capital flows are fragmented. Real assets (gold, commodities) tend to outperform during regime confusion.</span>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      })()}
+
       {/* ══ WHAT TO OWN RIGHT NOW ══ */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-lg font-bold text-[#e0e0e0] mb-1">What to Own Right Now</h2>
-        <p className="text-xs text-[#555] mb-4">ETF picks for each regime — conviction-weighted with live returns since the regime started.</p>
+        <h2 className="text-lg font-bold text-[#e0e0e0] mb-1">What to Own — By Region</h2>
+        <p className="text-xs text-[#555] mb-4">Per-region ETF picks. Returns shown since each region&apos;s regime started — see Global Signal above for the combined view.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <AllocationColumn
