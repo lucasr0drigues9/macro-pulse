@@ -138,7 +138,7 @@ export default function ChinaPage() {
           </p>
         </div>
         <SectionChat
-          context="China Tracker on World Order View. Uses proxy indicators (Li Keqiang index, Caixin PMI, port throughput, copper imports, property prices, PPI) instead of official Chinese data to detect the real economic regime. Applies the same four-season framework as the US tracker."
+          context="China Tracker on Macro World View. Uses proxy indicators (Li Keqiang index, Caixin PMI, port throughput, copper imports, property prices, PPI) instead of official Chinese data to detect the real economic regime. Applies the same four-season framework as the US tracker."
           label="Ask about this tool"
           suggestions={["Why not use official Chinese data?", "How does this compare to the US tracker?", "What is the Li Keqiang index?"]}
         />
@@ -893,7 +893,7 @@ export default function ChinaPage() {
           China tracker uses proxy indicators and AI synthesis. Official Chinese data is used only where no reliable alternative exists. All regime signals carry lower confidence than US signals based on FRED data. Direct China investments carry additional regulatory, geopolitical, and data risks. Not personalised financial advice.
         </p>
         <div className="flex gap-4 justify-center mt-3">
-          <a href="/" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Back to World Order View</a>
+          <a href="/" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Back to Macro World View</a>
           <a href="/disclaimer" className="text-xs text-[#888] hover:text-[#e0e0e0] underline underline-offset-2">Disclaimer</a>
         </div>
       </footer>

@@ -94,7 +94,7 @@ export default function Welcome() {
       </div>
 
       <SectionChat
-        context="Welcome section of the US Regime Tracker on World Order View. This page uses Ray Dalio's four-season framework (Stagflation, Goldilocks, Reflation, Deflation) to detect the current US economic regime using FRED data and an AI geopolitical layer. Below this section: live regime signal, asset performance, portfolio allocation, weekly calendar, triggers, transition outlook, and 19-year backtest history."
+        context="Welcome section of the US Regime Tracker on Macro World View. This page uses Ray Dalio's four-season framework (Stagflation, Goldilocks, Reflation, Deflation) to detect the current US economic regime using FRED data and an AI geopolitical layer. Below this section: live regime signal, asset performance, portfolio allocation, weekly calendar, triggers, transition outlook, and 19-year backtest history."
         label="Ask about this tool"
         suggestions={[
           "How does this regime tracker work?",

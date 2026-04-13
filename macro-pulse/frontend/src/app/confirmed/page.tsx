@@ -57,7 +57,7 @@ function ConfirmedInner() {
               href="/"
               className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors"
             >
-              Back to World Order View →
+              Back to Macro World View →
             </Link>
           </div>
         )}
@@ -73,10 +73,10 @@ function ConfirmedInner() {
               the button inside it directly. If you think something is wrong,
               email{" "}
               <a
-                href="mailto:hello@worldorderview.com"
+                href="mailto:hello@macroworldview.com"
                 className="text-[#e0e0e0] underline underline-offset-2"
               >
-                hello@worldorderview.com
+                hello@macroworldview.com
               </a>
               .
             </p>
@@ -84,7 +84,7 @@ function ConfirmedInner() {
               href="/"
               className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors"
             >
-              Back to World Order View →
+              Back to Macro World View →
             </Link>
           </div>
         )}

@@ -1,5 +1,5 @@
 """
-World Order View — Email system
+Macro World View — Email system
 Sends alerts and weekly newsletter via Resend.
 Uses Resend Audiences for persistent subscriber storage.
 """
@@ -14,8 +14,8 @@ logger = logging.getLogger("macro_pulse.emails")
 logging.basicConfig(level=logging.INFO)
 
 RESEND_KEY = os.getenv("RESEND_API_KEY", "")
-FROM_EMAIL = os.getenv("FROM_EMAIL", "World Order View <hello@worldorderview.com>")
-SITE_URL = os.getenv("SITE_URL", "https://worldorderview.com")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "Macro World View <hello@macroworldview.com>")
+SITE_URL = os.getenv("SITE_URL", "https://macroworldview.com")
 AUDIENCE_ID = os.getenv("RESEND_AUDIENCE_ID", "")
 ADMIN_ALERT_EMAIL = os.getenv("ADMIN_ALERT_EMAIL", "lucasrodrigues12000@gmail.com")
 
@@ -50,7 +50,7 @@ DISCLAIMER = (
 WELCOME_COPY = {
     "home_weekly_pulse": {
         "heading": "You're in. First briefing lands Tuesday.",
-        "body": "Every Tuesday morning you'll get the full World Order View: current regime, triggers that moved, what the framework says to own, and the economic releases to watch this week.",
+        "body": "Every Tuesday morning you'll get the full Macro World View: current regime, triggers that moved, what the framework says to own, and the economic releases to watch this week.",
     },
     "home_regime_alerts": {
         "heading": "You're tracking the transition.",
@@ -94,7 +94,7 @@ WELCOME_COPY = {
     },
     "default": {
         "heading": "You're subscribed.",
-        "body": "Thanks for signing up to World Order View. We'll be in touch with updates from the framework.",
+        "body": "Thanks for signing up to Macro World View. We'll be in touch with updates from the framework.",
     },
 }
 
@@ -116,7 +116,7 @@ def _alert_admin(subject: str, body: str):
         resend.Emails.send({
             "from": FROM_EMAIL,
             "to": [ADMIN_ALERT_EMAIL],
-            "subject": f"[World Order View alert] {subject}",
+            "subject": f"[Macro World View alert] {subject}",
             "html": f"<pre style='font-family:monospace;font-size:12px;'>{body}</pre>",
         })
     except Exception as e:
@@ -268,7 +268,7 @@ def _email_wrapper(title: str, body: str) -> str:
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:'Courier New',monospace;color:#e0e0e0;">
 <div style="max-width:600px;margin:0 auto;padding:24px;">
     <div style="text-align:center;padding:8px 0;border-bottom:1px solid #222;margin-bottom:24px;">
-        <span style="font-size:11px;letter-spacing:3px;color:#888;text-transform:uppercase;">World Order View</span>
+        <span style="font-size:11px;letter-spacing:3px;color:#888;text-transform:uppercase;">Macro World View</span>
     </div>
     <h1 style="font-size:20px;color:#e0e0e0;margin:0 0 16px;">{title}</h1>
     {body}
@@ -296,7 +296,7 @@ def send_welcome(email: str, source: str = "default") -> bool:
     just because the welcome email couldn't be sent.
     """
     copy = WELCOME_COPY.get(source, WELCOME_COPY["default"])
-    subject = "Welcome to World Order View — please confirm"
+    subject = "Welcome to Macro World View — please confirm"
     # Build the one-click confirmation URL
     confirm_url = (
         f"{SITE_URL}/confirmed?"
@@ -534,10 +534,10 @@ def send_geo_override(event: str, geo_regime: str, fred_regime: str, explanation
 def send_weekly_pulse(regime: str, months: int, fred_regime: str, geo_regime: str,
                       picks: list[dict], triggers: list[dict],
                       calendar: list[dict], bull_trigger: str, bear_trigger: str) -> int:
-    """Weekly World Order View — Tuesday newsletter."""
+    """Weekly Macro World View — Tuesday newsletter."""
     from datetime import datetime
     date_str = datetime.now().strftime("%B %d, %Y")
-    subject = f"Weekly World Order View — {date_str}"
+    subject = f"Weekly Macro World View — {date_str}"
 
     picks_rows = ""
     for p in picks:

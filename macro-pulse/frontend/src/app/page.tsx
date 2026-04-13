@@ -201,7 +201,7 @@ export default function HomePage() {
             </p>
           </div>
           <SectionChat
-            context="Welcome to World Order View. The AI Race is creating the next materials supercycle. Current macro regime affects entry timing — stagflation suppresses growth ETFs (buy now at discount), materials are inflated (wait for regime shift). The site covers the AI Race thesis with supply chain ETFs, US/EU/China regime trackers, and the world order transition."
+            context="Welcome to Macro World View. The AI Race is creating the next materials supercycle. Current macro regime affects entry timing — stagflation suppresses growth ETFs (buy now at discount), materials are inflated (wait for regime shift). The site covers the AI Race thesis with supply chain ETFs, US/EU/China regime trackers, and the world order transition."
             label="Ask about the AI Race thesis"
             suggestions={["What is the AI Race?", "How do I use the regime to time my entry?", "What ETFs should I start with?"]}
           />
@@ -478,35 +478,40 @@ export default function HomePage() {
 
       <div className="border-t border-[#181818]" />
 
+      <div className="border-t border-[#181818]" />
+
       {/* ════════════════════════════════════════════
-          RISK FACTORS
+          WAR ACCELERATES TECHNOLOGY
       ════════════════════════════════════════════ */}
 
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-4">What Could Go Wrong</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">War Accelerates Technology</h2>
+        <p className="text-xs text-[#555] mb-4">Every major technological leap in history was funded by nations competing to survive. The AI Race is no different.</p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
           {[
-            { risk: "Execution risk", detail: "Musk has a history of ambitious timelines. Gigafactory was years late. Terafab could be delayed significantly.", color: "#eab308" },
-            { risk: "Competition (actually bullish)", detail: "Intel, Samsung, TSMC, Google, Amazon all building fabs and robots. More competitors = more materials demand. Risk for TSLA, bullish for supply chain ETFs.", color: "#22c55e" },
-            { risk: "Materials already priced in", detail: "COPX +73%, SMH +117%. A lot of the thesis is in the price. A correction is likely before the next leg up.", color: "#ef4444" },
-            { risk: "China retaliation", detail: "China controls 60% of rare earth mining, 90% of processing. Export restrictions would spike prices short-term but crash supply chains.", color: "#ef4444" },
-            { risk: "Regulatory", detail: "AI regulation, environmental permits for mining, and CHIPS Act funding could all be delayed or reduced.", color: "#eab308" },
-            { risk: "Robotics adoption slower than projected", detail: "Musk's 10-100x target is aspirational. Real adoption depends on cost, safety, regulation. Could take 15 years not 5.", color: "#eab308" },
-          ].map((r) => (
-            <div key={r.risk} className="p-3 rounded-lg bg-[#111] border border-[#222]">
-              <div className="text-xs font-bold mb-1" style={{ color: r.color }}>{r.risk}</div>
-              <p className="text-[10px] text-[#888] leading-relaxed">{r.detail}</p>
+            { era: "WW2", tech: "Jet engines, radar, nuclear", result: "Created the aerospace and energy industries" },
+            { era: "Cold War", tech: "Internet, GPS, satellites", result: "Created the tech industry worth $10T+" },
+            { era: "Space Race", tech: "Microchips, materials science", result: "Enabled the semiconductor revolution" },
+            { era: "Now", tech: "AI, robots, autonomous systems", result: "Creating the next industrial revolution" },
+          ].map((e) => (
+            <div key={e.era} className="p-2 rounded-lg bg-[#111] border border-[#222]">
+              <div className="text-xs font-bold text-[#e0e0e0] mb-1">{e.era}</div>
+              <div className="text-[10px] text-[#888]">{e.tech}</div>
+              <div className="text-[10px] text-[#555] mt-1">{e.result}</div>
             </div>
           ))}
         </div>
-        <div className="mt-4 p-3 rounded bg-[#111] border border-[#222]">
-          <p className="text-[10px] text-[#888] leading-relaxed">
-            <span className="text-[#e0e0e0] font-bold">The key insight:</span> Even if Terafab is delayed or scaled back, the underlying demand (AI compute, automation, energy transition) exists independently. The materials supply chain benefits regardless of whether Terafab specifically succeeds — it&apos;s a bet on the industrial trend, not on one factory.
+
+        <div className="p-3 rounded bg-[#111] border border-[#3b82f630]" style={{ backgroundColor: "#3b82f608" }}>
+          <p className="text-xs text-[#888] leading-relaxed">
+            <span className="text-[#3b82f6] font-bold">Why this matters now:</span> The US ($52B CHIPS Act + Terafab), China (290k robots/year + chip independence push), and Europe (€43B Chips Act + ASML monopoly protection) are all pouring unprecedented money into AI and automation — not because it&apos;s profitable, but because <span className="text-[#e0e0e0]">falling behind is an existential threat</span>. Governments don&apos;t cut defence spending during a war, and they won&apos;t cut AI spending during the automation race. This makes the supply chain demand <span className="text-[#e0e0e0]">government-backed and recession-resistant</span> — even in stagflation, the spending continues.
           </p>
         </div>
       </section>
 
       <div className="border-t border-[#181818]" />
+
 
       {/* ════════════════════════════════════════════
           REGIME TRACKERS — context for the thesis
@@ -555,7 +560,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
-        <p className="text-xs text-[#555]">World Order View — Tracking the AI Race and the world order transition</p>
+        <p className="text-xs text-[#555]">Macro World View — Tracking the AI Race and the world order transition</p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
           This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. Past performance does not guarantee future results.
         </p>

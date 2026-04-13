@@ -10,7 +10,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "World Order View — Live Regime Tracker",
+  title: "Macro World View — The AI Race Supply Chain",
   description:
     "Track economic regimes in real time using Ray Dalio's four-season framework. Free macro investing dashboard with live FRED data, geopolitical AI synthesis, and ETF allocation recommendations.",
   icons: {

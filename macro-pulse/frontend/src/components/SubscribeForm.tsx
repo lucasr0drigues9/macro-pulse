@@ -107,7 +107,7 @@ export default function SubscribeForm({
           <p className="text-sm text-[#22c55e] mb-2">You&apos;re subscribed.</p>
           <p className="text-xs text-[#888] mb-3 leading-relaxed">
             We just sent a welcome email to <b className="text-[#e0e0e0]">{email}</b> from{" "}
-            <span className="text-[#e0e0e0]">hello@worldorderview.com</span>. Open it and click
+            <span className="text-[#e0e0e0]">hello@macroworldview.com</span>. Open it and click
             the <b className="text-[#22c55e]">&quot;Confirm I got this email ✓&quot;</b> button
             so we know our delivery pipeline is working.
           </p>
@@ -125,9 +125,9 @@ export default function SubscribeForm({
         <div className="max-w-md mx-auto py-2 text-left">
           <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
           <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
-            <li>Check your spam / promotions folder for &quot;Welcome to World Order View&quot;</li>
-            <li>Add <b className="text-[#e0e0e0]">hello@worldorderview.com</b> to your contacts so future alerts land in your inbox</li>
-            <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">hello@worldorderview.com</b> directly and we&apos;ll sort it out</li>
+            <li>Check your spam / promotions folder for &quot;Welcome to Macro World View&quot;</li>
+            <li>Add <b className="text-[#e0e0e0]">hello@macroworldview.com</b> to your contacts so future alerts land in your inbox</li>
+            <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">hello@macroworldview.com</b> directly and we&apos;ll sort it out</li>
           </ul>
           <p className="text-[10px] text-[#555] text-center">
             You&apos;re still subscribed — we&apos;ll send the next update either way.

@@ -1,5 +1,5 @@
 """
-World Order View — FastAPI backend
+Macro World View — FastAPI backend
 Wraps the existing Python CLI tool into REST endpoints.
 """
 
@@ -123,7 +123,7 @@ async def lifespan(app):
     task.cancel()
 
 
-app = FastAPI(title="World Order View API", version="0.3.0", lifespan=lifespan)
+app = FastAPI(title="Macro World View API", version="0.3.0", lifespan=lifespan)
 
 
 @app.get("/api/version")
@@ -1182,7 +1182,7 @@ def create_audience():
     if not _resend.api_key:
         return {"error": "No RESEND_API_KEY"}
     try:
-        audience = _resend.Audiences.create({"name": "World Order View Subscribers"})
+        audience = _resend.Audiences.create({"name": "Macro World View Subscribers"})
         return {"ok": True, "audience": audience}
     except Exception as e:
         return {"error": str(e)}
@@ -1231,7 +1231,7 @@ async def chat_period(body: dict):
     )
 
     # ── Build system prompt + messages ──
-    system_prompt = f"""Expert macro analyst for World Order View. Answer questions about this regime period.
+    system_prompt = f"""Expert macro analyst for Macro World View. Answer questions about this regime period.
 
 {start}→{end}, {region}. Data: {regime}. AI: {ai_regime}. Winner: {best}. Returns: {returns_str}.
 Event: {analysis.get('event', 'N/A')}
@@ -1301,7 +1301,7 @@ async def chat_general(body: dict):
     if not api_key:
         return {"error": "AI not configured"}
 
-    system_prompt = f"""You are an expert macro investment analyst on the World Order View platform.
+    system_prompt = f"""You are an expert macro investment analyst on the Macro World View platform.
 You help users understand the tools, data, and investment framework on the site.
 
 Section context: {context}
@@ -1574,7 +1574,7 @@ ALLOWED_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://macro-pulse.*\.vercel\.app|https://macro-pulse\.io|https://worldorderview\.com|https://www\.worldorderview\.com|http://localhost:3000",
+    allow_origin_regex=r"https://macro-pulse.*\.vercel\.app|https://macro-pulse\.io|https://macroworldview\.com|https://www\.macroworldview\.com|https://worldorderview\.com|https://www\.worldorderview\.com|http://localhost:3000",
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -3385,7 +3385,7 @@ Focus on:
 - Significant market moves (>2% on major indices)
 - World order shifts (alliances, trade, sanctions, military)
 
-Filter through the World Order View lens: only include stories that affect
+Filter through the Macro World View lens: only include stories that affect
 regime signals, the US-China power transition, European autonomy, or
 emerging market positioning.
 

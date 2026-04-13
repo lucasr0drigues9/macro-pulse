@@ -32,7 +32,7 @@ export default function Newsletter() {
   return (
     <section className="px-4 py-12 max-w-5xl mx-auto">
       <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Weekly World Order View</h2>
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Weekly Macro World View</h2>
         <p className="text-sm text-[#888] mb-6 max-w-lg mx-auto">
           Every Tuesday — the full regime update, this week&apos;s key releases, live trigger status,
           and current allocation. Written by the tool, edited for humans.
@@ -69,7 +69,7 @@ export default function Newsletter() {
             <p className="text-sm text-[#22c55e] mb-2">You&apos;re subscribed.</p>
             <p className="text-xs text-[#888] mb-3 leading-relaxed">
               We just sent a welcome email to <b className="text-[#e0e0e0]">{email}</b> from{" "}
-              <span className="text-[#e0e0e0]">hello@worldorderview.com</span>. Open it and click
+              <span className="text-[#e0e0e0]">hello@macroworldview.com</span>. Open it and click
               the <b className="text-[#22c55e]">&quot;Confirm I got this email ✓&quot;</b> button
               so we know our delivery pipeline is working.
             </p>
@@ -87,9 +87,9 @@ export default function Newsletter() {
           <div className="max-w-md mx-auto py-2 text-left">
             <p className="text-sm text-[#eab308] mb-2 text-center">Can&apos;t find it?</p>
             <ul className="text-xs text-[#888] space-y-1.5 mb-3 list-disc list-inside">
-              <li>Check your spam / promotions folder for &quot;Welcome to World Order View&quot;</li>
-              <li>Add <b className="text-[#e0e0e0]">hello@worldorderview.com</b> to your contacts so future alerts land in your inbox</li>
-              <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">hello@worldorderview.com</b> directly and we&apos;ll sort it out</li>
+              <li>Check your spam / promotions folder for &quot;Welcome to Macro World View&quot;</li>
+              <li>Add <b className="text-[#e0e0e0]">hello@macroworldview.com</b> to your contacts so future alerts land in your inbox</li>
+              <li>Still nothing after 5 minutes? Email <b className="text-[#e0e0e0]">hello@macroworldview.com</b> directly and we&apos;ll sort it out</li>
             </ul>
             <p className="text-[10px] text-[#555] text-center">
               You&apos;re still subscribed — first briefing lands next Tuesday morning either way.
@@ -106,7 +106,7 @@ export default function Newsletter() {
 
         {showPreview && (
           <div className="mt-4 p-4 rounded bg-[#0a0a0a] border border-[#181818] text-left text-xs text-[#888] max-w-md mx-auto">
-            <div className="text-[#555] mb-2">Subject: Weekly World Order View — April 1, 2026</div>
+            <div className="text-[#555] mb-2">Subject: Weekly Macro World View — April 1, 2026</div>
             <div className="space-y-2 leading-relaxed">
               <p className="font-bold text-[#e0e0e0]">Current Regime: Stagflation (4th month)</p>
               <p>FRED says Reflation. Geopolitical says Stagflation. We go with geo — it&apos;s more current.</p>
