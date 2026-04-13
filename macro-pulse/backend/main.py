@@ -473,8 +473,13 @@ def get_eu_allocation():
         import yfinance as _yf
 
         # Use the live EU regime signal, not the backtest timeline
-        eu_regime_data = get_eu_regime()
-        regime = eu_regime_data.get("confirmed", "Deflation")
+        try:
+            eu_regime_data = get_eu_regime()
+            if "error" in eu_regime_data:
+                raise Exception(eu_regime_data["error"])
+        except Exception:
+            eu_regime_data = {"confirmed": "Stagflation", "periodStart": "2026-02-01"}
+        regime = eu_regime_data.get("confirmed", "Stagflation")
         period_start = eu_regime_data.get("periodStart")
         picks = EU_REGIME_ETFS.get(regime, [])
 
