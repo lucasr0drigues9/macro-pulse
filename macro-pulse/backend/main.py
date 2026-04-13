@@ -1532,7 +1532,7 @@ def get_terafab_timing():
 
 @app.get("/api/health")
 def health():
-    return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
+    return {"status": "ok", "version": "0.3.0", "modes": list(MODE_CONFIG.keys())}
 
 
 @app.post("/api/seed-cache")
