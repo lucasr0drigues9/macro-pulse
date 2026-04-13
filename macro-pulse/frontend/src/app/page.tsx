@@ -313,13 +313,13 @@ export default function HomePage() {
             },
             {
               theme: "AI Infrastructure",
-              ticker: "ASML",
-              name: "ASML Holding (stock)",
-              ucits: "ASML.AS",
+              ticker: "SMH",
+              name: "VanEck Semiconductor ETF",
+              ucits: "SEMI.L",
               color: "#3b82f6",
-              why: "100% global monopoly on EUV lithography. Every advanced chip requires their equipment. EU Chips Act (€43B) backstops.",
-              catalyst: "AI capex cycle is multi-year. TSMC, Samsung, Intel all expanding — all need ASML.",
-              regime: "Best in Goldilocks/Reflation. Single stock risk but no ETF alternative captures this.",
+              why: "Holds the entire AI supply chain: ASML (lithography monopoly), TSMC (90% of advanced chips), Nvidia (AI GPUs), Broadcom, AMD. No single-stock risk.",
+              catalyst: "AI capex cycle is multi-year. Every hyperscaler expanding. Chips Act ($52B US + €43B EU) funds the buildout.",
+              regime: "Best in Goldilocks/Reflation. Underperforms in Stagflation but the structural demand is independent of macro.",
             },
           ].map((t) => (
             <div key={t.ticker} className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: t.color }}>
