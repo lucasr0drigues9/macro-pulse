@@ -441,31 +441,6 @@ export default function WorldOrderPage() {
         </div>
       </section>
 
-      {/* Big Cycle */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Where the US Sits in the Big Cycle</h2>
-        <p className="text-xs text-[#555] mb-6">Dalio&apos;s six stages of empire — applied to the United States</p>
-        <div className="space-y-2 mb-6">
-          {bigCycleStages.map((s) => (
-            <div key={s.stage} className="flex items-center gap-3 p-3 rounded-lg border"
-              style={{ backgroundColor: s.active ? ACCENT + "15" : "#111", borderColor: s.active ? ACCENT + "40" : "#222" }}>
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ backgroundColor: s.active ? ACCENT : "#222", color: s.active ? "#000" : "#555" }}>{s.stage}</span>
-              <div className="flex-1">
-                <span className={`text-sm font-bold ${s.active ? "text-[#e0e0e0]" : "text-[#555]"}`}>{s.label}</span>
-                <span className="text-xs text-[#333] ml-2">{s.period}</span>
-              </div>
-              {s.active && <span className="text-xs font-bold" style={{ color: ACCENT }}>← NOW</span>}
-            </div>
-          ))}
-        </div>
-        <SectionChat
-          context="Big Cycle position. US is at Stage 5 of 6 (great power conflict). Same indicators as British Empire 1940s and Soviet Union 1980s."
-          label="Ask about the big cycle"
-          suggestions={["What comes after Stage 5?", "How long do declining powers last?", "Is this reversible?"]}
-        />
-      </section>
-
       {/* Investment Implications */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">What Overextension Means for Investors</h2>
