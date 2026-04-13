@@ -1438,18 +1438,19 @@ def get_terafab_timing():
         {"ticker": "AIQ",  "ucits": "WTAI.L",  "layer": "AI & Autonomous",     "color": "#c084fc"},
         {"ticker": "SMH",  "ucits": "SEMI.L",  "layer": "AI Chips",            "color": "#3b82f6"},
         {"ticker": "BOTZ", "ucits": "RBOT.L",  "layer": "Robotics",            "color": "#22c55e"},
-        {"ticker": "ARKQ", "ucits": "—",        "layer": "Autonomous Tech",     "color": "#22c55e"},
+        {"ticker": "ARKQ", "ucits": None,       "layer": "Autonomous Tech",     "color": "#22c55e"},
         {"ticker": "COPX", "ucits": "COPP.L",  "layer": "Copper & Wiring",     "color": "#e09030"},
-        {"ticker": "LIT",  "ucits": "—",        "layer": "Lithium & Batteries", "color": "#a855f7"},
-        {"ticker": "REMX", "ucits": "—",        "layer": "Rare Earths",         "color": "#ef4444"},
+        {"ticker": "LIT",  "ucits": None,       "layer": "Lithium & Batteries", "color": "#a855f7"},
+        {"ticker": "REMX", "ucits": None,       "layer": "Rare Earths",         "color": "#ef4444"},
         {"ticker": "ICLN", "ucits": "INRG.L",  "layer": "Energy & Power",      "color": "#eab308"},
         {"ticker": "XLU",  "ucits": "IUUS.L",  "layer": "Utilities",           "color": "#eab308"},
     ]
 
     results = []
+    errors = []
     for t in layers:
         variants = [t["ticker"]]
-        if t["ucits"] != "—":
+        if t["ucits"]:
             variants.append(t["ucits"])
         for variant in variants:
             try:
@@ -1517,12 +1518,16 @@ def get_terafab_timing():
                     "score": score,
                     "signal": signal,
                 })
-            except Exception:
+            except Exception as e:
+                errors.append(f"{variant}: {str(e)[:80]}")
                 continue
 
     # Sort by score descending (best dips first)
     results.sort(key=lambda x: (-x["score"], x["drawdown"]))
-    return {"etfs": results}
+    resp = {"etfs": results}
+    if not results and errors:
+        resp["debug"] = errors[:5]
+    return resp
 
 
 @app.get("/api/health")
