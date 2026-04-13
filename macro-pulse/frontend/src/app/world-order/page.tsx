@@ -747,9 +747,79 @@ export default function WorldOrderPage() {
 
       <div className="border-t border-[#181818]" />
 
+      {/* ══ EMERGING MARKETS — The beneficiaries ══ */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Beneficiaries</h2>
+        <p className="text-xl font-bold text-[#e0e0e0] mb-1">Emerging Market Swing States</p>
+        <p className="text-xs text-[#555] mb-6">In every power transition Dalio documents, the countries that refuse to choose sides and trade with both powers capture disproportionate value.</p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+          {[
+            { country: "India", flag: "\uD83C\uDDEE\uD83C\uDDF3", ticker: "INDA", edge: "Largest non-aligned economy. Buys Russian oil at discount AND receives US tech transfer.", metric: "+35% FDI YoY" },
+            { country: "Saudi Arabia", flag: "\uD83C\uDDF8\uD83C\uDDE6", ticker: "KSA", edge: "Joined BRICS+, accepts yuan for oil, but maintains US security guarantee.", metric: "Vision 2030" },
+            { country: "Brazil", flag: "\uD83C\uDDE7\uD83C\uDDF7", ticker: "EWZ", edge: "BRICS+ founding member. Commodity superpower (iron ore, soy, oil). Yuan trade settlement.", metric: "Commodity leverage" },
+            { country: "Indonesia", flag: "\uD83C\uDDEE\uD83C\uDDE9", ticker: "EIDO", edge: "50% of global nickel. Battery supply chain critical. Plays US and China for investment.", metric: "50% global nickel" },
+            { country: "Turkey", flag: "\uD83C\uDDF9\uD83C\uDDF7", ticker: "TUR", edge: "NATO member that buys Russian S-400s. Controls Bosphorus. Trades with everyone.", metric: "Bosphorus control" },
+            { country: "Morocco", flag: "\uD83C\uDDF2\uD83C\uDDE6", ticker: "—", edge: "EU\u2019s nearshoring destination. Free trade with EU + US. Solar + manufacturing hub.", metric: "Nearshoring hub" },
+          ].map((c) => (
+            <div key={c.country} className="p-3 rounded-lg bg-[#111] border border-[#222]">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{c.flag}</span>
+                <span className="text-sm font-bold text-[#e0e0e0]">{c.country}</span>
+              </div>
+              {c.ticker !== "—" && <div className="text-[10px] text-[#22c55e] mb-1">{c.ticker}</div>}
+              <p className="text-[10px] text-[#888] leading-relaxed mb-2">{c.edge}</p>
+              <div className="text-[10px] font-bold" style={{ color: "#22c55e" }}>{c.metric}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#22c55e" }}>
+            <div className="text-xs font-bold text-[#22c55e] uppercase tracking-wider mb-2">Non-Alignment Premium</div>
+            <p className="text-xs text-[#888] leading-relaxed">Countries refusing to choose sides trade with both powers and extract concessions from both. India buys Russian oil at $30 discount AND receives US semiconductor investment.</p>
+          </div>
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#eab308" }}>
+            <div className="text-xs font-bold text-[#eab308] uppercase tracking-wider mb-2">Supply Chain Rerouting</div>
+            <p className="text-xs text-[#888] leading-relaxed">US-China decoupling reroutes global supply chains through neutral countries. Apple → India. Tesla → Mexico. EU → Morocco. This is structural, not cyclical.</p>
+          </div>
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#ef4444" }}>
+            <div className="text-xs font-bold text-[#ef4444] uppercase tracking-wider mb-2">Commodity Leverage</div>
+            <p className="text-xs text-[#888] leading-relaxed">Energy transition + Hormuz crisis give commodity-rich EMs unprecedented pricing power. Indonesia (nickel), Brazil (iron ore), Saudi (oil) can name their terms.</p>
+          </div>
+        </div>
+
+        {/* Historical parallels */}
+        <div className="space-y-2 mb-6">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Switzerland (1914-1945):</span> Neutral during both World Wars. Swiss banks held gold for all sides. The Swiss franc became a safe haven currency. GDP per capita surpassed all combatant nations by 1950. Neutrality was the most profitable strategy.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Asian Tigers (1950-1990):</span> South Korea, Taiwan, Singapore, and Hong Kong exploited Cold War competition for investment from both blocs. US poured capital into Asian allies to counter communism. Annual GDP growth averaged 8%+ for three decades. Today&apos;s swing states are positioned for the same dynamic.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Hormuz multiplier:</span> The US closure of Hormuz amplifies EM commodity leverage. Middle Eastern and African energy exporters become even more critical as alternative supply routes. Countries with overland pipeline access to China (Central Asia, Myanmar) gain strategic importance overnight.
+          </div>
+        </div>
+
+        <div className="text-center">
+          <Link href="/emerging-markets" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+            Full EM tracker — 6 countries, ETFs, Dalio determinants →
+          </Link>
+        </div>
+
+        <SectionChat
+          context="Emerging market swing states in the world order transition. India, Saudi Arabia, Brazil, Indonesia, Turkey, Morocco. Non-alignment premium, supply chain rerouting, commodity leverage. Historical parallels: Switzerland in WWI/WWII, Asian Tigers during Cold War. Hormuz closure amplifies commodity leverage."
+          label="Ask about emerging markets"
+          suggestions={["Which swing state benefits most from Hormuz?", "How did Switzerland profit from neutrality?", "Is the non-alignment strategy sustainable?"]}
+        />
+      </section>
+
+      <div className="border-t border-[#181818]" />
+
       <WorldOrderPosition
         title="The World Order Transition"
-        subtitle="Three forces reshaping global power — and where capital flows as a result"
+        subtitle="Four forces reshaping global power — and where capital flows as a result"
         cards={[
           {
             title: "US-China Power Transition",

@@ -1,12 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
 import Nav from "@/components/Nav";
 import SubscribeForm from "@/components/SubscribeForm";
-import SectionChat from "@/components/SectionChat";
-import WorldOrderPosition from "@/components/WorldOrderPosition";
-import { ACCENT, GOLD, morocco, countries, regimeAlignment, type CountryEM } from "@/lib/emergingData";
+import { ACCENT, GOLD, morocco, countries, type CountryEM } from "@/lib/emergingData";
 
 function CountryCard({ c, featured }: { c: CountryEM; featured?: boolean }) {
   const [open, setOpen] = useState(false);
@@ -159,36 +156,6 @@ export default function EmergingMarketsPage() {
         </p>
       </section>
 
-      {/* Why Now */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-4">The Multipolar Opportunity</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#3b82f6" }}>
-            <div className="text-xs font-bold text-[#3b82f6] mb-2">The Decoupling Dividend</div>
-            <p className="text-xs text-[#888] leading-relaxed">
-              As the US and China decouple, global supply chains must relocate. Countries with young populations, competitive costs, and strategic neutrality become the factories of the next world order. India and Morocco are the primary beneficiaries — India for scale, Morocco for European proximity.
-            </p>
-          </div>
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#eab308" }}>
-            <div className="text-xs font-bold text-[#eab308] mb-2">The Commodity Premium</div>
-            <p className="text-xs text-[#888] leading-relaxed">
-              World order transitions create sustained commodity demand — rearmament requires metals, energy insecurity drives resource premiums. Brazil and Saudi Arabia hold what the transition runs on.
-            </p>
-          </div>
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: ACCENT }}>
-            <div className="text-xs font-bold mb-2" style={{ color: ACCENT }}>The Swing State Advantage</div>
-            <p className="text-xs text-[#888] leading-relaxed">
-              Countries refusing to choose sides can trade with both powers and extract concessions from both. India perfected this. Turkey, Saudi Arabia, and Indonesia are playing the same game.
-            </p>
-          </div>
-        </div>
-        <SectionChat
-          context="The multipolar opportunity section. As US-China competition intensifies, swing states (India, Turkey, Saudi Arabia, Indonesia, Brazil, Morocco) capture the decoupling opportunity. They trade with both powers and extract concessions from both sides."
-          label="Ask about emerging markets"
-          suggestions={["Which swing state benefits most from Hormuz?", "Is India the safest emerging market bet?", "How does de-dollarisation help these countries?"]}
-        />
-      </section>
-
       {/* Morocco Featured */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <div className="mb-4">
@@ -247,92 +214,21 @@ export default function EmergingMarketsPage() {
         </div>
       </section>
 
-      {/* EU Autonomy Connection */}
+      {/* Thesis now on World Order page */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-4">How European Independence Creates Emerging Market Demand</h2>
-        <p className="text-xs text-[#888] leading-relaxed mb-4">
-          European strategic autonomy is not just a European story. The {"\u20AC"}800 billion ReArm Europe fund, the LNG terminal buildout, the critical materials strategy, and the manufacturing relocation away from China all create direct demand flowing to emerging markets. Morocco gets manufacturing and solar contracts. Gulf states get energy contracts. India gets supply chain investment. Indonesia gets battery material contracts. The European page tracks the companies enabling this shift. This page tracks the economies that supply it.
-        </p>
-        <div className="text-center">
-          <Link href="/europe" className="inline-block px-6 py-2 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
-            View European Autonomy Tracker {"\u2192"}
-          </Link>
-        </div>
-      </section>
-
-      {/* Regime Alignment */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Which Emerging Markets Perform Best Right Now</h2>
-        <p className="text-xs text-[#555] mb-4">Accounting for both US Stagflation and China Deflation</p>
-
-        <div className="space-y-2 mb-4">
-          {regimeAlignment.map((r) => (
-            <div key={r.regime} className="p-3 rounded-lg border flex flex-col sm:flex-row sm:items-start gap-2"
-              style={{ backgroundColor: r.current ? ACCENT + "10" : "#111", borderColor: r.current ? ACCENT + "40" : "#222" }}>
-              <div className="flex items-center gap-2 sm:w-32 shrink-0">
-                <span>{r.emoji}</span>
-                <span className={`text-sm font-bold ${r.current ? "text-[#e0e0e0]" : "text-[#555]"}`}>{r.regime}</span>
-                {r.current && <span className="text-[10px] font-bold" style={{ color: ACCENT }}>NOW</span>}
-              </div>
-              <div className="flex-1 text-xs text-[#888]">{r.performance}</div>
-              <div className="text-xs text-[#555] sm:w-28 sm:text-right shrink-0">{r.bestETFs}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="p-3 rounded bg-[#111] border border-[#222]">
-          <p className="text-xs text-[#888] leading-relaxed">
-            Current US regime is <span className="text-[#ef4444] font-bold">Stagflation</span> while China is in <span className="text-[#3b82f6] font-bold">Deflation</span>. Saudi Arabia benefits from energy supply shock. India resilient on domestic demand. Commodity exporters to China (Brazil iron ore, Indonesia nickel) face mixed signals. Morocco&apos;s phosphate premium rises on food security fears.{" "}
-            <Link href="/regimetracker" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: ACCENT }}>US regime {"\u2192"}</Link>{" "}
-            <Link href="/china" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: "#3b82f6" }}>China tracker {"\u2192"}</Link>
+        <div className="p-6 rounded-lg bg-[#111] border border-[#222] text-center">
+          <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Bigger Picture</h2>
+          <p className="text-lg font-bold text-[#e0e0e0] mb-2">Why Emerging Markets Win in the Transition</p>
+          <p className="text-xs text-[#555] mb-4 max-w-md mx-auto">
+            Non-alignment premium, supply chain rerouting, commodity leverage — the thesis is now part of the World Order Monitor.
           </p>
+          <a href="/world-order" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+            View the full world order narrative &rarr;
+          </a>
         </div>
-
-        <p className="mt-3 text-[10px] text-[#333] italic text-center">
-          Regime alignment shows short-term fit. All six have structural multi-year theses regardless of current regime.
-        </p>
-        <SectionChat
-          context="Emerging market regime alignment. Shows how each country (India, Brazil, Saudi Arabia, Indonesia, Turkey, Morocco) performs under each of the four macro regimes. Some benefit from Stagflation (commodity exporters), others from Goldilocks (growth stories). Current US regime: Stagflation."
-          label="Ask about EM regime fit"
-          suggestions={["Which EM benefits most from current Stagflation?", "What if the US shifts to Goldilocks?", "Is India overvalued?"]}
-        />
       </section>
 
-      <div className="border-t border-[#181818]" />
 
-      <WorldOrderPosition
-        title="Emerging Markets in the World Order Transition"
-        subtitle="Three reasons swing states capture disproportionate value during power transitions"
-        cards={[
-          {
-            title: "The Non-Alignment Premium",
-            content: "India, Turkey, Saudi Arabia, Indonesia, and Brazil refuse to choose sides in the US-China competition. This neutrality is a strategic asset — they trade with both powers, receive investment from both, and extract concessions by threatening to align with the other. India buys Russian oil at a discount AND receives US tech transfer. Saudi sells oil to China in yuan AND maintains its US security guarantee.",
-            keyMetric: "6 swing states = 40% of world population",
-            status: "Expanding",
-          },
-          {
-            title: "Supply Chain Rerouting",
-            content: "As US-China decoupling accelerates, global supply chains are rerouting through neutral countries. Vietnam, India, Mexico, Morocco, and Indonesia are the primary beneficiaries. Apple moved iPhone production to India. Tesla is building in Mexico. European manufacturers are moving to Morocco. This isn't temporary — it's a structural shift that creates decade-long growth runways.",
-            keyMetric: "India FDI: +35% YoY (2024)",
-            status: "Accelerating",
-          },
-          {
-            title: "Commodity Leverage",
-            content: "The energy transition AND the Hormuz crisis give commodity-rich EMs unprecedented leverage. Indonesia controls 50% of global nickel. Brazil has critical rare earths. Saudi Arabia can swing oil markets. Turkey controls the Bosphorus. In a world where physical resources matter more than financial assets, these countries gain pricing power that translates directly into GDP growth and currency strength.",
-            keyMetric: "Indonesia: 50% of global nickel",
-            status: "Critical",
-          },
-        ]}
-        accent={ACCENT}
-        chatContext="Emerging markets in the world order transition. Non-alignment premium (swing states trade with both powers), supply chain rerouting (Apple to India, Tesla to Mexico, EU to Morocco), commodity leverage (Indonesia nickel, Saudi oil, Turkey Bosphorus). How Hormuz closure amplifies EM commodity leverage."
-        chatSuggestions={[
-          "Which EM benefits most from Hormuz closure?",
-          "Is supply chain rerouting permanent?",
-          "How do I invest in the non-alignment premium?",
-        ]}
-      />
-
-      <div className="border-t border-[#181818]" />
 
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
