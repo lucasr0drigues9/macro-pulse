@@ -720,15 +720,62 @@ export default function WorldOrderPage() {
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Which Side Is Each Country On?</h2>
         <p className="text-xs text-[#555] mb-4">Click any country to see its full power scorecard and investment signal.</p>
 
-        {/* Legend */}
-        <div className="flex gap-4 mb-4">
-          {(["us_nato", "china_russia", "neutral"] as AllianceCamp[]).map((camp) => (
-            <div key={camp} className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CAMP_COLORS[camp] }} />
-              <span className="text-xs text-[#888]">{CAMP_LABELS[camp]}</span>
-            </div>
-          ))}
+        {/* Visual summary — 3 blocs */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          {(["us_nato", "neutral", "china_russia"] as AllianceCamp[]).map((camp) => {
+            const campCountries = sorted.filter((c) => c.allianceCamp === camp);
+            const shifting = campCountries.filter((c) => c.stability !== "Stable");
+            return (
+              <div key={camp} className="p-4 rounded-lg border" style={{ borderColor: CAMP_COLORS[camp] + "40", backgroundColor: CAMP_COLORS[camp] + "08" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CAMP_COLORS[camp] }} />
+                  <span className="text-sm font-bold text-[#e0e0e0]">{CAMP_LABELS[camp]}</span>
+                  <span className="text-xs text-[#555] ml-auto">{campCountries.length} countries</span>
+                </div>
+                <div className="space-y-2">
+                  {campCountries.map((c) => {
+                    const sig = c.investment;
+                    const isShifting = c.stability !== "Stable";
+                    return (
+                      <div key={c.code} className="flex items-center justify-between text-xs">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-[#e0e0e0]">{c.name}</span>
+                          {isShifting && <span className="text-[10px] text-[#eab308]">⚡{c.trend.replace("Moving toward ", "→ ").replace(" bloc", "")}</span>}
+                        </div>
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded"
+                          style={{ color: SIGNAL_COLORS[sig.signal], backgroundColor: SIGNAL_COLORS[sig.signal] + "20" }}>
+                          {sig.signal}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                {shifting.length > 0 && (
+                  <div className="mt-2 pt-2 border-t border-[#222] text-[10px] text-[#eab308]">
+                    {shifting.length} shifting — watch for realignment
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
+
+        {/* Key insight */}
+        {(() => {
+          const shifting = sorted.filter((c) => c.stability !== "Stable");
+          return shifting.length > 0 && (
+            <div className="p-3 rounded bg-[#eab30810] border border-[#eab30830] mb-6">
+              <p className="text-xs text-[#eab308] font-bold mb-1">{shifting.length} countries are actively shifting alignment</p>
+              <p className="text-xs text-[#888]">
+                {shifting.map((c) => `${c.name} (${c.trend})`).join(" · ")}
+              </p>
+            </div>
+          );
+        })()}
+
+        {/* Detailed table — expandable */}
+        <details className="mb-4">
+          <summary className="text-xs text-[#555] cursor-pointer hover:text-[#888] mb-4">View detailed alliance data table ↓</summary>
 
         {/* Table */}
         <div className="overflow-x-auto">
@@ -803,8 +850,9 @@ export default function WorldOrderPage() {
             </tbody>
           </table>
         </div>
+        </details>
         <SectionChat
-          context="Alliance tracker showing 30 countries classified as US-aligned, China-aligned, or Non-aligned/Swing. Based on UN voting patterns, trade ties, military alliances, and diplomatic relationships. Click any country to see Dalio's 18 determinants with evidence."
+          context="Alliance tracker showing 10 countries classified as US-aligned, China-aligned, or Non-aligned/Swing. Visual bloc summary shows investment signals per country and which ones are actively shifting alignment."
           label="Ask about alliances"
           suggestions={["Which countries are shifting alignment?", "How does Hormuz affect alliance positions?", "What determines a swing state?"]}
         />
