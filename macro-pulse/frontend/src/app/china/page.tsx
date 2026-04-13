@@ -418,9 +418,11 @@ export default function ChinaPage() {
           <p className="text-xs text-[#555] mb-2">
             Historical regime timeline based on proxy indicators — same four-quadrant framework applied to China&apos;s real economy.
           </p>
-          <p className="text-xs text-[#888] mb-4">
-            China&apos;s data is less reliable than US/EU, so this timeline uses curated periods from known economic events rather than monthly data feeds. Click any period to see how all 4 regime baskets actually performed.
-          </p>
+          <div className="p-3 rounded bg-[#111] border border-[#222] mb-4">
+            <p className="text-xs text-[#888] leading-relaxed">
+              <span className="text-[#e0e0e0] font-bold">Methodology difference:</span> The US and EU trackers derive regimes from monthly data feeds (FRED/Eurostat) — the data determines the regime automatically. China&apos;s monthly data is too noisy for this approach (we tested it — 28% accuracy vs 81% with expert curation). Instead, this timeline uses curated periods based on known economic events, verified against GDP/CPI/PPI data. The ETF returns are real market data — only the regime labels are curated.
+            </p>
+          </div>
 
           {/* Regime breakdown */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
