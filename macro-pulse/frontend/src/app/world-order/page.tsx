@@ -552,6 +552,68 @@ export default function WorldOrderPage() {
 
       <div className="border-t border-[#181818]" />
 
+      {/* ══ CHINA — The rising challenger ══ */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Rising Challenger</h2>
+        <p className="text-xl font-bold text-[#e0e0e0] mb-1">China&apos;s Path to Superpower</p>
+        <p className="text-xs text-[#555] mb-6">Systematically building the capabilities Dalio identifies as markers of rising powers — while the incumbent overextends.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#ef4444" }}>
+            <div className="text-xs font-bold text-[#ef4444] uppercase tracking-wider mb-2">Alliance Building</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              BRICS+ expanded to include Saudi Arabia, UAE, Egypt, Ethiopia, Iran. Belt and Road Initiative spans 140+ countries. Shanghai Cooperation Organisation provides military framework. China is building the institutional architecture of a parallel world order.
+            </p>
+            <div className="text-xs text-[#e0e0e0] font-bold">BRICS+ now represents 46% of world population</div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#eab308" }}>
+            <div className="text-xs font-bold text-[#eab308] uppercase tracking-wider mb-2">Financial Infrastructure</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              CIPS (Cross-Border Interbank Payment System) processing $20T+ annually — a SWIFT alternative. Yuan share of global trade settlements at 4.7%, up from 1.9% in 2020. Bilateral currency swaps with 40+ countries. Digital yuan (e-CNY) piloted across 26 cities.
+            </p>
+            <div className="text-xs text-[#e0e0e0] font-bold">CIPS: $20T+ annual volume</div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#3b82f6" }}>
+            <div className="text-xs font-bold text-[#3b82f6] uppercase tracking-wider mb-2">Technology Self-Sufficiency</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              US tech export restrictions forced domestic substitution — and it&apos;s working. Huawei&apos;s Kirin 9000s chip proved workaround capability. SMIC advancing to 7nm. China produces 80% of global solar panels, 60% of EVs, dominates battery supply chain. AI models (DeepSeek, Baidu ERNIE) closing the gap.
+            </p>
+            <div className="text-xs text-[#e0e0e0] font-bold">80% of global solar panel production</div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#22c55e" }}>
+            <div className="text-xs font-bold text-[#22c55e] uppercase tracking-wider mb-2">Military Modernisation</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              Navy surpassed the US in total vessel count (370 vs 290). Hypersonic missiles deployed (DF-27). Third aircraft carrier (Fujian) with electromagnetic catapult. Nuclear arsenal expanding from ~350 to estimated 1,000+ warheads by 2030. Space station (Tiangong) operational.
+            </p>
+            <div className="text-xs text-[#e0e0e0] font-bold">370 naval vessels (US: 290)</div>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-lg bg-[#111] border border-[#ef444430]" style={{ backgroundColor: "#ef444410" }}>
+          <div className="text-xs text-[#ef4444] font-bold mb-2">The Hormuz Confrontation</div>
+          <p className="text-xs text-[#888] leading-relaxed">
+            The US permanent closure of the Strait of Hormuz — specifically targeting Iran&apos;s shadow fleet tankers to China — is the first direct US action threatening China&apos;s energy supply chain. China&apos;s response will define whether this remains a cold war or escalates. The shadow fleet was China&apos;s workaround for sanctions; cutting it forces China to either accept US dominance over its energy supply or challenge it directly.
+          </p>
+        </div>
+
+        <div className="text-center mt-6">
+          <Link href="/china" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+            Full China tracker — regime, allocation, proxy indicators →
+          </Link>
+        </div>
+
+        <SectionChat
+          context="China as the rising challenger in Dalio's world order framework. Alliance building (BRICS+, BRI 140+ countries), financial infrastructure (CIPS $20T, yuan 4.7% of trade), technology self-sufficiency (Huawei, solar, EVs, AI), military modernisation (370 ships, hypersonics). Hormuz shadow fleet confrontation with the US."
+          label="Ask about China's rise"
+          suggestions={["How does China compare to the US at each stage?", "Can China replace the dollar?", "What does Hormuz mean for China's energy security?"]}
+        />
+      </section>
+
+      <div className="border-t border-[#181818]" />
+
       {/* ══ EUROPEAN AUTONOMY — The emerging third pole ══ */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Emerging Third Pole</h2>
@@ -611,14 +673,30 @@ export default function WorldOrderPage() {
           </div>
         </div>
 
+        {/* Historical analogies */}
+        <div className="p-4 rounded-lg bg-[#111] border border-[#222] mb-6">
+          <h3 className="text-sm font-bold text-[#e0e0e0] mb-3">Why Europe Becomes a Third Pole — Historical Precedent</h3>
+          <div className="space-y-4 text-xs text-[#888] leading-relaxed">
+            <div>
+              <span className="text-[#3b82f6] font-bold">The Byzantine Pattern.</span> When Rome split into Western and Eastern empires, the Eastern half (Byzantium) survived a thousand years longer by building autonomous military, economic, and diplomatic capabilities. Europe today is in the early stages of the same structural separation from US dependency — forced by the same catalyst: the protecting power can no longer guarantee security.
+            </div>
+            <div>
+              <span className="text-[#eab308] font-bold">The Cold War Parallel.</span> During US-Soviet competition, Western Europe emerged as a third economic pole — not militarily independent, but economically sovereign. The EU, single market, and euro were built during this period. Today&apos;s US-China competition is triggering the same dynamic but this time including military independence (defence spending 1.5% → 2.5%+ GDP).
+            </div>
+            <div>
+              <span className="text-[#22c55e] font-bold">The Dalio Framework.</span> In every historical power transition Dalio documents, the regions that benefit most are those that (1) avoid direct conflict, (2) build autonomous capabilities, and (3) trade with both sides. Europe is doing all three. The EU trades with both the US and China, is building defence independence, and maintains diplomatic relationships across all blocs. This is the optimal positioning during a transition.
+            </div>
+          </div>
+        </div>
+
         <div className="text-center">
           <Link href="/europe" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
-            Full European tracker — regime, allocation, 25+ companies →
+            Full European tracker — regime, allocation, timeline →
           </Link>
         </div>
 
         <SectionChat
-          context="European strategic autonomy section within the World Order Monitor. Four key positions: EUAD (defence), IOGP (energy), ASML (technology), NHY (materials). Europe building independence forced by Ukraine war + Hormuz crisis. Defence spending 1.5→2.5%+ GDP. Russian gas 40→8%."
+          context="European strategic autonomy as the third pole in the world order transition. Historical analogies: Byzantine Empire surviving after Rome split, Cold War Western Europe emerging as economic pole, Dalio's framework showing regions that avoid conflict and build capabilities benefit most. Four positions: EUAD, IOGP, ASML, NHY."
           label="Ask about European autonomy"
           suggestions={["Why is EUAD up 820%?", "Does European autonomy work in all regimes?", "How does Hormuz accelerate this?"]}
         />
