@@ -123,21 +123,40 @@ export default function HomePage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* AI Interpretation */}
-      {aiInterpretation && (
-        <section className="px-4 py-8 max-w-5xl mx-auto">
-          <div className="p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-[#555]">What this means right now</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+      {/* AI Interpretation — only show if it matches current regimes */}
+      {aiInterpretation && (() => {
+        const usRegime = usAlloc?.regime || "";
+        const euRegime = euAlloc?.regime || "";
+        const cnRegime = cnAlloc?.regime || "";
+        const text = aiInterpretation.toLowerCase();
+        // Check if the interpretation mentions regimes that don't match current signals
+        const stale = (usRegime && text.includes("stagflation") && usRegime !== "Stagflation" && !text.includes(usRegime.toLowerCase()))
+          || (euRegime && text.includes("europe") && text.includes("stagflation") && euRegime !== "Stagflation")
+          || (cnRegime && text.includes("china") && text.includes("deflation") && cnRegime !== "Deflation");
+
+        return (
+          <section className="px-4 py-8 max-w-5xl mx-auto">
+            <div className="p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-[#555]">What this means right now</span>
+                <div className="flex items-center gap-2">
+                  {stale && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#eab30820] text-[#eab308]">May be stale</span>}
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
+                </div>
+              </div>
+              {stale && (
+                <p className="text-[10px] text-[#eab308] mb-2">
+                  This interpretation may reference outdated regime readings. The live signals above are more current.
+                </p>
+              )}
+              <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
+              <p className="text-[10px] text-[#333] mt-2">
+                AI-generated interpretation. Refreshes every 24 hours. ETF mentions for educational purposes only.
+              </p>
             </div>
-            <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
-            <p className="text-[10px] text-[#333] mt-2">
-              AI-generated interpretation. ETF mentions for educational purposes only. Not personalised financial advice.
-            </p>
-          </div>
-        </section>
-      )}
+          </section>
+        );
+      })()}
 
       <div className="border-t border-[#181818]" />
 
