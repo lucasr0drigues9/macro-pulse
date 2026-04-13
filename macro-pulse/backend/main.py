@@ -768,12 +768,27 @@ def get_china_regime():
             if FRED_KEY:
                 r = _req.get("https://api.stlouisfed.org/fred/series/observations", params={
                     "series_id": "CPALTT01CNM659N", "api_key": FRED_KEY,
-                    "file_type": "json", "sort_order": "desc", "limit": 3,
+                    "file_type": "json", "sort_order": "desc", "limit": 12,
                 }, timeout=10)
-                obs = [o for o in r.json().get("observations", []) if o["value"] != "."]
+                obs = [(o["date"], float(o["value"])) for o in r.json().get("observations", []) if o["value"] != "."]
                 if obs:
-                    cpi_val = float(obs[0]["value"])
-                    indicators["cpi"] = {"value": cpi_val, "date": obs[0]["date"]}
+                    cpi_val = obs[0][1]
+                    # Compute trend: recent 6m avg vs prior 6m avg
+                    recent = [v for _, v in obs[:6]]
+                    prior = [v for _, v in obs[6:12]]
+                    recent_avg = round(sum(recent) / len(recent), 2) if recent else None
+                    prior_avg = round(sum(prior) / len(prior), 2) if prior else None
+                    trend = "rising" if recent_avg is not None and prior_avg is not None and recent_avg > prior_avg else "falling"
+                    # Build history for sparkline
+                    history = [{"date": d, "value": v} for d, v in reversed(obs)]
+                    indicators["cpi"] = {
+                        "value": cpi_val,
+                        "date": obs[0][0],
+                        "recent6mAvg": recent_avg,
+                        "prior6mAvg": prior_avg,
+                        "trend": trend,
+                        "history": history,
+                    }
         except Exception:
             pass
 

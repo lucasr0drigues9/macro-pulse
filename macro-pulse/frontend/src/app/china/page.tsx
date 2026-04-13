@@ -298,16 +298,47 @@ export default function ChinaPage() {
                 <div className="text-[10px] text-[#555] mt-1">Capital flow direction</div>
               </div>
             )}
-            {regime.indicators.cpi && (
-              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
-                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">CPI YoY (Inflation)</div>
-                <div className="text-lg font-bold text-[#e0e0e0]">{regime.indicators.cpi.value}%</div>
-                <div className={`text-xs font-bold ${regime.indicators.cpi.value > 0 ? "text-[#eab308]" : "text-[#3b82f6]"}`}>
-                  {regime.indicators.cpi.value > 0 ? "Positive" : "Deflationary"}
+            {regime.indicators.cpi && (() => {
+              const cpi = regime.indicators.cpi as { value: number; date: string; recent6mAvg?: number; prior6mAvg?: number; trend?: string; history?: { date: string; value: number }[] };
+              const trendColor = cpi.trend === "rising" ? "#eab308" : "#3b82f6";
+              const trendLabel = cpi.trend === "rising" ? "Rising toward zero" : "Falling deeper";
+              return (
+                <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">CPI YoY (Inflation)</div>
+                  <div className="text-lg font-bold text-[#e0e0e0]">{cpi.value}%</div>
+                  <div className="text-xs font-bold" style={{ color: trendColor }}>{trendLabel}</div>
+                  {/* Sparkline */}
+                  {cpi.history && cpi.history.length > 3 && (() => {
+                    const vals = cpi.history.map((h) => h.value);
+                    const min = Math.min(...vals) - 0.3;
+                    const max = Math.max(...vals) + 0.3;
+                    const range = max - min || 1;
+                    const w = 120, h = 30, px = 2, py = 2;
+                    const points = vals.map((v, i) => {
+                      const x = px + (i / (vals.length - 1)) * (w - px * 2);
+                      const y = py + (1 - (v - min) / range) * (h - py * 2);
+                      return `${x},${y}`;
+                    }).join(" ");
+                    // Zero line
+                    const zeroY = py + (1 - (0 - min) / range) * (h - py * 2);
+                    return (
+                      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-8 mt-1">
+                        <line x1={px} y1={zeroY} x2={w - px} y2={zeroY} stroke="#333" strokeWidth="0.5" strokeDasharray="2,2" />
+                        <polyline points={points} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    );
+                  })()}
+                  {cpi.recent6mAvg !== undefined && cpi.prior6mAvg !== undefined && (
+                    <div className="text-[10px] text-[#555] mt-1">
+                      6m avg: <span style={{ color: trendColor }}>{cpi.recent6mAvg > 0 ? "+" : ""}{cpi.recent6mAvg}%</span>
+                      <span className="text-[#333] mx-1">vs prior</span>
+                      {cpi.prior6mAvg > 0 ? "+" : ""}{cpi.prior6mAvg}%
+                    </div>
+                  )}
+                  <div className="text-[10px] text-[#333] mt-1">FRED — {cpi.date.slice(0, 7)}</div>
                 </div>
-                <div className="text-[10px] text-[#555] mt-1">FRED data — {regime.indicators.cpi.date.slice(0, 7)}</div>
-              </div>
-            )}
+              );
+            })()}
           </div>
 
           <div className="p-3 rounded bg-[#111] border border-[#222]">
