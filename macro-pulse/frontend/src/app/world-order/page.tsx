@@ -545,7 +545,7 @@ export default function WorldOrderPage() {
           <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
             <div className="text-xs uppercase tracking-wider mb-2" style={{ color: "#22c55e" }}>Beneficiaries of US retreat</div>
             <p className="text-xs text-[#888] leading-relaxed mb-3">When dominant powers overextend, allies rebuild and rivals expand. Both create opportunities.</p>
-            <Link href="/europe" className="text-xs text-[#555] hover:text-[#888] underline underline-offset-2">European Autonomy →</Link>
+            <span className="text-xs text-[#555]">See European Autonomy section below ↓</span>
           </div>
         </div>
       </section>
