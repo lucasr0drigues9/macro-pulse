@@ -470,22 +470,13 @@ def get_eu_allocation():
     """EU portfolio allocation — mirrors /api/allocation for European UCITS ETFs."""
     try:
         from europe_guidance import EU_REGIME_ETFS
-        from backtest_regime_eu import build_eu_regime_timeline, identify_eu_periods
-        import contextlib, io as _io
         import yfinance as _yf
 
-        # Get current EU regime + period start
-        with contextlib.redirect_stdout(_io.StringIO()):
-            timeline = build_eu_regime_timeline()
-        if not timeline:
-            return {"error": "No EU regime data"}
-
-        regime = timeline[-1]["regime"] if isinstance(timeline[-1], dict) else timeline[-1][1]
+        # Use the live EU regime signal, not the backtest timeline
+        eu_regime_data = get_eu_regime()
+        regime = eu_regime_data.get("confirmed", "Deflation")
+        period_start = eu_regime_data.get("periodStart")
         picks = EU_REGIME_ETFS.get(regime, [])
-
-        # Get period start from identified periods
-        periods = identify_eu_periods(timeline)
-        period_start = periods[-1]["start"] if periods else None
 
         def _eu_etf_return(ticker: str) -> float | None:
             if not period_start:
@@ -609,26 +600,11 @@ def get_eu_transition():
     """EU transition outlook — probabilities and UCITS ETF opportunities per scenario."""
     try:
         from europe_guidance import EU_REGIME_ETFS, EU_TRANSITION_GUIDANCE
-        from backtest_regime_eu import build_eu_regime_timeline
-        import contextlib, io as _io
 
-        with contextlib.redirect_stdout(_io.StringIO()):
-            timeline = build_eu_regime_timeline()
-        if not timeline:
-            return {"error": "No EU regime data"}
-
-        def _get_regime(entry):
-            return entry["regime"] if isinstance(entry, dict) else entry[1]
-
-        regime = _get_regime(timeline[-1])
-
-        # Count months in current regime
-        months = 1
-        for i in range(len(timeline) - 2, -1, -1):
-            if _get_regime(timeline[i]) == regime:
-                months += 1
-            else:
-                break
+        # Use live EU regime signal
+        eu_regime_data = get_eu_regime()
+        regime = eu_regime_data.get("confirmed", "Deflation")
+        months = eu_regime_data.get("consecutiveMonths", 1)
 
         # Build outlook for each possible target regime
         outlook = []
