@@ -262,10 +262,10 @@ export default function EuropePage() {
         <div className="text-center mt-8 mb-6">
           <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">European Regime Tracker</h1>
           <p className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold mb-3">
-            Markets rotate. Europe follows its own cycle.
+            How Europe affects the AI Race
           </p>
-          <p className="text-sm text-[#555] max-w-md mx-auto">
-            Four seasons. Four strategies. One European framework.
+          <p className="text-sm text-[#555] max-w-lg mx-auto">
+            Europe holds the key chokepoint: ASML&apos;s EUV lithography monopoly. No advanced chips exist without it. The EU regime determines defence automation spending (EUAD), energy buildout (ICLN), and whether European supply chain ETFs are discounted.
           </p>
         </div>
 

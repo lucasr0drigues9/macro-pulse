@@ -17,12 +17,12 @@ export default function Welcome() {
   return (
     <section className="px-4 pt-16 pb-8 max-w-5xl mx-auto">
       <div className="text-center mb-10">
-        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">World Order View</h1>
+        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">US Regime Tracker</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          Markets rotate. Your portfolio should too.
+          How the US economy affects the AI Race
         </p>
-        <p className="text-sm text-[#555] max-w-md mx-auto">
-          Four seasons. Four strategies. One framework.
+        <p className="text-sm text-[#555] max-w-lg mx-auto">
+          The US macro regime determines whether AI and robotics ETFs are discounted (buy) or extended (wait). Track the regime to time your AI Race entry.
         </p>
       </div>
 

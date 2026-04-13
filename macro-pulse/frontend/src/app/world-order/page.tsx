@@ -240,38 +240,38 @@ export default function WorldOrderPage() {
       <Nav />
       {/* Header */}
       <section className="px-4 pt-16 pb-8 max-w-5xl mx-auto text-center">
-        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The World Order Monitor</h1>
+        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">World Order</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          The world order is changing. Here&apos;s the investment thesis.
+          The race to automate will decide who leads the next world order
         </p>
         <p className="text-sm text-[#555] max-w-lg mx-auto mb-6">
-          Ray Dalio&apos;s framework applied to the current power transition — tracking who&apos;s declining, who&apos;s rising, and where capital should flow.
+          Empires used to compete with armies and navies. Now they compete with chips, robots, and AI. Whoever automates production fastest — building the most advanced fabs, deploying the most robots, controlling the supply chain — wins. That&apos;s why the AI Race is a geopolitical thesis, not just an investment one.
         </p>
       </section>
 
-      {/* Four Acts */}
+      {/* Three competitors */}
       <section className="px-4 py-4 max-w-5xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           <div className="p-3 rounded-lg border border-[#f9731640] bg-[#f9731610] text-center">
-            <div className="text-[10px] text-[#f97316] uppercase tracking-wider mb-1">Act 1</div>
-            <div className="text-sm font-bold text-[#e0e0e0]">US Decline</div>
-            <div className="text-[10px] text-[#555] mt-1">Stage 5 of 6 · $36.2T debt</div>
+            <div className="text-[10px] text-[#f97316] uppercase tracking-wider mb-1">🇺🇸 United States</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">Terafab + CHIPS Act</div>
+            <div className="text-[10px] text-[#555] mt-1">$52B subsidies · Nvidia/Tesla lead</div>
           </div>
           <div className="p-3 rounded-lg border border-[#ef444440] bg-[#ef444410] text-center">
-            <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-1">Act 2</div>
-            <div className="text-sm font-bold text-[#e0e0e0]">China Rises</div>
-            <div className="text-[10px] text-[#555] mt-1">370 ships · BRICS+ 46%</div>
+            <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-1">🇨🇳 China</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">#1 Robot Installer</div>
+            <div className="text-[10px] text-[#555] mt-1">60% rare earths · 290k robots/yr</div>
           </div>
           <div className="p-3 rounded-lg border border-[#3b82f640] bg-[#3b82f610] text-center">
-            <div className="text-[10px] text-[#3b82f6] uppercase tracking-wider mb-1">Act 3</div>
-            <div className="text-sm font-bold text-[#e0e0e0]">Europe Rebuilds</div>
-            <div className="text-[10px] text-[#555] mt-1">EUAD +820% · 2.5% GDP</div>
+            <div className="text-[10px] text-[#3b82f6] uppercase tracking-wider mb-1">🇪🇺 Europe</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">ASML Monopoly</div>
+            <div className="text-[10px] text-[#555] mt-1">EUV lithography · €43B Chips Act</div>
           </div>
-          <div className="p-3 rounded-lg border border-[#22c55e40] bg-[#22c55e10] text-center">
-            <div className="text-[10px] text-[#22c55e] uppercase tracking-wider mb-1">Act 4</div>
-            <div className="text-sm font-bold text-[#e0e0e0]">Emerging Markets</div>
-            <div className="text-[10px] text-[#555] mt-1">6 swing states profit</div>
-          </div>
+        </div>
+        <div className="p-3 mt-3 rounded bg-[#111] border border-[#222]">
+          <p className="text-[10px] text-[#888] leading-relaxed text-center">
+            <span className="text-[#e0e0e0] font-bold">Why this matters for your portfolio:</span> Every nation pouring money into AI and robotics = structural demand for the same supply chain: chips (SMH), copper (COPX), lithium (LIT), rare earths (REMX). The geopolitical competition <span className="text-[#e0e0e0]">accelerates</span> the AI Race thesis — governments are subsidising the demand.
+          </p>
         </div>
       </section>
 

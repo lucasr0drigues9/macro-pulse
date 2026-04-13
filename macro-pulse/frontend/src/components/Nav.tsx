@@ -5,12 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "Home", enabled: true },
-  { href: "/regimetracker", label: "Regime Tracker", enabled: true },
-  { href: "/world-order", label: "World Order", enabled: true },
+  { href: "/", label: "AI Race", enabled: true },
+  { href: "/regimetracker", label: "US", enabled: true },
   { href: "/europe", label: "Europe", enabled: true },
   { href: "/china", label: "China", enabled: true },
-  { href: "/emerging-markets", label: "Emerging Markets", enabled: true },
+  { href: "/world-order", label: "World Order", enabled: true },
 ];
 
 export default function Nav() {

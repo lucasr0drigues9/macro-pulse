@@ -127,11 +127,14 @@ export default function ChinaPage() {
       <section className="px-4 pt-12 pb-4 max-w-5xl mx-auto">
         <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">China Tracker</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          Official Chinese data is unreliable. This tracker uses proxy indicators to read the real economy.
+          How China affects the AI Race
+        </p>
+        <p className="text-xs text-[#555] max-w-2xl mb-4">
+          China controls 60% of rare earth mining, 90% of processing, and installs more industrial robots than the rest of the world combined. The Chinese regime determines rare earth supply risk (REMX), copper demand (COPX), and whether the AI Race supply chain faces bottlenecks or abundance.
         </p>
         <div className="p-3 rounded bg-[#111] border border-[#222] mt-4">
           <p className="text-xs text-[#555] italic leading-relaxed">
-            The Li Keqiang index — named after the former Premier who reportedly told a US diplomat he ignored official GDP and tracked electricity, rail freight, and bank loans instead — is the foundation of this tracker.
+            Official Chinese data is unreliable. This tracker uses proxy indicators — the Li Keqiang approach: track what moves markets (FXI, copper, CNH) instead of what Beijing reports.
           </p>
         </div>
         <SectionChat
