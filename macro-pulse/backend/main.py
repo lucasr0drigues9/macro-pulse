@@ -1429,6 +1429,102 @@ def get_structural_timing():
     return {"themes": results}
 
 
+@app.get("/api/terafab-timing")
+def get_terafab_timing():
+    """Entry timing signals for Terafab supply chain ETFs."""
+    import requests as _req
+
+    layers = [
+        {"ticker": "AIQ",  "ucits": "WTAI.L",  "layer": "AI & Autonomous",     "color": "#c084fc"},
+        {"ticker": "SMH",  "ucits": "SEMI.L",  "layer": "AI Chips",            "color": "#3b82f6"},
+        {"ticker": "BOTZ", "ucits": "RBOT.L",  "layer": "Robotics",            "color": "#22c55e"},
+        {"ticker": "ARKQ", "ucits": "—",        "layer": "Autonomous Tech",     "color": "#22c55e"},
+        {"ticker": "COPX", "ucits": "COPP.L",  "layer": "Copper & Wiring",     "color": "#e09030"},
+        {"ticker": "LIT",  "ucits": "—",        "layer": "Lithium & Batteries", "color": "#a855f7"},
+        {"ticker": "REMX", "ucits": "—",        "layer": "Rare Earths",         "color": "#ef4444"},
+        {"ticker": "ICLN", "ucits": "INRG.L",  "layer": "Energy & Power",      "color": "#eab308"},
+        {"ticker": "XLU",  "ucits": "IUUS.L",  "layer": "Utilities",           "color": "#eab308"},
+    ]
+
+    results = []
+    for t in layers:
+        variants = [t["ticker"]]
+        if t["ucits"] != "—":
+            variants.append(t["ucits"])
+        for variant in variants:
+            try:
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{variant}"
+                r = _req.get(url, params={"interval": "1d", "range": "1y"},
+                            headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+                data = r.json()["chart"]["result"][0]
+                closes = data["indicators"]["quote"][0]["close"]
+                valid = [c for c in closes if c is not None]
+
+                if len(valid) < 50:
+                    continue
+
+                current = valid[-1]
+                high_52w = max(valid)
+                low_52w = min(valid)
+                ma200 = sum(valid[-200:]) / 200 if len(valid) >= 200 else sum(valid) / len(valid)
+
+                # RSI 14
+                gains, losses = [], []
+                for i in range(-14, 0):
+                    diff = valid[i] - valid[i - 1]
+                    gains.append(max(0, diff))
+                    losses.append(max(0, -diff))
+                avg_gain = sum(gains) / 14
+                avg_loss = sum(losses) / 14
+                rs = avg_gain / avg_loss if avg_loss > 0 else 100
+                rsi = round(100 - (100 / (1 + rs)))
+
+                drawdown = round((current - high_52w) / high_52w * 100, 1)
+                vs_ma200 = round((current - ma200) / ma200 * 100, 1)
+
+                # 1Y return
+                ret_1y = round((current - valid[0]) / valid[0] * 100, 1)
+
+                # Score (same criteria as structural-timing)
+                score = 0
+                if vs_ma200 < -10: score += 3
+                elif vs_ma200 < 0: score += 2
+                elif vs_ma200 < 5: score += 1
+                if rsi < 30: score += 3
+                elif rsi < 40: score += 2
+                elif rsi < 50: score += 1
+                if drawdown < -20: score += 3
+                elif drawdown < -10: score += 2
+                elif drawdown < -5: score += 1
+
+                if score >= 7: signal = "Strong Buy"
+                elif score >= 5: signal = "Buy"
+                elif score >= 3: signal = "Wait for pullback"
+                else: signal = "Extended"
+
+                results.append({
+                    "ticker": variant,
+                    "layer": t["layer"],
+                    "color": t["color"],
+                    "isUcits": variant != t["ticker"],
+                    "price": round(current, 2),
+                    "rsi": rsi,
+                    "vsMa200": vs_ma200,
+                    "high52w": round(high_52w, 2),
+                    "low52w": round(low_52w, 2),
+                    "drawdown": drawdown,
+                    "ret1y": ret_1y,
+                    "score": score,
+                    "signal": signal,
+                })
+            except Exception:
+                continue
+
+    # Sort by score descending (best dips first)
+    results.sort(key=lambda x: (-x["score"], x["drawdown"]))
+    return {"etfs": results}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
