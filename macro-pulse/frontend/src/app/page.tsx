@@ -274,6 +274,91 @@ export default function HomePage() {
 
       <div className="border-t border-[#181818]" />
 
+      {/* ══ STRUCTURAL THEMES — hold through regime changes ══ */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-lg font-bold text-[#e0e0e0] mb-1">Structural Themes</h2>
+        <p className="text-xs text-[#555] mb-4">Secular trends that work across all regimes — hold these alongside your regime picks, not instead of them.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          {[
+            {
+              theme: "Energy Transition",
+              ticker: "COPX",
+              name: "Global X Copper Miners",
+              ucits: "COPP.L",
+              color: "#22c55e",
+              why: "EVs use 3-4x more copper than ICE cars. Grid infrastructure for renewables needs massive copper. Supply constrained — Chile/Peru mines depleting.",
+              catalyst: "IEA projects copper demand doubles by 2035. No substitute exists.",
+              regime: "Works in all regimes — demand is policy-driven, not cyclical.",
+            },
+            {
+              theme: "European Defence",
+              ticker: "EUAD",
+              name: "iShares European Defence UCITS",
+              ucits: "EUAD.L",
+              color: "#6b8e5a",
+              why: "NATO Europe defence spending 1.5% → 2.5%+ GDP. €800B ReArm Europe fund. Rheinmetall, BAE, Leonardo, Saab.",
+              catalyst: "Government commitments locked in for a decade. Hormuz + Ukraine accelerate.",
+              regime: "Works in all regimes — sovereign spending is immune to macro cycles.",
+            },
+            {
+              theme: "De-dollarisation",
+              ticker: "GLD",
+              name: "SPDR Gold",
+              ucits: "SGLD.L",
+              color: "#eab308",
+              why: "Central banks bought 1,037 tonnes in 2023 — record. USD reserves 72% → 58%. BRICS+ building alternatives. Hormuz weaponises dollar system.",
+              catalyst: "Every US sanction accelerates diversification. Trend is multi-decade.",
+              regime: "Strong in Stagflation + Deflation. Moderate in others. Never a bad hold during transitions.",
+            },
+            {
+              theme: "AI Infrastructure",
+              ticker: "ASML",
+              name: "ASML Holding (stock)",
+              ucits: "ASML.AS",
+              color: "#3b82f6",
+              why: "100% global monopoly on EUV lithography. Every advanced chip requires their equipment. EU Chips Act (€43B) backstops.",
+              catalyst: "AI capex cycle is multi-year. TSMC, Samsung, Intel all expanding — all need ASML.",
+              regime: "Best in Goldilocks/Reflation. Single stock risk but no ETF alternative captures this.",
+            },
+          ].map((t) => (
+            <div key={t.ticker} className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: t.color }}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: t.color }}>{t.theme}</div>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg font-bold text-[#e0e0e0]">{t.ticker}</span>
+                <span className="text-[10px] text-[#555]">{t.name}</span>
+              </div>
+              <p className="text-[10px] text-[#888] leading-relaxed mb-2">{t.why}</p>
+              <div className="text-[10px] leading-relaxed mb-1">
+                <span className="text-[#e0e0e0] font-bold">Catalyst: </span>
+                <span className="text-[#555]">{t.catalyst}</span>
+              </div>
+              <div className="text-[10px] leading-relaxed mb-2">
+                <span className="text-[#e0e0e0] font-bold">Regime fit: </span>
+                <span className="text-[#555]">{t.regime}</span>
+              </div>
+              <div className="text-[10px] text-[#333]">UCITS: {t.ucits}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-3 rounded bg-[#111] border border-[#222]">
+          <p className="text-[10px] text-[#888] leading-relaxed">
+            <span className="text-[#e0e0e0] font-bold">Why these are different from regime picks:</span> Regime picks rotate when the economic season changes — you sell XLE when Stagflation ends. Structural themes don&apos;t rotate — the energy transition doesn&apos;t stop because the US enters Goldilocks. Hold both: regime picks for the cycle, structural themes for the decade.
+          </p>
+        </div>
+
+        <SectionChat
+          context="Structural themes on the home page. Four secular trends that work across all regimes: Energy Transition (COPX/COPP.L — copper demand doubles by 2035), European Defence (EUAD — €800B fund), De-dollarisation (GLD/SGLD — central bank gold buying), AI Infrastructure (ASML — EUV monopoly). These complement regime picks, not replace them."
+          label="Ask about structural themes"
+          suggestions={["How do I size structural vs regime positions?", "Which theme has the strongest catalyst right now?", "Are there other structural themes I'm missing?"]}
+        />
+      </section>
+
+      <div className="border-t border-[#181818]" />
+
       {/* ══ GO DEEPER ══ */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-lg font-bold text-[#e0e0e0] mb-4">Go Deeper</h2>
