@@ -857,6 +857,7 @@ def get_china_regime():
         "confidence": confidence,
         "consecutiveMonths": months,
         "periodStart": regime_start,
+        "indicators": indicators if indicators else None,
     }
 
 
