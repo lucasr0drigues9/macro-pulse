@@ -20,6 +20,19 @@
   --accent-blue-dim: rgba(59, 130, 246, 0.15);
 }
 
+html {
+  /* Scale everything ~12% larger on desktop for readability.
+     Tailwind rem-based sizes (text-xs, text-sm, text-lg) scale automatically.
+     Fixed px sizes below are overridden to scale proportionally. */
+  font-size: 18px;
+}
+
+@media (max-width: 640px) {
+  html {
+    font-size: 16px; /* Mobile stays at default — already fills the screen */
+  }
+}
+
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -28,6 +41,15 @@ body {
 
 * {
   box-sizing: border-box;
+}
+
+/* Scale fixed-px Tailwind classes proportionally with root font-size.
+   At 18px root: 10px → 11px, 9px → 10px, 8px → 9px.
+   This keeps the visual hierarchy intact while making everything readable. */
+@media (min-width: 641px) {
+  .text-\[10px\] { font-size: 0.6875rem !important; } /* ~12.4px at 18px root */
+  .text-\[9px\]  { font-size: 0.625rem !important; }  /* ~11.3px */
+  .text-\[8px\]  { font-size: 0.5625rem !important; } /* ~10.1px */
 }
 
 ::selection {
