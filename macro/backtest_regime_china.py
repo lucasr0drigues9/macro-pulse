@@ -200,6 +200,7 @@ def build_china_backtest():
             "aiPicksReturn": ai_picks_return,
             "aiDiffersFromProxy": geo_override is not None and geo_override != regime,
             "aiCorrect": ai_correct,
+            "regimeETFs": CHINA_BACKTEST_ETFS,
         })
 
     return periods

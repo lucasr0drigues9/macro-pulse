@@ -70,7 +70,7 @@ type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; g
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
-type BacktestEntry = { regime: string; start: string; end: string; months: number; current?: boolean; signalStrength?: string; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null; aiRegime?: string; aiPicksReturn?: number | null; aiDiffersFromProxy?: boolean; aiCorrect?: boolean | null };
+type BacktestEntry = { regime: string; start: string; end: string; months: number; current?: boolean; signalStrength?: string; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null; aiRegime?: string; aiPicksReturn?: number | null; aiDiffersFromProxy?: boolean; aiCorrect?: boolean | null; regimeETFs?: Record<string, string[]> };
 type ChinaBacktest = { totalRegimes: number; yearRange: string; timeline: BacktestEntry[]; regimeBreakdown: Record<string, number> };
 
 export default function ChinaPage() {
@@ -501,6 +501,7 @@ export default function ChinaPage() {
                           const rColor = REGIME_COLORS[reg] || "#555";
                           const isBest = p.bestRegime === reg;
                           const isCalled = p.regime === reg;
+                          const etfs = p.regimeETFs?.[reg] || [];
                           return (
                             <div key={reg} className="p-1.5 rounded" style={{
                               backgroundColor: isBest ? "#22c55e10" : "#0a0a0a",
@@ -514,6 +515,9 @@ export default function ChinaPage() {
                               <div className="text-xs font-bold" style={{ color: ret == null ? "#333" : ret >= 0 ? "#22c55e" : "#ef4444" }}>
                                 {ret == null ? "—" : `${ret >= 0 ? "+" : ""}${ret.toFixed(1)}%`}
                               </div>
+                              {etfs.length > 0 && (
+                                <div className="text-[8px] text-[#555] mt-0.5">{etfs.join(" · ")}</div>
+                              )}
                             </div>
                           );
                         })}
