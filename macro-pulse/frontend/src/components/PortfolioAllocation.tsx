@@ -9,6 +9,7 @@ type Overweight = {
   ticker: string; name: string; weight: number; conviction: number;
   priceAssessment: string; rationale: string; aiReason?: string;
   timing?: { price: number; rsi: number; score: number } | null;
+  returnSinceRegime?: number | null;
 };
 type Underweight = { ticker: string; name: string; rationale: string };
 type AllocData = {
@@ -92,7 +93,14 @@ export default function PortfolioAllocation() {
               <div key={etf.ticker} className="p-3 rounded bg-[#111] border border-[#181818]">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-bold text-sm">{etf.ticker} <span className="text-[#555] font-normal text-xs">{etf.name}</span></span>
-                  <span className="text-xs text-[#888]">{etf.weight}%</span>
+                  <div className="flex items-center gap-2">
+                    {typeof etf.returnSinceRegime === "number" && (
+                      <span className={`text-sm font-bold ${etf.returnSinceRegime >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                        {etf.returnSinceRegime >= 0 ? "+" : ""}{etf.returnSinceRegime}%
+                      </span>
+                    )}
+                    <span className="text-xs text-[#888]">{etf.weight}%</span>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 mb-1">
                   <AssessmentBadge assessment={etf.priceAssessment} />

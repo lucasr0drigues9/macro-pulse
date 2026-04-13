@@ -402,7 +402,7 @@ export default function EuropePage() {
   const [europeInterpretation, setEuropeInterpretation] = useState<string | null>(null);
 
   // EU guidance layer state
-  const [euAllocation, setEuAllocation] = useState<{ regime: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string }[]; underweight: { ticker: string; name: string; reason: string }[] } | null>(null);
+  const [euAllocation, setEuAllocation] = useState<{ regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] } | null>(null);
   const [euTriggers, setEuTriggers] = useState<{ name: string; current: string; threshold: string; status: string; action: string; urgency: string }[]>([]);
   const [euTransition, setEuTransition] = useState<{ currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] } | null>(null);
   const [euCalendar, setEuCalendar] = useState<{ name: string; source: string; date?: string; day?: string; impact: string; implication: string }[]>([]);
@@ -939,7 +939,14 @@ export default function EuropePage() {
                   <span className="text-xs text-[#888]">{etf.name}</span>
                   <p className="text-[10px] text-[#555] mt-0.5">{etf.rationale}</p>
                 </div>
-                <span className="text-xs text-[#555] shrink-0">Conviction: {etf.conviction}</span>
+                <div className="flex items-center gap-3 shrink-0">
+                  {typeof etf.returnSinceRegime === "number" && (
+                    <span className={`text-sm font-bold ${etf.returnSinceRegime >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                      {etf.returnSinceRegime >= 0 ? "+" : ""}{etf.returnSinceRegime.toFixed(1)}%
+                    </span>
+                  )}
+                  <span className="text-[10px] text-[#555]">Conv: {etf.conviction}</span>
+                </div>
               </div>
             ))}
             <div className="p-3 rounded-lg bg-[#111] border border-[#222] flex items-center gap-2">

@@ -470,22 +470,37 @@ def get_eu_allocation():
     """EU portfolio allocation — mirrors /api/allocation for European UCITS ETFs."""
     try:
         from europe_guidance import EU_REGIME_ETFS
-        from backtest_regime_eu import build_eu_regime_timeline
+        from backtest_regime_eu import build_eu_regime_timeline, identify_eu_periods
         import contextlib, io as _io
+        import yfinance as _yf
 
-        # Get current EU regime
+        # Get current EU regime + period start
         with contextlib.redirect_stdout(_io.StringIO()):
             timeline = build_eu_regime_timeline()
         if not timeline:
             return {"error": "No EU regime data"}
 
-        # Current regime is the last entry
         regime = timeline[-1]["regime"] if isinstance(timeline[-1], dict) else timeline[-1][1]
         picks = EU_REGIME_ETFS.get(regime, [])
 
+        # Get period start from identified periods
+        periods = identify_eu_periods(timeline)
+        period_start = periods[-1]["start"] if periods else None
+
+        def _eu_etf_return(ticker: str) -> float | None:
+            if not period_start:
+                return None
+            try:
+                h = _yf.Ticker(ticker).history(start=period_start)
+                if len(h) >= 2:
+                    return round((float(h["Close"].iloc[-1]) - float(h["Close"].iloc[0])) / float(h["Close"].iloc[0]) * 100, 1)
+            except Exception:
+                pass
+            return None
+
         # Build allocation weights from convictions
         total_conviction = sum(e["conviction"] for e in picks) or 1
-        cash_target = 15  # Active mode default
+        cash_target = 15
 
         overweight = []
         for etf in picks:
@@ -497,9 +512,9 @@ def get_eu_allocation():
                 "conviction": etf["conviction"],
                 "rationale": etf["note"],
                 "priceAssessment": "Fairly valued",
+                "returnSinceRegime": _eu_etf_return(etf["ticker"]),
             })
 
-        # Build underweight (ETFs from other regimes not in current picks)
         pick_tickers = {e["ticker"] for e in picks}
         underweight = []
         for other_regime, other_etfs in EU_REGIME_ETFS.items():
@@ -513,10 +528,12 @@ def get_eu_allocation():
                         "ticker": etf["ticker"],
                         "name": etf["name"],
                         "reason": f"Underperforms in {regime} — better suited for {other_regime}.",
+                        "returnSinceRegime": _eu_etf_return(etf["ticker"]),
                     })
 
         return {
             "regime": regime,
+            "periodStart": period_start,
             "cashTarget": cash_target,
             "overweight": overweight,
             "underweight": underweight,
@@ -1438,10 +1455,25 @@ def get_allocation(mode: str = "active"):
     from fred import get_all
     from quadrant import get_quadrant
 
+    from macro_kelly import get_etf_price
+    import yfinance as _yf
+
     mode_cfg = MODE_CONFIG.get(mode, MODE_CONFIG["active"])
     regime, fred_regime, lag_warning = get_current_regime()
     picks = REGIME_ETFS.get(regime, [])
     pick_tickers = {e["ticker"] for e in picks}
+
+    # Get regime start date for return calculation
+    regime_start = _get_regime_start()
+
+    def _etf_return(ticker: str) -> float | None:
+        try:
+            h = _yf.Ticker(ticker).history(start=regime_start)
+            if len(h) >= 2:
+                return round((float(h["Close"].iloc[-1]) - float(h["Close"].iloc[0])) / float(h["Close"].iloc[0]) * 100, 1)
+        except Exception:
+            pass
+        return None
 
     # AI synthesis data for reasoning
     dyn_convictions, cash_pct = get_dynamic_convictions()
@@ -1517,6 +1549,7 @@ def get_allocation(mode: str = "active"):
             "priceAssessment": assessment,
             "rationale": etf["note"],
             "timing": price_info,
+            "returnSinceRegime": _etf_return(ticker),
         }
         if ai_reasons.get(ticker):
             entry["aiReason"] = ai_reasons[ticker]
