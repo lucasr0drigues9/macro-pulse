@@ -8,63 +8,12 @@ import WorldOrderPosition from "@/components/WorldOrderPosition";
 import PeriodChat from "@/components/PeriodChat";
 import { apiUrl } from "@/lib/api";
 import {
-  ACCENT, proxyIndicators, strategicCards,
-  type ProxyIndicator,
+  ACCENT, strategicCards,
 } from "@/lib/chinaData";
 
 const REGIME_COLORS: Record<string, string> = {
   Stagflation: "#ef4444", Goldilocks: "#22c55e", Reflation: "#eab308", Deflation: "#3b82f6",
 };
-
-// ── Sparkline ──
-function Sparkline({ data, color }: { data: { month: string; value: number }[]; color: string }) {
-  const w = 200, h = 40, px = 4, py = 4;
-  const ys = data.map((d) => d.value);
-  const yMin = Math.min(...ys), yMax = Math.max(...ys);
-  const range = yMax - yMin || 1;
-  const points = data.map((d, i) => {
-    const x = px + (i / (data.length - 1)) * (w - px * 2);
-    const y = py + (1 - (d.value - yMin) / range) * (h - py * 2);
-    return `${x},${y}`;
-  }).join(" ");
-  return (
-    <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-10">
-      <polyline points={points} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-      {data.length > 0 && (() => {
-        const last = data[data.length - 1];
-        const x = w - px;
-        const y = py + (1 - (last.value - yMin) / range) * (h - py * 2);
-        return <circle cx={x} cy={y} r="2.5" fill={color} />;
-      })()}
-    </svg>
-  );
-}
-
-// ── Proxy Indicator Card ──
-function IndicatorCard({ ind }: { ind: ProxyIndicator }) {
-  const [open, setOpen] = useState(false);
-  const trendColor = ind.trend === "rising" ? "#22c55e" : ind.trend === "declining" ? "#ef4444" : "#eab308";
-  const sparkColor = ind.signal === "growth" ? "#3b82f6" : "#eab308";
-  return (
-    <div className="rounded-lg bg-[#111] border border-[#222] overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full p-4 text-left hover:bg-[#151515] transition-colors">
-        <div className="flex items-center justify-between mb-1">
-          <span className="text-sm font-bold text-[#e0e0e0]">{ind.name}</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color: trendColor, backgroundColor: trendColor + "20" }}>{ind.trend}</span>
-        </div>
-        <div className="text-xs text-[#555] mb-2">{ind.subtitle}</div>
-        <div className="text-lg font-bold" style={{ color: ACCENT }}>{ind.currentValue}</div>
-        <Sparkline data={ind.history} color={sparkColor} />
-      </button>
-      {open && (
-        <div className="px-4 pb-4 border-t border-[#222] text-xs">
-          <p className="text-[#888] mt-3 leading-relaxed">{ind.whyItMatters}</p>
-          <p className="text-[#333] mt-2">Source: {ind.source}</p>
-        </div>
-      )}
-    </div>
-  );
-}
 
 const chinaUcitsMapping = [
   { us: "GLD", ucits: "SGLD.L", name: "Invesco Physical Gold ETC", exchange: "London", regimes: "Stagflation, Deflation" },
@@ -375,24 +324,6 @@ export default function ChinaPage() {
           </div>
         </section>
       )}
-
-      <div className="border-t border-[#181818]" />
-
-      {/* Six Static Proxy Indicators — historical context */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Proxy Indicator History</h2>
-        <p className="text-xs text-[#555] mb-6">Longer-term trends from the Li Keqiang indicators. These are updated periodically, not live. Click for details.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {proxyIndicators.map((ind) => (
-            <IndicatorCard key={ind.name} ind={ind} />
-          ))}
-        </div>
-        <SectionChat
-          context="Six proxy indicators for China's real economy: Li Keqiang Index, Caixin Manufacturing PMI, Port Throughput, Copper Imports, New Home Prices, and Producer Price Index (PPI). Each is harder to manipulate than official GDP."
-          label="Ask about the indicators"
-          suggestions={["Which indicator is most reliable?", "Why is PPI so negative?", "What does the port data tell us?"]}
-        />
-      </section>
 
       <div className="border-t border-[#181818]" />
 
