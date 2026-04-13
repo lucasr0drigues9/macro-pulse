@@ -552,6 +552,80 @@ export default function WorldOrderPage() {
 
       <div className="border-t border-[#181818]" />
 
+      {/* ══ EUROPEAN AUTONOMY — The emerging third pole ══ */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Emerging Third Pole</h2>
+        <p className="text-xl font-bold text-[#e0e0e0] mb-1">European Strategic Autonomy</p>
+        <p className="text-xs text-[#555] mb-6">Europe is structurally building independence in defence, energy, and technology. The companies enabling this have outperformed SPY in every sector since Russia invaded Ukraine.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#6b8e5a" }}>
+            <div className="text-xs font-bold text-[#6b8e5a] uppercase tracking-wider mb-2">Defence</div>
+            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">EUAD</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">iShares European Defence UCITS ETF — pure-play European rearmament. Rheinmetall, BAE, Leonardo, Saab. {"\u20AC"}800B ReArm Europe fund.</p>
+            <div className="text-xs text-[#22c55e]">Works in all regimes — policy-driven spending</div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#e09030" }}>
+            <div className="text-xs font-bold text-[#e09030] uppercase tracking-wider mb-2">Energy Independence</div>
+            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">IOGP</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">iShares Oil &amp; Gas UCITS — Equinor, TotalEnergies, Shell. Russian gas share fell from 40% to 8%.</p>
+            <div className="text-xs text-[#ef4444]">Stagflation pick + structural energy thesis</div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#3b82f6" }}>
+            <div className="text-xs font-bold text-[#3b82f6] uppercase tracking-wider mb-2">Technology Sovereignty</div>
+            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">ASML</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">100% global monopoly on EUV lithography. Every advanced chip requires their equipment. The EU Chips Act ({"\u20AC"}43B) backstops this.</p>
+            <div className="text-xs text-[#eab308]">Single stock risk — but no ETF alternative exists</div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#a855f7" }}>
+            <div className="text-xs font-bold text-[#a855f7] uppercase tracking-wider mb-2">Critical Materials</div>
+            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">NHY</div>
+            <p className="text-xs text-[#888] leading-relaxed mb-2">Norsk Hydro — lowest-carbon aluminium globally. Critical for defence, aerospace, EVs. Norwegian, NOK denominated, Nordnet accessible.</p>
+            <div className="text-xs text-[#22c55e]">Stagflation + Reflation pick</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">Defence spending</div>
+            <div className="text-lg font-bold text-[#e0e0e0]">1.5% → 2.5%+</div>
+            <div className="text-[10px] text-[#555]">GDP commitment</div>
+          </div>
+          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">Russian gas</div>
+            <div className="text-lg font-bold text-[#e0e0e0]">40% → 8%</div>
+            <div className="text-[10px] text-[#555]">of EU imports</div>
+          </div>
+          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">EUAD since launch</div>
+            <div className="text-lg font-bold text-[#22c55e]">+820%</div>
+            <div className="text-[10px] text-[#555]">Rheinmetall</div>
+          </div>
+          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">EU Chips Act</div>
+            <div className="text-lg font-bold text-[#e0e0e0]">{"\u20AC"}43B</div>
+            <div className="text-[10px] text-[#555]">semiconductor investment</div>
+          </div>
+        </div>
+
+        <div className="text-center">
+          <Link href="/europe" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+            Full European tracker — regime, allocation, 25+ companies →
+          </Link>
+        </div>
+
+        <SectionChat
+          context="European strategic autonomy section within the World Order Monitor. Four key positions: EUAD (defence), IOGP (energy), ASML (technology), NHY (materials). Europe building independence forced by Ukraine war + Hormuz crisis. Defence spending 1.5→2.5%+ GDP. Russian gas 40→8%."
+          label="Ask about European autonomy"
+          suggestions={["Why is EUAD up 820%?", "Does European autonomy work in all regimes?", "How does Hormuz accelerate this?"]}
+        />
+      </section>
+
+      <div className="border-t border-[#181818]" />
+
       <WorldOrderPosition
         title="The World Order Transition"
         subtitle="Three forces reshaping global power — and where capital flows as a result"
