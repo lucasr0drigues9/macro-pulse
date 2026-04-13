@@ -373,16 +373,48 @@ export default function WorldOrderPage() {
       {/* Debt */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Financial Burden</h2>
-        <p className="text-xs text-[#555] mb-6">Wars are financed by debt. Debt devalues currency. Dalio&apos;s principle: sell debt, buy gold.</p>
-        <div className="space-y-6">
-          <LineChart data={debtTimeline} xKey="year" yKey="debt" label="US National Debt ($T) — 2000 to 2026" color={ACCENT} />
-          <LineChart data={debtTimeline} xKey="year" yKey="gdpPct" label="Debt as % of GDP — 2000 to 2026" color="#ef4444"
-            thresholds={[{ value: 80, label: "80% warning", color: "#eab308" }, { value: 100, label: "100% critical", color: "#ef4444" }]} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <LineChart data={debtTimeline} xKey="year" yKey="usdReserve" label="USD Share of Global Reserves (%)" color="#3b82f6" />
-            <LineChart data={debtTimeline} xKey="year" yKey="goldPrice" label="Gold Price ($/oz) — inverse of USD confidence" color="#eab308" />
+        <p className="text-xs text-[#555] mb-4">Wars are financed by debt. Debt devalues currency. Dalio&apos;s principle: sell debt, buy gold.</p>
+
+        {/* Key numbers */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          <div className="p-3 rounded-lg bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">National Debt</div>
+            <div className="text-xl font-bold" style={{ color: ACCENT }}>$36.2T</div>
+            <div className="text-[10px] text-[#555]">125% of GDP</div>
+          </div>
+          <div className="p-3 rounded-lg bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">Interest vs Defence</div>
+            <div className="text-xl font-bold text-[#ef4444]">Interest wins</div>
+            <div className="text-[10px] text-[#555]">First time in 2024</div>
+          </div>
+          <div className="p-3 rounded-lg bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">USD Reserves</div>
+            <div className="text-xl font-bold text-[#3b82f6]">72% → 58%</div>
+            <div className="text-[10px] text-[#555]">Since 2000</div>
+          </div>
+          <div className="p-3 rounded-lg bg-[#111] border border-[#222] text-center">
+            <div className="text-xs text-[#555]">CBO Projection</div>
+            <div className="text-xl font-bold text-[#ef4444]">166%</div>
+            <div className="text-[10px] text-[#555]">Debt/GDP by 2054</div>
           </div>
         </div>
+
+        {/* Charts — expandable */}
+        <details className="mb-2">
+          <summary className="text-xs text-[#555] cursor-pointer hover:text-[#888]">View historical charts ↓</summary>
+          <div className="mt-4 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <LineChart data={debtTimeline} xKey="year" yKey="debt" label="National Debt ($T)" color={ACCENT} />
+              <LineChart data={debtTimeline} xKey="year" yKey="gdpPct" label="Debt as % of GDP" color="#ef4444"
+                thresholds={[{ value: 80, label: "80%", color: "#eab308" }, { value: 100, label: "100%", color: "#ef4444" }]} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <LineChart data={debtTimeline} xKey="year" yKey="usdReserve" label="USD Reserve Share (%)" color="#3b82f6" />
+              <LineChart data={debtTimeline} xKey="year" yKey="goldPrice" label="Gold Price ($/oz)" color="#eab308" />
+            </div>
+          </div>
+        </details>
+
         <SectionChat
           context="US debt trajectory. $36.2T (125% GDP). Interest exceeded defence spending in 2024. CBO projects 166% by 2054."
           label="Ask about the debt"
