@@ -217,8 +217,8 @@ export default function ChinaPage() {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
             {[
-              { key: "copper" as const, label: "Copper (Growth)", subtitle: "China consumes 50%+ of global copper", prefix: "$" },
-              { key: "fxi" as const, label: "FXI (Sentiment)", subtitle: "Market's real-time vote on China", prefix: "$" },
+              { key: "copper" as const, label: "Copper (Growth · 30%)", subtitle: "Diluted by energy transition + Hormuz premium", prefix: "$" },
+              { key: "fxi" as const, label: "FXI (Growth · 70%)", subtitle: "Purest real-time signal on China", prefix: "$" },
             ].map(({ key, label, subtitle, prefix }) => {
               const ind = regime.indicators?.[key] as { value: number; momentum3m: number; recent6mAvg?: number; prior6mAvg?: number; trend?: string; history?: { date: string; value: number }[] } | undefined;
               if (!ind) return null;
@@ -319,7 +319,7 @@ export default function ChinaPage() {
 
           <div className="p-3 rounded bg-[#111] border border-[#222]">
             <p className="text-[10px] text-[#888] leading-relaxed">
-              <span className="text-[#e0e0e0] font-bold">How this drives the regime:</span> Growth is measured by copper demand (3-month momentum) combined with FXI equity sentiment. Inflation uses FRED China CPI (monthly, lagged but real). Yuan direction confirms: weakening = capital flight (bearish), strengthening = confidence (bullish). All data from public markets — no reliance on Chinese official statistics.
+              <span className="text-[#e0e0e0] font-bold">How this drives the regime:</span> Growth is measured primarily by FXI equity sentiment (70% weight) supplemented by copper demand (30% weight). Copper is increasingly driven by the global energy transition and Hormuz premium rather than Chinese demand alone — FXI is a purer China signal. Inflation uses FRED China CPI (monthly, lagged but real). Yuan direction confirms: weakening = capital flight (bearish), strengthening = confidence (bullish). All data from public markets — no reliance on Chinese official statistics.
             </p>
           </div>
         </section>

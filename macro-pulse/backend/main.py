@@ -826,7 +826,10 @@ def get_china_regime():
         # Compute regime from live data
         # Growth: average of copper + FXI momentum. Both negative = falling, both positive = rising
         if copper_mom is not None and fxi_mom is not None:
-            growth_composite = (copper_mom + fxi_mom) / 2
+            # FXI weighted 70% (pure China equity sentiment)
+            # Copper weighted 30% (China demand proxy, but increasingly driven by
+            # energy transition and global commodity premium — less China-specific)
+            growth_composite = (fxi_mom * 0.7) + (copper_mom * 0.3)
             growth = "rising" if growth_composite > 0 else "falling"
             confidence = "Medium" if abs(growth_composite) > 3 else "Low"
         elif copper_mom is not None:
