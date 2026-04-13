@@ -269,7 +269,7 @@ export default function WorldOrderPage() {
           </div>
           <div className="p-3 rounded-lg border border-[#22c55e40] bg-[#22c55e10] text-center">
             <div className="text-[10px] text-[#22c55e] uppercase tracking-wider mb-1">Act 4</div>
-            <div className="text-sm font-bold text-[#e0e0e0]">EM Benefits</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">Emerging Markets</div>
             <div className="text-[10px] text-[#555] mt-1">6 swing states profit</div>
           </div>
         </div>
@@ -710,13 +710,13 @@ export default function WorldOrderPage() {
             <span className="text-[#888] font-bold">Asian Tigers (1950-1990):</span> South Korea, Taiwan, Singapore, and Hong Kong exploited Cold War competition for investment from both blocs. US poured capital into Asian allies to counter communism. Annual GDP growth averaged 8%+ for three decades. Today&apos;s swing states are positioned for the same dynamic.
           </div>
           <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
-            <span className="text-[#888] font-bold">Hormuz multiplier:</span> The US closure of Hormuz amplifies EM commodity leverage. Middle Eastern and African energy exporters become even more critical as alternative supply routes. Countries with overland pipeline access to China (Central Asia, Myanmar) gain strategic importance overnight.
+            <span className="text-[#888] font-bold">Hormuz multiplier:</span> The US closure of Hormuz amplifies emerging market commodity leverage. Middle Eastern and African energy exporters become even more critical as alternative supply routes. Countries with overland pipeline access to China (Central Asia, Myanmar) gain strategic importance overnight.
           </div>
         </div>
 
         <div className="text-center">
           <Link href="/emerging-markets" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
-            Full EM tracker — 6 countries, ETFs, Dalio determinants →
+            Full emerging markets tracker — 6 countries, ETFs, Dalio determinants →
           </Link>
         </div>
 
