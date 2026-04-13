@@ -66,6 +66,70 @@ function IndicatorCard({ ind }: { ind: ProxyIndicator }) {
   );
 }
 
+const chinaUcitsMapping = [
+  { us: "GLD", ucits: "SGLD.L", name: "Invesco Physical Gold ETC", exchange: "London", regimes: "Stagflation, Deflation" },
+  { us: "DBC", ucits: "EXXY.DE", name: "iShares Diversified Commodity Swap UCITS", exchange: "Xetra", regimes: "Stagflation" },
+  { us: "EWH", ucits: "XCHA.L", name: "Xtrackers FTSE China 50 UCITS (closest proxy)", exchange: "London", regimes: "Stagflation" },
+  { us: "FXI", ucits: "XCHA.L", name: "Xtrackers FTSE China 50 UCITS", exchange: "London", regimes: "Reflation, Goldilocks" },
+  { us: "CHIQ", ucits: "XCHA.L", name: "Xtrackers FTSE China 50 UCITS (no direct consumer UCITS)", exchange: "London", regimes: "Reflation" },
+  { us: "COPX", ucits: "COPP.L", name: "Global X Copper Miners UCITS", exchange: "London", regimes: "Reflation" },
+  { us: "KWEB", ucits: "KWEB.L", name: "KraneShares CSI China Internet UCITS", exchange: "London", regimes: "Goldilocks" },
+  { us: "AAXJ", ucits: "EIMI.L", name: "iShares MSCI EM IMI UCITS", exchange: "London", regimes: "Goldilocks" },
+  { us: "TLT", ucits: "DTLA.L", name: "iShares USD Treasury Bond 20+yr UCITS", exchange: "London", regimes: "Deflation" },
+  { us: "AGG", ucits: "IUAA.L", name: "iShares US Aggregate Bond UCITS", exchange: "London", regimes: "Deflation" },
+];
+
+function ChinaUcitsMapping() {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="mt-6">
+      <button onClick={() => setExpanded(!expanded)} className="w-full text-left">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-[#e0e0e0]">European Investors — UCITS Equivalents</h3>
+            <p className="text-xs text-[#555]">EU/EEA regulated alternatives available on Nordnet and other European brokers</p>
+          </div>
+          <span className="text-[#555] text-sm">{expanded ? "−" : "+"}</span>
+        </div>
+      </button>
+      {expanded && (
+        <div className="mt-4">
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-[#555] uppercase tracking-wider border-b border-[#222]">
+                  <th className="text-left py-2 pr-2">US ETF</th>
+                  <th className="text-left py-2 pr-2">UCITS</th>
+                  <th className="text-left py-2 pr-2 hidden sm:table-cell">Name</th>
+                  <th className="text-left py-2">Regimes</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chinaUcitsMapping.map((row) => (
+                  <tr key={`${row.us}-${row.ucits}`} className="border-b border-[#181818]">
+                    <td className="py-2 pr-2 text-[#e0e0e0] font-bold">{row.us}</td>
+                    <td className="py-2 pr-2 text-[#eab308]">{row.ucits}</td>
+                    <td className="py-2 pr-2 text-[#888] hidden sm:table-cell">{row.name}</td>
+                    <td className="py-2 text-[#555]">{row.regimes}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 space-y-1">
+            <p className="text-xs text-[#555]">
+              No direct UCITS equivalent for CHIQ (China Consumer). Use <span className="text-[#eab308]">XCHA.L</span> (China 50) as the closest alternative — it holds the largest Chinese companies including consumer names.
+            </p>
+            <p className="text-xs text-[#555]">
+              For ASK accounts on Nordnet, prefer accumulating (Acc) versions to avoid dividend tax drag. All listed ETFs are available on London Stock Exchange (.L) or Xetra (.DE).
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean; growth: string; inflation: string; confidence: string; consecutiveMonths: number; periodStart?: string };
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
@@ -266,6 +330,9 @@ export default function ChinaPage() {
             label="Ask about China allocation"
             suggestions={["Why so much cash?", "Is FXI too risky right now?", "What about BABA directly?"]}
           />
+
+          {/* UCITS Mapping */}
+          <ChinaUcitsMapping />
         </section>
       )}
 
