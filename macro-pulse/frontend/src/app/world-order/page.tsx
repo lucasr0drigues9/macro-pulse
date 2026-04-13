@@ -242,159 +242,66 @@ export default function WorldOrderPage() {
       <section className="px-4 pt-16 pb-8 max-w-5xl mx-auto text-center">
         <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The World Order Monitor</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          Which countries are winning — and where the opportunities are.
+          The world order is changing. Here&apos;s the investment thesis.
         </p>
-        <p className="text-sm text-[#555] max-w-lg mx-auto mb-4">
-          Tracking alliance shifts, power scores, and investment implications across 10 major economies.
-        </p>
-        <p className="text-[10px] text-[#333]">
-          Framework based on Ray Dalio&apos;s Principles for Dealing with the Changing World Order.
+        <p className="text-sm text-[#555] max-w-lg mx-auto mb-6">
+          Ray Dalio&apos;s framework applied to the current power transition — tracking who&apos;s declining, who&apos;s rising, and where capital should flow.
         </p>
       </section>
 
-      {/* Alliance Tracker */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Which Side Is Each Country On?</h2>
-        <p className="text-xs text-[#555] mb-4">Click any country to see its full power scorecard and investment signal.</p>
+      {/* Four Acts */}
+      <section className="px-4 py-4 max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-lg border border-[#f9731640] bg-[#f9731610] text-center">
+            <div className="text-[10px] text-[#f97316] uppercase tracking-wider mb-1">Act 1</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">US Decline</div>
+            <div className="text-[10px] text-[#555] mt-1">Stage 5 of 6 · $36.2T debt</div>
+          </div>
+          <div className="p-3 rounded-lg border border-[#ef444440] bg-[#ef444410] text-center">
+            <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-1">Act 2</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">China Rises</div>
+            <div className="text-[10px] text-[#555] mt-1">370 ships · BRICS+ 46%</div>
+          </div>
+          <div className="p-3 rounded-lg border border-[#3b82f640] bg-[#3b82f610] text-center">
+            <div className="text-[10px] text-[#3b82f6] uppercase tracking-wider mb-1">Act 3</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">Europe Rebuilds</div>
+            <div className="text-[10px] text-[#555] mt-1">EUAD +820% · 2.5% GDP</div>
+          </div>
+          <div className="p-3 rounded-lg border border-[#22c55e40] bg-[#22c55e10] text-center">
+            <div className="text-[10px] text-[#22c55e] uppercase tracking-wider mb-1">Act 4</div>
+            <div className="text-sm font-bold text-[#e0e0e0]">EM Benefits</div>
+            <div className="text-[10px] text-[#555] mt-1">6 swing states profit</div>
+          </div>
+        </div>
+      </section>
 
-        {/* Legend */}
-        <div className="flex gap-4 mb-4">
-          {(["us_nato", "china_russia", "neutral"] as AllianceCamp[]).map((camp) => (
-            <div key={camp} className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CAMP_COLORS[camp] }} />
-              <span className="text-xs text-[#888]">{CAMP_LABELS[camp]}</span>
+      <div className="border-t border-[#181818]" />
+
+      {/* Big Cycle */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Where the US Sits in the Big Cycle</h2>
+        <p className="text-xs text-[#555] mb-6">Dalio&apos;s six stages of empire — applied to the United States</p>
+        <div className="space-y-2 mb-6">
+          {bigCycleStages.map((s) => (
+            <div key={s.stage} className="flex items-center gap-3 p-3 rounded-lg border"
+              style={{ backgroundColor: s.active ? ACCENT + "15" : "#111", borderColor: s.active ? ACCENT + "40" : "#222" }}>
+              <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                style={{ backgroundColor: s.active ? ACCENT : "#222", color: s.active ? "#000" : "#555" }}>{s.stage}</span>
+              <div className="flex-1">
+                <span className={`text-sm font-bold ${s.active ? "text-[#e0e0e0]" : "text-[#555]"}`}>{s.label}</span>
+                <span className="text-xs text-[#333] ml-2">{s.period}</span>
+              </div>
+              {s.active && <span className="text-xs font-bold" style={{ color: ACCENT }}>← NOW</span>}
             </div>
           ))}
         </div>
-
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-[#555] uppercase tracking-wider border-b border-[#222]">
-                <th className="text-left py-2 pr-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("name")}>
-                  Country{arrow("name")}
-                </th>
-                <th className="text-center py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("camp")}>
-                  Camp{arrow("camp")}
-                </th>
-                <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("usAlign")}>
-                  US%{arrow("usAlign")}
-                </th>
-                <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("cnAlign")}>
-                  CN%{arrow("cnAlign")}
-                </th>
-                <th className="text-left py-2 px-2 hidden sm:table-cell">Trade Partner</th>
-                <th className="text-center py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("stability")}>
-                  Stability{arrow("stability")}
-                </th>
-                <th className="text-left py-2 px-2 hidden sm:table-cell">Trend</th>
-                <th className="text-right py-2 pl-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("score")}>
-                  Score{arrow("score")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.flatMap((c) => {
-                const color = CAMP_COLORS[c.allianceCamp];
-                const isExpanded = expanded === c.code;
-                const score = getOverallScore(c.scores);
-                const rows = [
-                  <tr
-                    key={c.code}
-                    className="border-b border-[#181818] hover:bg-[#111] cursor-pointer transition-colors"
-                    onClick={() => setExpanded(isExpanded ? null : c.code)}
-                  >
-                    <td className="py-3 pr-2">
-                      <span className="font-bold text-[#e0e0e0]">{c.name}</span>
-                      <span className="text-[#333] ml-1">{isExpanded ? "▲" : "▼"}</span>
-                    </td>
-                    <td className="text-center py-3 px-2">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ color, backgroundColor: color + "20" }}>
-                        {CAMP_LABELS[c.allianceCamp]}
-                      </span>
-                    </td>
-                    <td className="text-right py-3 px-2 text-[#3b82f6]">{c.unAlignmentUS}%</td>
-                    <td className="text-right py-3 px-2 text-[#ef4444]">{c.unAlignmentChina}%</td>
-                    <td className="py-3 px-2 text-[#555] hidden sm:table-cell">{c.primaryTradePartner}</td>
-                    <td className="text-center py-3 px-2">
-                      <span className={c.stability === "Stable" ? "text-[#22c55e]" : c.stability === "Volatile" ? "text-[#ef4444]" : "text-[#eab308]"}>
-                        {c.stability}
-                      </span>
-                    </td>
-                    <td className="py-3 px-2 text-[#555] hidden sm:table-cell text-[10px]">{c.trend}</td>
-                    <td className="text-right py-3 pl-2 font-bold" style={{ color }}>{score}</td>
-                  </tr>,
-                ];
-                if (isExpanded) {
-                  rows.push(
-                    <tr key={c.code + "-detail"}>
-                      <td colSpan={8}>
-                        <CountryDetail country={c} />
-                      </td>
-                    </tr>
-                  );
-                }
-                return rows;
-              })}
-            </tbody>
-          </table>
-        </div>
         <SectionChat
-          context="Alliance tracker showing 30 countries classified as US-aligned, China-aligned, or Non-aligned/Swing. Based on UN voting patterns, trade ties, military alliances, and diplomatic relationships. Click any country to see Dalio's 18 determinants with evidence."
-          label="Ask about alliances"
-          suggestions={["Which countries are shifting alignment?", "How does Hormuz affect alliance positions?", "What determines a swing state?"]}
-        />
-        <div className="mt-4 space-y-2">
-          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
-            <span className="text-[#888] font-bold">Historical parallel:</span> Before WWI, the Ottoman Empire switched from British to German alignment (1914). Within 4 years, the entire Middle Eastern map was redrawn. Alliance shifts precede territorial changes by years.
-          </div>
-          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
-            <span className="text-[#888] font-bold">Historical parallel:</span> Saudi Arabia&apos;s 1973 oil embargo against the US — a key ally shifting leverage — crashed markets 45% and ended the post-war economic order. Today Saudi joined BRICS+ and accepts yuan for oil.
-          </div>
-        </div>
-      </section>
-
-      {/* Power Rankings */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Global Power Rankings</h2>
-        <p className="text-xs text-[#555] mb-4">Ranked by overall power score across Dalio&apos;s 18 determinants</p>
-
-        <div className="space-y-2">
-          {ranked.map((c, i) => {
-            const score = getOverallScore(c.scores);
-            const color = CAMP_COLORS[c.allianceCamp];
-            const strongest = getStrongestDeterminant(c.scores);
-            const weakest = getWeakestDeterminant(c.scores);
-            const sig = c.investment.signal;
-            return (
-              <div key={c.code} className="flex items-center gap-3 p-3 rounded-lg bg-[#111] border border-[#222]">
-                <span className="text-lg font-bold text-[#333] w-8 text-right">#{i + 1}</span>
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                <span className="font-bold text-sm text-[#e0e0e0] w-28">{c.name}</span>
-                <div className="flex-1 h-3 bg-[#181818] rounded overflow-hidden hidden sm:block">
-                  <div className="h-full rounded" style={{ width: `${score * 10}%`, backgroundColor: color }} />
-                </div>
-                <span className="font-bold text-sm w-8" style={{ color }}>{score}</span>
-                <span className="text-[10px] text-[#555] hidden md:inline w-24">Best: {strongest}</span>
-                <span className="text-[10px] text-[#555] hidden md:inline w-24">Weak: {weakest}</span>
-                <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
-                  style={{ color: SIGNAL_COLORS[sig], backgroundColor: SIGNAL_COLORS[sig] + "20" }}
-                >
-                  {sig}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
-        <SectionChat
-          context="Global power rankings based on Dalio's 18 determinants of national power (education, technology, military, trade, financial center status, reserve currency, etc). Countries ranked by overall score with strongest/weakest determinant shown."
-          label="Ask about power rankings"
-          suggestions={["Why is China ranked where it is?", "Which country is rising fastest?", "How does military spending affect the ranking?"]}
+          context="Big Cycle position. US is at Stage 5 of 6 (great power conflict). Same indicators as British Empire 1940s and Soviet Union 1980s."
+          label="Ask about the big cycle"
+          suggestions={["What comes after Stage 5?", "How long do declining powers last?", "Is this reversible?"]}
         />
       </section>
+
 
       <div className="border-t border-[#181818]" />
 
@@ -582,6 +489,7 @@ export default function WorldOrderPage() {
         </div>
       </section>
 
+
       <div className="border-t border-[#181818]" />
 
       {/* ══ CHINA — The rising challenger ══ */}
@@ -654,6 +562,8 @@ export default function WorldOrderPage() {
           </div>
         </div>
       </section>
+
+      <div className="border-t border-[#181818]" />
 
       <div className="border-t border-[#181818]" />
 
@@ -747,6 +657,8 @@ export default function WorldOrderPage() {
 
       <div className="border-t border-[#181818]" />
 
+      <div className="border-t border-[#181818]" />
+
       {/* ══ EMERGING MARKETS — The beneficiaries ══ */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Beneficiaries</h2>
@@ -817,6 +729,164 @@ export default function WorldOrderPage() {
 
       <div className="border-t border-[#181818]" />
 
+      <div className="border-t border-[#181818]" />
+
+
+      {/* ══ THE EVIDENCE ══ */}
+      <section className="px-4 py-4 max-w-5xl mx-auto text-center">
+        <div className="border-t border-[#222] pt-6">
+          <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Evidence</h2>
+          <p className="text-xs text-[#555]">Alliance positions and power scores across 30 economies — click any country for the full scorecard</p>
+        </div>
+      </section>
+
+      {/* Alliance Tracker */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Which Side Is Each Country On?</h2>
+        <p className="text-xs text-[#555] mb-4">Click any country to see its full power scorecard and investment signal.</p>
+
+        {/* Legend */}
+        <div className="flex gap-4 mb-4">
+          {(["us_nato", "china_russia", "neutral"] as AllianceCamp[]).map((camp) => (
+            <div key={camp} className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: CAMP_COLORS[camp] }} />
+              <span className="text-xs text-[#888]">{CAMP_LABELS[camp]}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="text-[#555] uppercase tracking-wider border-b border-[#222]">
+                <th className="text-left py-2 pr-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("name")}>
+                  Country{arrow("name")}
+                </th>
+                <th className="text-center py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("camp")}>
+                  Camp{arrow("camp")}
+                </th>
+                <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("usAlign")}>
+                  US%{arrow("usAlign")}
+                </th>
+                <th className="text-right py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("cnAlign")}>
+                  CN%{arrow("cnAlign")}
+                </th>
+                <th className="text-left py-2 px-2 hidden sm:table-cell">Trade Partner</th>
+                <th className="text-center py-2 px-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("stability")}>
+                  Stability{arrow("stability")}
+                </th>
+                <th className="text-left py-2 px-2 hidden sm:table-cell">Trend</th>
+                <th className="text-right py-2 pl-2 cursor-pointer hover:text-[#888]" onClick={() => toggleSort("score")}>
+                  Score{arrow("score")}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sorted.flatMap((c) => {
+                const color = CAMP_COLORS[c.allianceCamp];
+                const isExpanded = expanded === c.code;
+                const score = getOverallScore(c.scores);
+                const rows = [
+                  <tr
+                    key={c.code}
+                    className="border-b border-[#181818] hover:bg-[#111] cursor-pointer transition-colors"
+                    onClick={() => setExpanded(isExpanded ? null : c.code)}
+                  >
+                    <td className="py-3 pr-2">
+                      <span className="font-bold text-[#e0e0e0]">{c.name}</span>
+                      <span className="text-[#333] ml-1">{isExpanded ? "▲" : "▼"}</span>
+                    </td>
+                    <td className="text-center py-3 px-2">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold" style={{ color, backgroundColor: color + "20" }}>
+                        {CAMP_LABELS[c.allianceCamp]}
+                      </span>
+                    </td>
+                    <td className="text-right py-3 px-2 text-[#3b82f6]">{c.unAlignmentUS}%</td>
+                    <td className="text-right py-3 px-2 text-[#ef4444]">{c.unAlignmentChina}%</td>
+                    <td className="py-3 px-2 text-[#555] hidden sm:table-cell">{c.primaryTradePartner}</td>
+                    <td className="text-center py-3 px-2">
+                      <span className={c.stability === "Stable" ? "text-[#22c55e]" : c.stability === "Volatile" ? "text-[#ef4444]" : "text-[#eab308]"}>
+                        {c.stability}
+                      </span>
+                    </td>
+                    <td className="py-3 px-2 text-[#555] hidden sm:table-cell text-[10px]">{c.trend}</td>
+                    <td className="text-right py-3 pl-2 font-bold" style={{ color }}>{score}</td>
+                  </tr>,
+                ];
+                if (isExpanded) {
+                  rows.push(
+                    <tr key={c.code + "-detail"}>
+                      <td colSpan={8}>
+                        <CountryDetail country={c} />
+                      </td>
+                    </tr>
+                  );
+                }
+                return rows;
+              })}
+            </tbody>
+          </table>
+        </div>
+        <SectionChat
+          context="Alliance tracker showing 30 countries classified as US-aligned, China-aligned, or Non-aligned/Swing. Based on UN voting patterns, trade ties, military alliances, and diplomatic relationships. Click any country to see Dalio's 18 determinants with evidence."
+          label="Ask about alliances"
+          suggestions={["Which countries are shifting alignment?", "How does Hormuz affect alliance positions?", "What determines a swing state?"]}
+        />
+        <div className="mt-4 space-y-2">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Historical parallel:</span> Before WWI, the Ottoman Empire switched from British to German alignment (1914). Within 4 years, the entire Middle Eastern map was redrawn. Alliance shifts precede territorial changes by years.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Historical parallel:</span> Saudi Arabia&apos;s 1973 oil embargo against the US — a key ally shifting leverage — crashed markets 45% and ended the post-war economic order. Today Saudi joined BRICS+ and accepts yuan for oil.
+          </div>
+        </div>
+      </section>
+
+      {/* Power Rankings */}
+      <section className="px-4 py-8 max-w-5xl mx-auto">
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Global Power Rankings</h2>
+        <p className="text-xs text-[#555] mb-4">Ranked by overall power score across Dalio&apos;s 18 determinants</p>
+
+        <div className="space-y-2">
+          {ranked.map((c, i) => {
+            const score = getOverallScore(c.scores);
+            const color = CAMP_COLORS[c.allianceCamp];
+            const strongest = getStrongestDeterminant(c.scores);
+            const weakest = getWeakestDeterminant(c.scores);
+            const sig = c.investment.signal;
+            return (
+              <div key={c.code} className="flex items-center gap-3 p-3 rounded-lg bg-[#111] border border-[#222]">
+                <span className="text-lg font-bold text-[#333] w-8 text-right">#{i + 1}</span>
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                <span className="font-bold text-sm text-[#e0e0e0] w-28">{c.name}</span>
+                <div className="flex-1 h-3 bg-[#181818] rounded overflow-hidden hidden sm:block">
+                  <div className="h-full rounded" style={{ width: `${score * 10}%`, backgroundColor: color }} />
+                </div>
+                <span className="font-bold text-sm w-8" style={{ color }}>{score}</span>
+                <span className="text-[10px] text-[#555] hidden md:inline w-24">Best: {strongest}</span>
+                <span className="text-[10px] text-[#555] hidden md:inline w-24">Weak: {weakest}</span>
+                <span
+                  className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
+                  style={{ color: SIGNAL_COLORS[sig], backgroundColor: SIGNAL_COLORS[sig] + "20" }}
+                >
+                  {sig}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <SectionChat
+          context="Global power rankings based on Dalio's 18 determinants of national power (education, technology, military, trade, financial center status, reserve currency, etc). Countries ranked by overall score with strongest/weakest determinant shown."
+          label="Ask about power rankings"
+          suggestions={["Why is China ranked where it is?", "Which country is rising fastest?", "How does military spending affect the ranking?"]}
+        />
+      </section>
+
+
+      <div className="border-t border-[#181818]" />
+
       <WorldOrderPosition
         title="The World Order Transition"
         subtitle="Four forces reshaping global power — and where capital flows as a result"
@@ -847,6 +917,8 @@ export default function WorldOrderPage() {
           "How does this compare to the British Empire decline?",
         ]}
       />
+
+      <div className="border-t border-[#181818]" />
 
       <div className="border-t border-[#181818]" />
 
