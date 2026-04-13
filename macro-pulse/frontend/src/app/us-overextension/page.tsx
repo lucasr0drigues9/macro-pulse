@@ -3,9 +3,11 @@
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import SubscribeForm from "@/components/SubscribeForm";
+import SectionChat from "@/components/SectionChat";
+import WorldOrderPosition from "@/components/WorldOrderPosition";
 import {
   ACCENT, dashboardIndicators, militaryCommitments, debtTimeline,
-  bigCycleStages, dedollarisation, centralBankGold,
+  bigCycleStages, dedollarisation, centralBankGold, usStrategicCards,
 } from "@/lib/usOverextensionData";
 
 // ── Simple line chart (pure SVG) ──
@@ -154,6 +156,11 @@ export default function USOverextensionPage() {
             &ldquo;The US has 750-800 military bases in 70-80 countries and has commitments that create expensive vulnerabilities all over the world.&rdquo; — Ray Dalio, April 2026
           </p>
         </div>
+        <SectionChat
+          context="Military overextension section. US has 750+ bases in 80 countries, three active theaters (Middle East/Iran, Ukraine support, Pacific), plus Hormuz enforcement. Defence budget $886B. Dalio's pattern: overextended empires cannot fight on multiple fronts."
+          label="Ask about military overextension"
+          suggestions={["How does Hormuz enforcement add to overextension?", "What happened when the British Empire was overextended?", "Can the US afford three theaters?"]}
+        />
       </section>
 
       {/* Debt and Financial Overextension */}
@@ -204,6 +211,11 @@ export default function USOverextensionPage() {
             <Link href="/regimetracker" className="underline underline-offset-2 hover:text-[#e0e0e0]" style={{ color: ACCENT }}>See regime tracker →</Link>
           </p>
         </div>
+        <SectionChat
+          context="US debt and financial overextension. National debt $36.2T (125% GDP). Interest payments exceeded defence spending in 2024. CBO projects 166% debt-to-GDP by 2054. Each rate hike costs ~$200B in additional annual interest."
+          label="Ask about the debt trajectory"
+          suggestions={["When does debt become unsustainable?", "What assets protect against currency debasement?", "How does this compare to Japan's debt?"]}
+        />
       </section>
 
       {/* Reserve Currency Erosion */}
@@ -345,6 +357,23 @@ export default function USOverextensionPage() {
           Investment implications based on Dalio&apos;s published historical research applied to current data. Not personalised financial advice.
         </p>
       </section>
+
+      <div className="border-t border-[#181818]" />
+
+      <WorldOrderPosition
+        title="US in the World Order Transition"
+        subtitle="Four dimensions of America's position as the declining incumbent power"
+        cards={usStrategicCards}
+        accent={ACCENT}
+        chatContext="US position in Ray Dalio's world order transition. Military overextension (750+ bases, 3 theaters + Hormuz), dollar reserve erosion (72%→58%), debt trajectory ($36.2T, interest > defence), internal polarisation. Stage 5 of Dalio's big cycle."
+        chatSuggestions={[
+          "How does Hormuz fit Dalio's framework?",
+          "What historical empires show this pattern?",
+          "Which assets benefit from US decline?",
+        ]}
+      />
+
+      <div className="border-t border-[#181818]" />
 
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">

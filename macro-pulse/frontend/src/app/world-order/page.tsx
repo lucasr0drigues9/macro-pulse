@@ -3,6 +3,8 @@
 import { useState } from "react";
 import Nav from "@/components/Nav";
 import SubscribeForm from "@/components/SubscribeForm";
+import SectionChat from "@/components/SectionChat";
+import WorldOrderPosition from "@/components/WorldOrderPosition";
 import {
   countries, DETERMINANT_LABELS, DETERMINANT_KEYS, CAMP_COLORS, CAMP_LABELS,
   SIGNAL_COLORS, getOverallScore, getStrongestDeterminant, getWeakestDeterminant,
@@ -295,6 +297,11 @@ export default function WorldOrderPage() {
             </tbody>
           </table>
         </div>
+        <SectionChat
+          context="Alliance tracker showing 30 countries classified as US-aligned, China-aligned, or Non-aligned/Swing. Based on UN voting patterns, trade ties, military alliances, and diplomatic relationships. Click any country to see Dalio's 18 determinants with evidence."
+          label="Ask about alliances"
+          suggestions={["Which countries are shifting alignment?", "How does Hormuz affect alliance positions?", "What determines a swing state?"]}
+        />
       </section>
 
       {/* Power Rankings */}
@@ -330,7 +337,48 @@ export default function WorldOrderPage() {
             );
           })}
         </div>
+
+        <SectionChat
+          context="Global power rankings based on Dalio's 18 determinants of national power (education, technology, military, trade, financial center status, reserve currency, etc). Countries ranked by overall score with strongest/weakest determinant shown."
+          label="Ask about power rankings"
+          suggestions={["Why is China ranked where it is?", "Which country is rising fastest?", "How does military spending affect the ranking?"]}
+        />
       </section>
+
+      <div className="border-t border-[#181818]" />
+
+      <WorldOrderPosition
+        title="The World Order Transition"
+        subtitle="Three forces reshaping global power — and where capital flows as a result"
+        cards={[
+          {
+            title: "US-China Power Transition",
+            content: "Dalio's framework identifies the current period as Stage 5 of the big cycle — great power conflict. The US is the declining incumbent with 750+ military bases, $36.2T debt, and eroding reserve currency status. China is the rising challenger with expanding alliances (BRICS+, BRI), growing naval capability, and systematic de-dollarisation. The Hormuz closure is the latest flashpoint — the US using naval dominance to enforce economic compliance against China's shadow fleet.",
+            keyMetric: "Stage 5 of 6 in Dalio's big cycle",
+            status: "Critical",
+          },
+          {
+            title: "Alliance Fragmentation",
+            content: "The world is splitting into blocs faster than at any point since the Cold War. BRICS+ expanded to include Saudi Arabia, UAE, Egypt, Ethiopia, and Iran. NATO expanded to include Finland and Sweden. Swing states (India, Turkey, Indonesia, Saudi Arabia, Brazil) are playing both sides — maximising leverage by not committing. Their alignment choices will determine the balance of power.",
+            keyMetric: "6 swing states control 40% of world GDP",
+            status: "Accelerating",
+          },
+          {
+            title: "De-dollarisation & Capital Flows",
+            content: "USD share of global reserves fell from 72% to 58%. Central banks bought record gold (1,037 tonnes in 2023). BRICS+ is building payment alternatives (CIPS, bilateral settlements). The investment implication: assets that benefit from a multipolar financial system — gold, commodity exporters, and countries positioned as neutral trade hubs — outperform in this environment.",
+            keyMetric: "USD reserves: 72% → 58%",
+            status: "Accelerating",
+          },
+        ]}
+        chatContext="The world order transition as described by Ray Dalio. US-China power competition, alliance fragmentation into blocs, de-dollarisation. How capital flows between declining powers (US), rising challengers (China), and swing states (India, Saudi, Turkey, Brazil, Indonesia)."
+        chatSuggestions={[
+          "Where should capital flow in this transition?",
+          "Which swing states benefit most?",
+          "How does this compare to the British Empire decline?",
+        ]}
+      />
+
+      <div className="border-t border-[#181818]" />
 
       {/* Email Alerts */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
