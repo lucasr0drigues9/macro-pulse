@@ -383,10 +383,38 @@ export default function ChinaPage() {
               </div>
             </div>
           )}
+          {/* Global context warning */}
+          <div className="p-3 rounded bg-[#eab30808] border border-[#eab30830] mb-4">
+            <p className="text-xs text-[#eab308] font-bold mb-1">These picks assume China&apos;s regime in isolation</p>
+            <p className="text-[10px] text-[#888] leading-relaxed">
+              When global regimes conflict, the dominant signal often overpowers regional picks. Right now the US is in Stagflation — which pushes bond yields up (hurting TLT) and commodity prices up (boosting copper miners like COPX). The <a href="/" className="text-[#eab308] underline underline-offset-2">Global Regime Signal on the home page</a> shows the combined view across all three economies.
+            </p>
+          </div>
+
+          {/* Cross-regime outperformer alert */}
+          {allocation.underweight.some((u) => typeof u.returnSinceRegime === "number" && u.returnSinceRegime > 10) && (
+            <div className="p-3 rounded bg-[#22c55e08] border border-[#22c55e30] mb-4">
+              <p className="text-xs text-[#22c55e] font-bold mb-1">Cross-regime outperformers detected</p>
+              <p className="text-[10px] text-[#888] leading-relaxed mb-2">
+                Some ETFs from other regime baskets are outperforming the current {allocation.regime} picks. This can mean the regime is about to shift, or that a global dynamic (like the energy transition or Hormuz crisis) is overriding China-specific signals.
+              </p>
+              <div className="space-y-1">
+                {allocation.underweight
+                  .filter((u) => typeof u.returnSinceRegime === "number" && u.returnSinceRegime > 10)
+                  .map((u) => (
+                    <div key={u.ticker} className="flex items-center justify-between text-xs">
+                      <span className="text-[#e0e0e0] font-bold">{u.ticker} <span className="text-[#555] font-normal">{u.name}</span></span>
+                      <span className="text-[#22c55e] font-bold">+{u.returnSinceRegime}%</span>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
           <SectionChat
-            context="China regime allocation. Shows ETF weights for the current Chinese regime. Higher cash target (20%) than US/EU due to data unreliability and geopolitical risk."
+            context="China regime allocation with global context warning. When US Stagflation dominates, it can hurt China Deflation picks (TLT down from rising yields) while boosting cross-regime assets (copper miners up from commodity premium). The Global Regime Signal on the home page shows the combined view."
             label="Ask about China allocation"
-            suggestions={["Why so much cash?", "Is FXI too risky right now?", "What about BABA directly?"]}
+            suggestions={["Why is TLT down despite China Deflation?", "Should I follow China picks or global signal?", "Why is COPX outperforming?"]}
           />
 
           {/* UCITS Mapping */}
