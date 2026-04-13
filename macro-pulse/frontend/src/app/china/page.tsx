@@ -392,24 +392,88 @@ export default function ChinaPage() {
           </div>
 
           {/* Cross-regime outperformer alert */}
-          {allocation.underweight.some((u) => typeof u.returnSinceRegime === "number" && u.returnSinceRegime > 10) && (
-            <div className="p-3 rounded bg-[#22c55e08] border border-[#22c55e30] mb-4">
-              <p className="text-xs text-[#22c55e] font-bold mb-1">Cross-regime outperformers detected</p>
-              <p className="text-[10px] text-[#888] leading-relaxed mb-2">
-                Some ETFs from other regime baskets are outperforming the current {allocation.regime} picks. This can mean the regime is about to shift, or that a global dynamic (like the energy transition or Hormuz crisis) is overriding China-specific signals.
-              </p>
-              <div className="space-y-1">
-                {allocation.underweight
-                  .filter((u) => typeof u.returnSinceRegime === "number" && u.returnSinceRegime > 10)
-                  .map((u) => (
-                    <div key={u.ticker} className="flex items-center justify-between text-xs">
-                      <span className="text-[#e0e0e0] font-bold">{u.ticker} <span className="text-[#555] font-normal">{u.name}</span></span>
-                      <span className="text-[#22c55e] font-bold">+{u.returnSinceRegime}%</span>
-                    </div>
-                  ))}
+          {(() => {
+            const outperformers = allocation.underweight
+              .filter((u) => typeof u.returnSinceRegime === "number" && u.returnSinceRegime > 10)
+              .sort((a, b) => (b.returnSinceRegime || 0) - (a.returnSinceRegime || 0));
+            if (outperformers.length === 0) return null;
+
+            // Contextual explanations per ticker
+            const explanations: Record<string, { driver: string; globalLink: string; signal: string }> = {
+              COPX: {
+                driver: "Energy transition demand (EVs, grid, renewables) + Hormuz commodity premium",
+                globalLink: "Copper demand is structural and global — doesn't depend on China reflating. US Stagflation adds commodity premium on top.",
+                signal: "If copper stays strong while China deflates, it means demand is coming from elsewhere. Watch for China PMI to confirm or deny.",
+              },
+              FXI: {
+                driver: "Anticipation of PBOC stimulus or reopening-like bounce",
+                globalLink: "Markets may be pricing in a policy response before it shows up in data. Chinese equities rallied 40%+ in late 2022 before any data confirmed the pivot.",
+                signal: "If FXI rises while copper falls, it's speculation not fundamentals. Both rising together = genuine reflation signal.",
+              },
+              CHIQ: {
+                driver: "Chinese consumer recovery expectations or rotation from US growth stocks",
+                globalLink: "When US Stagflation hurts US tech, some capital rotates to undervalued Chinese consumer names.",
+                signal: "Sustainable only if domestic consumption data (retail sales, consumer confidence) improves.",
+              },
+              AAXJ: {
+                driver: "Broad Asia ex-Japan benefits from supply chain rerouting and India growth",
+                globalLink: "AAXJ captures India, Korea, Taiwan alongside China — the non-China components may be driving returns.",
+                signal: "Check if AAXJ is up because of India/Korea or because of China. FXI relative performance tells you.",
+              },
+              EEM: {
+                driver: "Broad emerging market rally from commodity prices and dollar weakness",
+                globalLink: "When USD weakens during Stagflation, EM assets mechanically appreciate in dollar terms.",
+                signal: "Dollar direction (DXY) is the key variable — if dollar strengthens, EM gains reverse quickly.",
+              },
+              DBC: {
+                driver: "Broad commodity basket benefits from Hormuz oil disruption + global inflation",
+                globalLink: "DBC is in both the China Stagflation and US Stagflation baskets. It's responding to the dominant global signal, not China specifically.",
+                signal: "This is the US Stagflation signal bleeding into China metrics. The Global Regime Signal captures this correctly.",
+              },
+            };
+
+            return (
+              <div className="p-4 rounded bg-[#22c55e08] border border-[#22c55e30] mb-4">
+                <p className="text-xs text-[#22c55e] font-bold mb-2">Cross-regime outperformers — why are they up?</p>
+                <div className="space-y-3">
+                  {outperformers.map((u) => {
+                    const ctx = explanations[u.ticker];
+                    return (
+                      <div key={u.ticker} className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-bold text-[#e0e0e0]">{u.ticker} <span className="text-[#555] font-normal">{u.name}</span></span>
+                          <span className="text-sm font-bold text-[#22c55e]">+{u.returnSinceRegime}%</span>
+                        </div>
+                        {ctx ? (
+                          <div className="space-y-1.5">
+                            <div className="text-[10px] leading-relaxed">
+                              <span className="text-[#e0e0e0] font-bold">What&apos;s driving it: </span>
+                              <span className="text-[#888]">{ctx.driver}</span>
+                            </div>
+                            <div className="text-[10px] leading-relaxed">
+                              <span className="text-[#e0e0e0] font-bold">Global connection: </span>
+                              <span className="text-[#888]">{ctx.globalLink}</span>
+                            </div>
+                            <div className="text-[10px] leading-relaxed">
+                              <span className="text-[#e0e0e0] font-bold">What to watch: </span>
+                              <span className="text-[#888]">{ctx.signal}</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-[10px] text-[#555]">{u.reason}</p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <SectionChat
+                  context={`Cross-regime outperformers on the China page. Current regime: ${allocation.regime}. These ETFs from other baskets are outperforming: ${outperformers.map((u) => `${u.ticker} +${u.returnSinceRegime}%`).join(", ")}. US is in Stagflation which drives commodity and energy assets higher globally. The question is whether this signals a China regime shift or just US dominance.`}
+                  label="Ask about these outperformers"
+                  suggestions={["Is this a regime shift signal?", "Should I buy the outperformers instead?", "How do I tell if copper is rising because of China or because of Hormuz?"]}
+                />
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           <SectionChat
             context="China regime allocation with global context warning. When US Stagflation dominates, it can hurt China Deflation picks (TLT down from rising yields) while boosting cross-regime assets (copper miners up from commodity premium). The Global Regime Signal on the home page shows the combined view."
