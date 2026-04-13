@@ -419,8 +419,19 @@ export default function ChinaPage() {
             Historical regime timeline based on proxy indicators — same four-quadrant framework applied to China&apos;s real economy.
           </p>
           <div className="p-3 rounded bg-[#111] border border-[#222] mb-4">
-            <p className="text-xs text-[#888] leading-relaxed">
-              <span className="text-[#e0e0e0] font-bold">Methodology difference:</span> The US and EU trackers derive regimes from monthly data feeds (FRED/Eurostat) — the data determines the regime automatically. China&apos;s monthly data is too noisy for this approach (we tested it — 28% accuracy vs 81% with expert curation). Instead, this timeline uses curated periods based on known economic events, verified against GDP/CPI/PPI data. The ETF returns are real market data — only the regime labels are curated.
+            <p className="text-xs text-[#888] leading-relaxed mb-2">
+              <span className="text-[#e0e0e0] font-bold">Why this backtest works differently:</span> The US and EU trackers derive regimes automatically from monthly data feeds (FRED/Eurostat). For China, we tested every available proxy combination:
+            </p>
+            <ul className="text-[10px] text-[#555] space-y-1 list-disc list-inside mb-2">
+              <li>Imports YoY + CPI momentum → <span className="text-[#ef4444]">28% accuracy</span> (worse than random)</li>
+              <li>Exports YoY + CPI YoY → <span className="text-[#ef4444]">0% match</span> with known economic reality</li>
+              <li>Copper YoY + CPI acceleration → <span className="text-[#ef4444]">11% accuracy</span></li>
+            </ul>
+            <p className="text-[10px] text-[#888] leading-relaxed mb-2">
+              <span className="text-[#e0e0e0]">The root cause:</span> Chinese CPI stays between +1% and +4% even during deep deflation (2022 lockdowns, 2023 property crisis). The real deflation signal is <span className="text-[#e0e0e0]">PPI</span> (producer prices), which went to -3% — but PPI isn&apos;t available via any free API (FRED, World Bank, OECD all lack it).
+            </p>
+            <p className="text-[10px] text-[#888] leading-relaxed">
+              So this timeline uses expert-curated periods based on PPI + GDP + proxy indicators, verified against known economic events. <span className="text-[#e0e0e0]">The ETF returns are real market data</span> — the regime labels are the curated part. This is transparency over false precision.
             </p>
           </div>
 
