@@ -70,7 +70,7 @@ type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; g
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
 type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
-type BacktestEntry = { regime: string; start: string; end: string; months: number; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null };
+type BacktestEntry = { regime: string; start: string; end: string; months: number; signalStrength?: string; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null; aiRegime?: string; aiPicksReturn?: number | null; aiDiffersFromProxy?: boolean; aiCorrect?: boolean | null };
 type ChinaBacktest = { totalRegimes: number; yearRange: string; timeline: BacktestEntry[]; regimeBreakdown: Record<string, number> };
 
 export default function ChinaPage() {
@@ -499,17 +499,81 @@ export default function ChinaPage() {
                         })}
                       </div>
 
-                      <div className="text-[10px]" style={{ color: p.frameworkCorrect ? "#22c55e" : "#eab308" }}>
-                        {p.frameworkCorrect
-                          ? `✓ Framework called ${p.regime} and those picks had the best return`
-                          : `⚠ Framework called ${p.regime} but ${p.bestRegime} picks outperformed`}
-                      </div>
+                      {/* 3-way comparison: Proxy Data / AI Geo / Winner */}
+                      {p.aiRegime && p.bestRegime && (() => {
+                        const aiReg = p.aiRegime!;
+                        const bestReg = p.bestRegime!;
+                        const bestRet = p.allRegimeReturns?.[bestReg];
+                        return (
+                        <div className="mt-3 p-2 rounded bg-[#111] border border-[#222]">
+                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Proxy data vs AI geopolitical vs actual winner</div>
+                          <div className="grid grid-cols-3 gap-2">
+                            {/* Proxy Data */}
+                            <div className="p-2 rounded bg-[#0a0a0a]">
+                              <div className="text-[9px] text-[#555] uppercase">Proxy data</div>
+                              <div className="text-xs font-bold" style={{ color: REGIME_COLORS[p.regime] || "#555" }}>{p.regime}</div>
+                              {typeof p.picksReturn === "number" && (
+                                <div className="text-[10px] mt-0.5" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                                  {p.picksReturn >= 0 ? "+" : ""}{p.picksReturn.toFixed(1)}%
+                                </div>
+                              )}
+                            </div>
+                            {/* AI Geo */}
+                            <div className="p-2 rounded" style={{
+                              backgroundColor: p.aiDiffersFromProxy ? "#9ca3af15" : "#0a0a0a",
+                              border: p.aiDiffersFromProxy ? "1px solid #9ca3af40" : "1px solid transparent",
+                            }}>
+                              <div className="text-[9px] text-[#9ca3af] uppercase">AI geo</div>
+                              {p.aiDiffersFromProxy ? (
+                                <>
+                                  <div className="text-xs font-bold" style={{ color: REGIME_COLORS[aiReg] || "#555" }}>{aiReg}</div>
+                                  {typeof p.aiPicksReturn === "number" && (
+                                    <div className="text-[10px] mt-0.5" style={{ color: p.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
+                                      {p.aiPicksReturn >= 0 ? "+" : ""}{p.aiPicksReturn.toFixed(1)}%
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-xs font-bold text-[#555]">= same as data</div>
+                                  <div className="text-[10px] mt-0.5 text-[#333]">no override</div>
+                                </>
+                              )}
+                            </div>
+                            {/* Winner */}
+                            <div className="p-2 rounded" style={{ backgroundColor: "#22c55e10", border: "1px solid #22c55e40" }}>
+                              <div className="text-[9px] text-[#22c55e] uppercase">Actual winner ★</div>
+                              <div className="text-xs font-bold" style={{ color: REGIME_COLORS[bestReg] || "#555" }}>{bestReg}</div>
+                              {typeof bestRet === "number" && (
+                                <div className="text-[10px] mt-0.5 text-[#22c55e]">+{bestRet.toFixed(1)}%</div>
+                              )}
+                            </div>
+                          </div>
+                          {/* Summary */}
+                          <div className="mt-2 text-[10px] leading-relaxed">
+                            {p.frameworkCorrect && p.aiCorrect && (
+                              <span className="text-[#22c55e]">✓ Both proxy data and AI agreed with the winner — strongest signal.</span>
+                            )}
+                            {!p.frameworkCorrect && p.aiCorrect && (
+                              <span className="text-[#9ca3af]">✓ AI geo would have correctly called {bestReg} while proxy data was wrong.</span>
+                            )}
+                            {p.frameworkCorrect && !p.aiCorrect && (
+                              <span className="text-[#eab308]">⚠ Proxy data got it right but AI would have missed it.</span>
+                            )}
+                            {!p.frameworkCorrect && !p.aiCorrect && (
+                              <span className="text-[#ef4444]">✗ Both proxy data and AI missed — {bestReg} picks outperformed.</span>
+                            )}
+                          </div>
+                        </div>
+                        );
+                      })()}
 
                       <PeriodChat context={{
                         region: "China",
                         start: p.start,
                         end: p.end,
                         regime: p.regime,
+                        aiRegime: p.aiRegime,
                         bestRegime: p.bestRegime || undefined,
                         allRegimeReturns: p.allRegimeReturns,
                       }} />

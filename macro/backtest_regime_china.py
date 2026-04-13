@@ -103,8 +103,37 @@ def compute_portfolio_return(prices, tickers, start, end):
     return round(sum(returns) / len(returns), 1) if returns else None
 
 
+# ── AI geopolitical overrides for China ──
+# Format: start_month -> (strength, context, ai_regime_override_or_None)
+# None = AI would have agreed with proxy data
+CHINA_SIGNAL_STRENGTH = {
+    # 2010-2012: Post-GFC stimulus → tightening
+    "2010-01": ("STRONG", "Post-GFC 4 trillion yuan stimulus created massive inflation overshoot. CPI 6.5%, food prices surging. PBOC hiked 5 times.", None),
+    "2011-07": ("MODERATE", "Eurozone debt crisis. Greece bailout contagion fears. Chinese exports slowing. PBOC shifted from tightening to easing.", None),
+    # 2012-2015: Xi era begins
+    "2012-10": ("MODERATE", "Xi Jinping took power. Anti-corruption campaign. Moderate reform expectations. Stability-oriented policy.", None),
+    "2014-01": ("MODERATE", "Economy growing 7% despite PPI deflation. Tech boom (Alibaba IPO Sep 2014). Equity bull market building.", None),
+    "2015-07": ("STRONG", "Stock market crash lost $5T in weeks. PBOC devalued yuan Aug 2015. Capital flight $500B+. Global contagion fears.", None),
+    # 2016-2019: Stimulus → Trade war
+    "2016-01": ("STRONG", "Massive stimulus. PBOC cut rates + RRR. Supply-side reform shutting overcapacity. Property boom reignited.", None),
+    "2017-01": ("MODERATE", "Deleveraging campaign. Shadow banking crackdown. But economy strong — GDP 6.8%, tech thriving.", None),
+    "2018-04": ("STRONG", "US-China trade war started. Trump tariffs Mar 2018. Growth slowed as export sector hit. PBOC cut RRR 4 times to cushion.", None),
+    "2019-04": ("MODERATE", "Trade war escalation. Huawei ban May 2019. Phase 1 deal negotiations ongoing. PMI below 50.", None),
+    # 2020-2022: COVID → Recovery → Property crisis
+    "2020-01": ("STRONG", "COVID-19 pandemic origin. Wuhan lockdown Jan 2020. GDP -6.8% Q1. BUT massive fiscal+monetary response — PBOC + $500B stimulus within weeks.", "Goldilocks"),
+    "2020-07": ("STRONG", "First economy to recover from COVID. Exports booming on global restocking. PPI surging to +9%. Commodity super-cycle.", None),
+    "2021-07": ("STRONG", "Evergrande default Sep 2021. $300B in liabilities. Property sector collapse begins. Simultaneously PPI above 10% from commodities. Regulatory crackdown on tech (DIDI, education).", None),
+    "2022-04": ("STRONG", "Shanghai locked down Apr-Jun 2022. Zero-COVID at peak. BUT China abruptly abandoned zero-COVID Dec 2022. Markets anticipated reopening from Oct.", "Goldilocks"),
+    # 2023-2026: Deflation → Hormuz
+    "2023-01": ("MODERATE", "Reopening bounce lasted 2-3 weeks then fizzled. Property crisis accelerated. Consumer confidence collapsed.", None),
+    "2023-07": ("MODERATE", "Prolonged deflation. Country Garden crisis Aug 2023. Youth unemployment data suspended. PBOC cutting but insufficient.", None),
+    "2024-10": ("STRONG", "Iran-Israel war escalated. Hormuz transits dropped. Shadow fleet still operating but oil costs rising. Energy supply chain under pressure.", "Stagflation"),
+    "2026-04": ("STRONG", "US permanently closed Hormuz to ALL shipping including Iran's shadow fleet to China. First direct US-China energy confrontation.", None),
+}
+
+
 def build_china_backtest():
-    """Build the full China backtest — regime periods with basket returns."""
+    """Build the full China backtest — regime periods with basket returns + AI geo layer."""
     prices = load_all_prices()
 
     periods = []
@@ -125,6 +154,13 @@ def build_china_backtest():
         best = max(valid, key=lambda k: valid[k]) if valid else None
         framework_correct = best == regime if best else None
 
+        # AI geopolitical layer
+        sig = CHINA_SIGNAL_STRENGTH.get(start, ("MODERATE", "", None))
+        geo_override = sig[2] if len(sig) > 2 else None
+        ai_regime = geo_override if geo_override else regime
+        ai_picks_return = all_returns.get(ai_regime)
+        ai_correct = best == ai_regime if best else None
+
         # Duration in months
         try:
             s = datetime.strptime(start_date, "%Y-%m-%d")
@@ -138,11 +174,16 @@ def build_china_backtest():
             "start": start,
             "end": end,
             "months": months,
-            "signalContext": context,
+            "signalStrength": sig[0],
+            "signalContext": sig[1] if sig[1] else context,
             "picksReturn": all_returns.get(regime),
             "allRegimeReturns": all_returns,
             "bestRegime": best,
             "frameworkCorrect": framework_correct,
+            "aiRegime": ai_regime,
+            "aiPicksReturn": ai_picks_return,
+            "aiDiffersFromProxy": geo_override is not None and geo_override != regime,
+            "aiCorrect": ai_correct,
         })
 
     return periods
