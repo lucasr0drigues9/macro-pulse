@@ -345,6 +345,14 @@ export default function WorldOrderPage() {
           label="Ask about alliances"
           suggestions={["Which countries are shifting alignment?", "How does Hormuz affect alliance positions?", "What determines a swing state?"]}
         />
+        <div className="mt-4 space-y-2">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Historical parallel:</span> Before WWI, the Ottoman Empire switched from British to German alignment (1914). Within 4 years, the entire Middle Eastern map was redrawn. Alliance shifts precede territorial changes by years.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Historical parallel:</span> Saudi Arabia&apos;s 1973 oil embargo against the US — a key ally shifting leverage — crashed markets 45% and ended the post-war economic order. Today Saudi joined BRICS+ and accepts yuan for oil.
+          </div>
+        </div>
       </section>
 
       {/* Power Rankings */}
@@ -445,6 +453,14 @@ export default function WorldOrderPage() {
           label="Ask about military overextension"
           suggestions={["How does Hormuz add to overextension?", "What happened to the British Empire?", "Can the US afford three theaters?"]}
         />
+        <div className="mt-4 space-y-2">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Spanish Empire (1588-1648):</span> Simultaneous wars in the Netherlands, France, England, and the Ottoman frontier bankrupted Spain three times. The Armada defeat (1588) didn&apos;t end the empire — the multi-front cost did.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">British Empire (1939-1947):</span> Fighting Germany in Europe + Japan in Asia simultaneously forced Britain to liquidate $4.5B in US-held assets and take $31B in Lend-Lease debt. Within 2 years of victory, the empire was dissolving.
+          </div>
+        </div>
       </section>
 
       {/* Debt */}
@@ -465,6 +481,14 @@ export default function WorldOrderPage() {
           label="Ask about the debt"
           suggestions={["When does debt become unsustainable?", "What protects against debasement?", "How does this compare to Japan?"]}
         />
+        <div className="mt-4 space-y-2">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Dutch Republic (1780s):</span> The Fourth Anglo-Dutch War (1780-84) pushed Dutch debt to 250% of GDP. Interest payments consumed 70% of tax revenue. Within a decade, the guilder lost reserve status and Amsterdam lost its financial center role to London.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">British Empire (1945):</span> Post-WWII debt hit 270% of GDP. Britain was forced to devalue the pound 30% (1949) and again 14% (1967). Gold reserves depleted. IMF bailout required (1976). The pound&apos;s reserve share fell from 64% to under 5% over 40 years.
+          </div>
+        </div>
       </section>
 
       {/* Dollar Erosion */}
@@ -498,6 +522,14 @@ export default function WorldOrderPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+        <div className="mt-4 space-y-2">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Guilder → Pound (1780-1820):</span> The Dutch guilder was the world&apos;s reserve currency for 80 years. The transition to sterling took ~40 years and was accelerated by war debt, not a single event. Gold flowed from Amsterdam to London gradually, then suddenly.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Sterling → Dollar (1914-1944):</span> The pound lost reserve status over 30 years. WWI forced Britain off the gold standard (1914). Bretton Woods (1944) formalised the dollar&apos;s dominance. But the actual capital flight happened in the 1930s — the market moved before the institutions did.
           </div>
         </div>
       </section>
@@ -610,6 +642,17 @@ export default function WorldOrderPage() {
           label="Ask about China's rise"
           suggestions={["How does China compare to the US at each stage?", "Can China replace the dollar?", "What does Hormuz mean for China's energy security?"]}
         />
+        <div className="mt-4 space-y-2">
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">US overtaking Britain (1870-1945):</span> The US surpassed Britain in GDP by 1890 but didn&apos;t become the dominant power until 1945 — a 55-year gap. Rising powers build capabilities for decades before the transition moment. China&apos;s GDP surpassed the US in PPP terms in 2014.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Germany&apos;s naval challenge (1898-1914):</span> Kaiser Wilhelm&apos;s naval build-up (1898 Naval Laws) directly threatened British sea dominance. Britain responded with the Dreadnought programme. The arms race consumed resources from both sides and ended in war. China&apos;s naval expansion follows the same pattern — 370 ships vs 290.
+          </div>
+          <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
+            <span className="text-[#888] font-bold">Japan&apos;s tech rise (1960-1990):</span> Japan went from making cheap transistor radios (1955) to dominating semiconductors, automobiles, and electronics in 30 years. US responded with trade restrictions (1986 Semiconductor Agreement). China&apos;s trajectory is faster — EVs, solar, batteries, and AI in 15 years — and the US response (CHIPS Act, export bans) mirrors the same playbook.
+          </div>
+        </div>
       </section>
 
       <div className="border-t border-[#181818]" />
