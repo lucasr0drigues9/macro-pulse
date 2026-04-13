@@ -39,20 +39,19 @@ CHINA_REGIME_HISTORY = [
 ]
 
 # ETF baskets for China regime backtesting
-# China-specific: what performs when China is in each regime
-# Key insight: use China-exposed assets, not generic global baskets
+# China-specific: uses China-exposed and Asia-focused ETFs
 CHINA_BACKTEST_ETFS = {
-    "Stagflation": ["GLD", "DBC", "XLE"],          # Real assets hedge China stagflation spillover
-    "Reflation":   ["FXI", "EEM", "DBC"],           # Chinese equities + EM + commodities on China demand
-    "Goldilocks":  ["FXI", "KWEB", "EEM"],           # Chinese tech + broad equities on growth + low inflation
-    "Deflation":   ["TLT", "GLD", "XLP"],            # Bonds + gold + defensives when China drags global growth
+    "Stagflation": ["GLD", "DBC", "EWH"],           # Gold + commodities + HK (defensive Asia)
+    "Reflation":   ["FXI", "CHIQ", "COPX"],          # China large-cap + consumer + copper (demand recovery)
+    "Goldilocks":  ["KWEB", "FXI", "AAXJ"],          # China tech + equities + Asia broad (risk-on)
+    "Deflation":   ["TLT", "GLD", "AGG"],             # US Treasuries + gold + bonds (safe haven)
 }
 
 ALL_TICKERS = list(set(t for picks in CHINA_BACKTEST_ETFS.values() for t in picks))
 
 
 def fetch_etf_monthly(ticker, start="2010-01-01"):
-    """Fetch monthly close prices for an ETF, cached."""
+    """Fetch monthly close prices for an ETF via Yahoo query2 API, cached."""
     cache_file = f"{CACHE_DIR}/backtest_etf_{ticker}.json"
     if os.path.exists(cache_file):
         age = datetime.now().timestamp() - os.path.getmtime(cache_file)
@@ -61,16 +60,25 @@ def fetch_etf_monthly(ticker, start="2010-01-01"):
                 return json.load(f)
 
     try:
-        import yfinance as yf
-        h = yf.Ticker(ticker).history(start=start, interval="1mo")
-        if h.empty:
-            return {}
+        url = f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}"
+        r = requests.get(url, params={"interval": "1mo", "range": "max"},
+                        headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        data = r.json()
+        result = data.get("chart", {}).get("result", [{}])[0]
+        timestamps = result.get("timestamp", [])
+        closes = result.get("indicators", {}).get("quote", [{}])[0].get("close", [])
+
         monthly = {}
-        for date, row in h.iterrows():
-            key = date.strftime("%Y-%m-01")
-            monthly[key] = round(float(row["Close"]), 2)
-        with open(cache_file, "w") as f:
-            json.dump(monthly, f)
+        for ts, close in zip(timestamps, closes):
+            if close is not None:
+                dt = datetime.fromtimestamp(ts)
+                key = dt.strftime("%Y-%m-01")
+                if key >= start:
+                    monthly[key] = round(float(close), 2)
+
+        if monthly:
+            with open(cache_file, "w") as f:
+                json.dump(monthly, f)
         return monthly
     except Exception:
         return {}
