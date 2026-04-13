@@ -69,7 +69,7 @@ function IndicatorCard({ ind }: { ind: ProxyIndicator }) {
 type ChinaRegime = { regime: string; proxyRegime?: string; geoRegime?: string; geoContext?: string; lagWarning?: boolean; growth: string; inflation: string; confidence: string; consecutiveMonths: number; periodStart?: string };
 type Allocation = { regime: string; periodStart?: string; cashTarget: number; overweight: { ticker: string; name: string; weight: number; conviction: number; rationale: string; returnSinceRegime?: number | null }[]; underweight: { ticker: string; name: string; reason: string; returnSinceRegime?: number | null }[] };
 type Trigger = { name: string; current: string; threshold: string; status: string; action: string; urgency: string };
-type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number }[] }[] };
+type TransitionData = { currentRegime: string; durationStats: { months: number }; outlook: { regime: string; probability: number; description: string; signals: string[]; etfs: { ticker: string; name: string; conviction: number; returnSinceRegime?: number | null }[] }[] };
 type BacktestEntry = { regime: string; start: string; end: string; months: number; current?: boolean; signalStrength?: string; signalContext?: string; picksReturn: number | null; allRegimeReturns: Record<string, number | null>; bestRegime: string | null; frameworkCorrect: boolean | null; aiRegime?: string; aiPicksReturn?: number | null; aiDiffersFromProxy?: boolean; aiCorrect?: boolean | null; regimeETFs?: Record<string, string[]> };
 type ChinaBacktest = { totalRegimes: number; yearRange: string; timeline: BacktestEntry[]; regimeBreakdown: Record<string, number> };
 
@@ -371,7 +371,14 @@ export default function ChinaPage() {
                             <span className="text-xs font-bold text-[#e0e0e0]">{e.ticker}</span>
                             <span className="text-[10px] text-[#555] ml-2">{e.name}</span>
                           </div>
-                          <span className="text-[10px] text-[#555]">Conviction: {e.conviction}</span>
+                          <div className="flex items-center gap-3">
+                            {typeof e.returnSinceRegime === "number" && (
+                              <span className={`text-xs font-bold ${e.returnSinceRegime >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                                {e.returnSinceRegime >= 0 ? "+" : ""}{e.returnSinceRegime}%
+                              </span>
+                            )}
+                            <span className="text-[10px] text-[#555]">Conv: {e.conviction}</span>
+                          </div>
                         </div>
                       ))}
                     </div>

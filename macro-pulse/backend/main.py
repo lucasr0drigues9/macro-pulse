@@ -965,11 +965,22 @@ def get_china_transition():
     """China transition outlook — probabilities and ETF opportunities."""
     try:
         from china_api_config import CHINA_REGIME_ETFS, CHINA_TRANSITION_GUIDANCE
+        import yfinance as _yf
 
         # Use confirmed regime from geo layer
         regime_data = get_china_regime()
         regime = regime_data.get("regime", "Deflation")
         months = regime_data.get("consecutiveMonths", 1)
+        period_start = regime_data.get("periodStart", "2026-01-01")
+
+        def _get_ret(ticker: str) -> float | None:
+            try:
+                h = _yf.Ticker(ticker).history(start=period_start)
+                if len(h) >= 2:
+                    return round((float(h["Close"].iloc[-1]) - float(h["Close"].iloc[0])) / float(h["Close"].iloc[0]) * 100, 1)
+            except Exception:
+                pass
+            return None
 
         outlook = []
         for target in ["Stagflation", "Goldilocks", "Reflation", "Deflation"]:
@@ -978,14 +989,18 @@ def get_china_transition():
             guide = CHINA_TRANSITION_GUIDANCE.get(target, {})
             etfs = CHINA_REGIME_ETFS.get(target, [])
 
-            # Probabilities based on current Deflation regime
+            # Probabilities based on current regime
             prob = 20
             if regime == "Deflation" and target == "Reflation":
-                prob = 45  # Tepper thesis — most likely exit
+                prob = 45
             elif regime == "Deflation" and target == "Goldilocks":
                 prob = 20
             elif regime == "Deflation" and target == "Stagflation":
-                prob = 15  # Least likely from deflation
+                prob = 15
+            elif regime == "Stagflation" and target == "Deflation":
+                prob = 35
+            elif regime == "Stagflation" and target == "Reflation":
+                prob = 25
 
             outlook.append({
                 "regime": target,
@@ -994,7 +1009,8 @@ def get_china_transition():
                 "signals": guide.get("confirmation_signals", []),
                 "description": guide.get("description", ""),
                 "etfs": [
-                    {"ticker": e["ticker"], "name": e["name"], "conviction": e["conviction"]}
+                    {"ticker": e["ticker"], "name": e["name"], "conviction": e["conviction"],
+                     "returnSinceRegime": _get_ret(e["ticker"])}
                     for e in etfs
                 ],
             })
