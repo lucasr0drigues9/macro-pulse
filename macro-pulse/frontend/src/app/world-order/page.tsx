@@ -866,44 +866,48 @@ export default function WorldOrderPage() {
         </div>
       </section>
 
-      {/* Power Rankings */}
+      {/* Power Rankings — compact */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Global Power Rankings</h2>
-        <p className="text-xs text-[#555] mb-4">Ranked by overall power score across Dalio&apos;s 18 determinants</p>
+        <p className="text-xs text-[#555] mb-4">Dalio&apos;s 18 determinants — who leads, who&apos;s closing the gap</p>
 
-        <div className="space-y-2">
-          {ranked.map((c, i) => {
+        {/* Top 3 highlighted */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {ranked.slice(0, 3).map((c, i) => {
             const score = getOverallScore(c.scores);
             const color = CAMP_COLORS[c.allianceCamp];
-            const strongest = getStrongestDeterminant(c.scores);
-            const weakest = getWeakestDeterminant(c.scores);
-            const sig = c.investment.signal;
             return (
-              <div key={c.code} className="flex items-center gap-3 p-3 rounded-lg bg-[#111] border border-[#222]">
-                <span className="text-lg font-bold text-[#333] w-8 text-right">#{i + 1}</span>
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                <span className="font-bold text-sm text-[#e0e0e0] w-28">{c.name}</span>
-                <div className="flex-1 h-3 bg-[#181818] rounded overflow-hidden hidden sm:block">
-                  <div className="h-full rounded" style={{ width: `${score * 10}%`, backgroundColor: color }} />
-                </div>
-                <span className="font-bold text-sm w-8" style={{ color }}>{score}</span>
-                <span className="text-[10px] text-[#555] hidden md:inline w-24">Best: {strongest}</span>
-                <span className="text-[10px] text-[#555] hidden md:inline w-24">Weak: {weakest}</span>
-                <span
-                  className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0"
-                  style={{ color: SIGNAL_COLORS[sig], backgroundColor: SIGNAL_COLORS[sig] + "20" }}
-                >
-                  {sig}
-                </span>
+              <div key={c.code} className="p-3 rounded-lg border text-center" style={{ borderColor: color + "40", backgroundColor: color + "08" }}>
+                <div className="text-xs text-[#555]">#{i + 1}</div>
+                <div className="text-lg font-bold text-[#e0e0e0]">{c.name}</div>
+                <div className="text-2xl font-bold mt-1" style={{ color }}>{score}</div>
+                <div className="text-[10px] text-[#555] mt-1">Best: {getStrongestDeterminant(c.scores)}</div>
+                <div className="text-[10px] text-[#555]">Weak: {getWeakestDeterminant(c.scores)}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Compact list for rest */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+          {ranked.slice(3).map((c, i) => {
+            const score = getOverallScore(c.scores);
+            const color = CAMP_COLORS[c.allianceCamp];
+            return (
+              <div key={c.code} className="flex items-center gap-2 p-2 rounded bg-[#111] border border-[#222]">
+                <span className="text-xs text-[#333]">#{i + 4}</span>
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                <span className="text-xs font-bold text-[#e0e0e0] flex-1">{c.name}</span>
+                <span className="text-xs font-bold" style={{ color }}>{score}</span>
               </div>
             );
           })}
         </div>
 
         <SectionChat
-          context="Global power rankings based on Dalio's 18 determinants of national power (education, technology, military, trade, financial center status, reserve currency, etc). Countries ranked by overall score with strongest/weakest determinant shown."
+          context="Global power rankings. Top 3: US, China, and the next closest. Based on Dalio's 18 determinants (education, tech, military, trade, finance, reserves, debt, equality, rule of law, infrastructure, resources, alliances, leadership)."
           label="Ask about power rankings"
-          suggestions={["Why is China ranked where it is?", "Which country is rising fastest?", "How does military spending affect the ranking?"]}
+          suggestions={["Why is China ranked where it is?", "Which country is rising fastest?", "What's the US weakest determinant?"]}
         />
       </section>
 
