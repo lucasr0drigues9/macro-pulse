@@ -19,14 +19,11 @@ export default function HomePage() {
   const [euAlloc, setEuAlloc] = useState<RegimeAllocation | null>(null);
   const [cnAlloc, setCnAlloc] = useState<RegimeAllocation | null>(null);
   const [usPerformance, setUsPerformance] = useState<{ assets: { ticker: string; name: string; returnPct: number; category: string }[]; regimeStartDate: string } | null>(null);
-  const [aiInterpretation, setAiInterpretation] = useState<string | null>(null);
-
   useEffect(() => {
     fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUsAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/eu/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setEuAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setCnAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/performance")).then((r) => r.json()).then((d) => { if (d.assets) setUsPerformance(d); }).catch(() => {});
-    fetch(apiUrl("/api/interpretation")).then((r) => r.json()).then((d) => { if (d.interpretation || d.situation) setAiInterpretation(d.interpretation || d.situation); }).catch(() => {});
   }, []);
 
   function AllocationColumn({ flag, label, data, href, source }: {
@@ -231,36 +228,45 @@ export default function HomePage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* AI Interpretation — only show if it matches current regimes */}
-      {aiInterpretation && (() => {
-        const usRegime = usAlloc?.regime || "";
-        const euRegime = euAlloc?.regime || "";
-        const cnRegime = cnAlloc?.regime || "";
-        const text = aiInterpretation.toLowerCase();
-        // Check if the interpretation mentions regimes that don't match current signals
-        const stale = (usRegime && text.includes("stagflation") && usRegime !== "Stagflation" && !text.includes(usRegime.toLowerCase()))
-          || (euRegime && text.includes("europe") && text.includes("stagflation") && euRegime !== "Stagflation")
-          || (cnRegime && text.includes("china") && text.includes("deflation") && cnRegime !== "Deflation");
+      {/* What this means — derived from live regime data, not cached synthesis */}
+      {usAlloc && euAlloc && cnAlloc && (() => {
+        const us = usAlloc.regime;
+        const eu = euAlloc.regime;
+        const cn = cnAlloc.regime;
+
+        // Build interpretation from the actual live data
+        const allStagflation = us === "Stagflation" && eu === "Stagflation" && cn === "Stagflation";
+        const allSame = us === eu && eu === cn;
+
+        let interpretation = "";
+        if (allStagflation) {
+          interpretation = `All three economies are in Stagflation — the strongest possible bearish signal for growth assets. Energy (XLE, IOGP.L), gold (GLD, SGLD.L), and commodities (DBC) benefit from inflation pressure across all major economies simultaneously. The Hormuz closure is the common catalyst, cutting oil supply to both Western and Chinese markets. This alignment is rare and historically produces the strongest returns for real assets.`;
+        } else if (allSame) {
+          interpretation = `All three economies are in ${us}. When the world's three largest economic blocs agree on the same regime, capital flows are unidirectional and conviction is at its highest. The current picks are supported by global alignment.`;
+        } else {
+          const regimes = [
+            { label: "US", regime: us },
+            { label: "Europe", regime: eu },
+            { label: "China", regime: cn },
+          ];
+          const unique = Array.from(new Set(regimes.map((r) => r.regime)));
+          if (unique.length === 2) {
+            const majority = regimes.filter((r) => r.regime === us).length >= 2 ? us : eu;
+            const outlierEntry = regimes.find((r) => r.regime !== majority);
+            interpretation = `${regimes.filter((r) => r.regime === majority).map((r) => r.label).join(" and ")} are in ${majority}, while ${outlierEntry?.label} diverges with ${outlierEntry?.regime}. The majority signal (${majority}) dominates global capital flows — position primarily for ${majority} but monitor ${outlierEntry?.label} for signs of convergence or further divergence.`;
+          } else {
+            interpretation = `Three different regimes across three economies: US (${us}), Europe (${eu}), China (${cn}). No dominant signal — capital flows are fragmented. In this environment, real assets (gold, commodities) tend to outperform as they benefit from uncertainty regardless of which regime wins.`;
+          }
+        }
 
         return (
           <section className="px-4 py-8 max-w-5xl mx-auto">
             <div className="p-4 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs text-[#555]">What this means right now</span>
-                <div className="flex items-center gap-2">
-                  {stale && <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#eab30820] text-[#eab308]">May be stale</span>}
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#222] text-[#555]">AI synthesis</span>
-                </div>
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#22c55e20] text-[#22c55e]">Live</span>
               </div>
-              {stale && (
-                <p className="text-[10px] text-[#eab308] mb-2">
-                  This interpretation may reference outdated regime readings. The live signals above are more current.
-                </p>
-              )}
-              <p className="text-xs text-[#888] italic leading-relaxed">{aiInterpretation}</p>
-              <p className="text-[10px] text-[#333] mt-2">
-                AI-generated interpretation. Refreshes every 24 hours. ETF mentions for educational purposes only.
-              </p>
+              <p className="text-xs text-[#888] leading-relaxed">{interpretation}</p>
             </div>
           </section>
         );
