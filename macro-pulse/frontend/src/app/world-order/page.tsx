@@ -546,79 +546,36 @@ export default function WorldOrderPage() {
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">The Emerging Third Pole</h2>
         <p className="text-xl font-bold text-[#e0e0e0] mb-1">European Strategic Autonomy</p>
-        <p className="text-xs text-[#555] mb-6">Europe is structurally building independence in defence, energy, and technology. The companies enabling this have outperformed SPY in every sector since Russia invaded Ukraine.</p>
+        <p className="text-xs text-[#555] mb-4">Europe is building independence in defence, energy, and technology — forced by necessity, funded by governments, outperforming every benchmark since Ukraine.</p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#6b8e5a" }}>
-            <div className="text-xs font-bold text-[#6b8e5a] uppercase tracking-wider mb-2">Defence</div>
-            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">EUAD</div>
-            <p className="text-xs text-[#888] leading-relaxed mb-2">iShares European Defence UCITS ETF — pure-play European rearmament. Rheinmetall, BAE, Leonardo, Saab. {"\u20AC"}800B ReArm Europe fund.</p>
-            <div className="text-xs text-[#22c55e]">Works in all regimes — policy-driven spending</div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#e09030" }}>
-            <div className="text-xs font-bold text-[#e09030] uppercase tracking-wider mb-2">Energy Independence</div>
-            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">IOGP</div>
-            <p className="text-xs text-[#888] leading-relaxed mb-2">iShares Oil &amp; Gas UCITS — Equinor, TotalEnergies, Shell. Russian gas share fell from 40% to 8%.</p>
-            <div className="text-xs text-[#ef4444]">Stagflation pick + structural energy thesis</div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#3b82f6" }}>
-            <div className="text-xs font-bold text-[#3b82f6] uppercase tracking-wider mb-2">Technology Sovereignty</div>
-            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">ASML</div>
-            <p className="text-xs text-[#888] leading-relaxed mb-2">100% global monopoly on EUV lithography. Every advanced chip requires their equipment. The EU Chips Act ({"\u20AC"}43B) backstops this.</p>
-            <div className="text-xs text-[#eab308]">Single stock risk — but no ETF alternative exists</div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-[#111] border-l-2 border border-[#222]" style={{ borderLeftColor: "#a855f7" }}>
-            <div className="text-xs font-bold text-[#a855f7] uppercase tracking-wider mb-2">Critical Materials</div>
-            <div className="text-2xl font-bold text-[#e0e0e0] mb-1">NHY</div>
-            <p className="text-xs text-[#888] leading-relaxed mb-2">Norsk Hydro — lowest-carbon aluminium globally. Critical for defence, aerospace, EVs. Norwegian, NOK denominated, Nordnet accessible.</p>
-            <div className="text-xs text-[#22c55e]">Stagflation + Reflation pick</div>
-          </div>
+        {/* Compact: 4 positions in one row with stats integrated */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+          {[
+            { ticker: "EUAD", sector: "Defence", stat: "1.5→2.5% GDP", color: "#6b8e5a", note: "All regimes" },
+            { ticker: "IOGP", sector: "Energy", stat: "40→8% RU gas", color: "#e09030", note: "Stagflation pick" },
+            { ticker: "ASML", sector: "Technology", stat: "100% EUV", color: "#3b82f6", note: "Single stock risk" },
+            { ticker: "NHY", sector: "Materials", stat: "NOK listed", color: "#a855f7", note: "Stag + Reflation" },
+          ].map((p) => (
+            <div key={p.ticker} className="p-3 rounded-lg border text-center" style={{ borderColor: p.color + "40", backgroundColor: p.color + "08" }}>
+              <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: p.color }}>{p.sector}</div>
+              <div className="text-xl font-bold text-[#e0e0e0]">{p.ticker}</div>
+              <div className="text-[10px] text-[#888] mt-1">{p.stat}</div>
+              <div className="text-[10px] mt-1" style={{ color: p.color }}>{p.note}</div>
+            </div>
+          ))}
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
-            <div className="text-xs text-[#555]">Defence spending</div>
-            <div className="text-lg font-bold text-[#e0e0e0]">1.5% → 2.5%+</div>
-            <div className="text-[10px] text-[#555]">GDP commitment</div>
-          </div>
-          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
-            <div className="text-xs text-[#555]">Russian gas</div>
-            <div className="text-lg font-bold text-[#e0e0e0]">40% → 8%</div>
-            <div className="text-[10px] text-[#555]">of EU imports</div>
-          </div>
-          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
-            <div className="text-xs text-[#555]">EUAD since launch</div>
-            <div className="text-lg font-bold text-[#22c55e]">+820%</div>
-            <div className="text-[10px] text-[#555]">Rheinmetall</div>
-          </div>
-          <div className="p-3 rounded bg-[#111] border border-[#222] text-center">
-            <div className="text-xs text-[#555]">EU Chips Act</div>
-            <div className="text-lg font-bold text-[#e0e0e0]">{"\u20AC"}43B</div>
-            <div className="text-[10px] text-[#555]">semiconductor investment</div>
-          </div>
-        </div>
-
-        {/* Historical analogies */}
-        <div className="p-4 rounded-lg bg-[#111] border border-[#222] mb-6">
-          <h3 className="text-sm font-bold text-[#e0e0e0] mb-3">Why Europe Becomes a Third Pole — Historical Precedent</h3>
-          <div className="space-y-4 text-xs text-[#888] leading-relaxed">
-            <div>
-              <span className="text-[#3b82f6] font-bold">The Byzantine Pattern.</span> When Rome split into Western and Eastern empires, the Eastern half (Byzantium) survived a thousand years longer by building autonomous military, economic, and diplomatic capabilities. Europe today is in the early stages of the same structural separation from US dependency — forced by the same catalyst: the protecting power can no longer guarantee security.
-            </div>
-            <div>
-              <span className="text-[#eab308] font-bold">The Cold War Parallel.</span> During US-Soviet competition, Western Europe emerged as a third economic pole — not militarily independent, but economically sovereign. The EU, single market, and euro were built during this period. Today&apos;s US-China competition is triggering the same dynamic but this time including military independence (defence spending 1.5% → 2.5%+ GDP).
-            </div>
-            <div>
-              <span className="text-[#22c55e] font-bold">The Dalio Framework.</span> In every historical power transition Dalio documents, the regions that benefit most are those that (1) avoid direct conflict, (2) build autonomous capabilities, and (3) trade with both sides. Europe is doing all three. The EU trades with both the US and China, is building defence independence, and maintains diplomatic relationships across all blocs. This is the optimal positioning during a transition.
-            </div>
-          </div>
+        {/* The thesis in one line + historical backing */}
+        <div className="p-3 rounded bg-[#111] border border-[#222] mb-4">
+          <p className="text-xs text-[#888] leading-relaxed">
+            <span className="text-[#3b82f6] font-bold">Byzantine pattern:</span> When the protecting power can no longer guarantee security, dependencies build their own. Byzantium survived 1,000 years after Rome fell.{" "}
+            <span className="text-[#eab308] font-bold">Cold War parallel:</span> EU, single market, and euro were all built during US-Soviet competition. This time Europe adds military independence.{" "}
+            <span className="text-[#22c55e] font-bold">Dalio&apos;s rule:</span> Regions that avoid direct conflict, build capabilities, and trade with both sides benefit most in every transition. Europe is doing all three.
+          </p>
         </div>
 
         <div className="text-center">
-          <Link href="/europe" className="inline-block px-6 py-3 rounded bg-[#222] text-sm text-[#e0e0e0] hover:bg-[#333] transition-colors">
+          <Link href="/europe" className="inline-block px-5 py-2 rounded bg-[#222] text-xs text-[#e0e0e0] hover:bg-[#333] transition-colors">
             Full European tracker — regime, allocation, timeline →
           </Link>
         </div>
