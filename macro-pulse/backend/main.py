@@ -719,33 +719,64 @@ def get_china_regime():
     indicators = {}
 
     try:
-        # Copper 3-month momentum (China demand proxy)
-        copper_mom = None
-        try:
-            r = _req.get("https://query2.finance.yahoo.com/v8/finance/chart/HG=F",
-                        params={"interval": "1d", "range": "6mo"},
-                        headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-            closes = r.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-            valid = [c for c in closes if c is not None]
-            if len(valid) >= 60:
-                copper_mom = round((valid[-1] - valid[-63]) / valid[-63] * 100, 1) if len(valid) >= 63 else round((valid[-1] - valid[0]) / valid[0] * 100, 1)
-                indicators["copper"] = {"value": round(valid[-1], 2), "momentum3m": copper_mom}
-        except Exception:
-            pass
+        def _fetch_market_indicator(ticker, label):
+            """Fetch daily prices, compute 3m momentum, 6m averages, trend, and monthly history."""
+            try:
+                r = _req.get(f"https://query2.finance.yahoo.com/v8/finance/chart/{ticker}",
+                            params={"interval": "1d", "range": "1y"},
+                            headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+                data = r.json()["chart"]["result"][0]
+                closes = data["indicators"]["quote"][0]["close"]
+                timestamps = data.get("timestamp", [])
+                valid = [(t, c) for t, c in zip(timestamps, closes) if c is not None]
+                if len(valid) < 60:
+                    return None, None
 
-        # FXI 3-month momentum (market sentiment on China)
-        fxi_mom = None
-        try:
-            r = _req.get("https://query2.finance.yahoo.com/v8/finance/chart/FXI",
-                        params={"interval": "1d", "range": "6mo"},
-                        headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-            closes = r.json()["chart"]["result"][0]["indicators"]["quote"][0]["close"]
-            valid = [c for c in closes if c is not None]
-            if len(valid) >= 60:
-                fxi_mom = round((valid[-1] - valid[-63]) / valid[-63] * 100, 1) if len(valid) >= 63 else round((valid[-1] - valid[0]) / valid[0] * 100, 1)
-                indicators["fxi"] = {"value": round(valid[-1], 2), "momentum3m": fxi_mom}
-        except Exception:
-            pass
+                current = valid[-1][1]
+                # 3-month momentum
+                idx_3m = max(0, len(valid) - 63)
+                mom_3m = round((current - valid[idx_3m][1]) / valid[idx_3m][1] * 100, 1)
+
+                # Monthly samples for sparkline (last 12 months, ~1 per 21 trading days)
+                from datetime import datetime as _dtm
+                history = []
+                step = max(1, len(valid) // 12)
+                for i in range(0, len(valid), step):
+                    dt = _dtm.fromtimestamp(valid[i][0])
+                    history.append({"date": dt.strftime("%Y-%m"), "value": round(valid[i][1], 2)})
+                # Ensure latest is included
+                dt_last = _dtm.fromtimestamp(valid[-1][0])
+                if not history or history[-1]["date"] != dt_last.strftime("%Y-%m"):
+                    history.append({"date": dt_last.strftime("%Y-%m"), "value": round(current, 2)})
+
+                # 6m avg vs prior 6m avg (using daily closes)
+                mid = len(valid) // 2
+                recent_vals = [c for _, c in valid[mid:]]
+                prior_vals = [c for _, c in valid[:mid]]
+                recent_avg = round(sum(recent_vals) / len(recent_vals), 2) if recent_vals else None
+                prior_avg = round(sum(prior_vals) / len(prior_vals), 2) if prior_vals else None
+                trend = "rising" if recent_avg and prior_avg and recent_avg > prior_avg else "falling"
+
+                return mom_3m, {
+                    "value": round(current, 2),
+                    "momentum3m": mom_3m,
+                    "recent6mAvg": recent_avg,
+                    "prior6mAvg": prior_avg,
+                    "trend": trend,
+                    "history": history,
+                }
+            except Exception:
+                return None, None
+
+        # Copper (China demand proxy)
+        copper_mom, copper_data = _fetch_market_indicator("HG=F", "copper")
+        if copper_data:
+            indicators["copper"] = copper_data
+
+        # FXI (market sentiment on China)
+        fxi_mom, fxi_data = _fetch_market_indicator("FXI", "fxi")
+        if fxi_data:
+            indicators["fxi"] = fxi_data
 
         # USD/CNH (yuan direction)
         try:

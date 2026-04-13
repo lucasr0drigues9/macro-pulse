@@ -267,26 +267,53 @@ export default function ChinaPage() {
           <p className="text-xs text-[#555] mb-4">Real-time data driving the regime calculation — updated daily from global markets.</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-            {regime.indicators.copper && (
-              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
-                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Copper (Growth)</div>
-                <div className="text-lg font-bold text-[#e0e0e0]">${regime.indicators.copper.value}</div>
-                <div className={`text-xs font-bold ${regime.indicators.copper.momentum3m >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                  3m: {regime.indicators.copper.momentum3m >= 0 ? "+" : ""}{regime.indicators.copper.momentum3m}%
+            {[
+              { key: "copper" as const, label: "Copper (Growth)", subtitle: "China consumes 50%+ of global copper", prefix: "$" },
+              { key: "fxi" as const, label: "FXI (Sentiment)", subtitle: "Market's real-time vote on China", prefix: "$" },
+            ].map(({ key, label, subtitle, prefix }) => {
+              const ind = regime.indicators?.[key] as { value: number; momentum3m: number; recent6mAvg?: number; prior6mAvg?: number; trend?: string; history?: { date: string; value: number }[] } | undefined;
+              if (!ind) return null;
+              const trendColor = ind.trend === "rising" ? "#22c55e" : "#ef4444";
+              const trendLabel = ind.trend === "rising" ? "Trending up" : "Trending down";
+              return (
+                <div key={key} className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">{label}</div>
+                  <div className="text-lg font-bold text-[#e0e0e0]">{prefix}{ind.value}</div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs font-bold ${ind.momentum3m >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                      3m: {ind.momentum3m >= 0 ? "+" : ""}{ind.momentum3m}%
+                    </span>
+                    <span className="text-[10px]" style={{ color: trendColor }}>{trendLabel}</span>
+                  </div>
+                  {/* Sparkline */}
+                  {ind.history && ind.history.length > 3 && (() => {
+                    const vals = ind.history.map((h) => h.value);
+                    const min = Math.min(...vals) * 0.97;
+                    const max = Math.max(...vals) * 1.03;
+                    const range = max - min || 1;
+                    const w = 120, h = 30, px = 2, py = 2;
+                    const points = vals.map((v, i) => {
+                      const x = px + (i / (vals.length - 1)) * (w - px * 2);
+                      const y = py + (1 - (v - min) / range) * (h - py * 2);
+                      return `${x},${y}`;
+                    }).join(" ");
+                    return (
+                      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-8 mt-1">
+                        <polyline points={points} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinecap="round" />
+                      </svg>
+                    );
+                  })()}
+                  {ind.recent6mAvg !== undefined && ind.prior6mAvg !== undefined && (
+                    <div className="text-[10px] text-[#555] mt-1">
+                      6m avg: <span style={{ color: trendColor }}>{prefix}{ind.recent6mAvg}</span>
+                      <span className="text-[#333] mx-1">vs prior</span>
+                      {prefix}{ind.prior6mAvg}
+                    </div>
+                  )}
+                  <div className="text-[10px] text-[#555] mt-1">{subtitle}</div>
                 </div>
-                <div className="text-[10px] text-[#555] mt-1">China consumes 50%+ of global copper</div>
-              </div>
-            )}
-            {regime.indicators.fxi && (
-              <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
-                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">FXI (Sentiment)</div>
-                <div className="text-lg font-bold text-[#e0e0e0]">${regime.indicators.fxi.value}</div>
-                <div className={`text-xs font-bold ${regime.indicators.fxi.momentum3m >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                  3m: {regime.indicators.fxi.momentum3m >= 0 ? "+" : ""}{regime.indicators.fxi.momentum3m}%
-                </div>
-                <div className="text-[10px] text-[#555] mt-1">Market&apos;s real-time vote on China</div>
-              </div>
-            )}
+              );
+            })}
             {regime.indicators.cnh && (
               <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
                 <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">USD/CNH (Yuan)</div>
