@@ -309,10 +309,39 @@ export default function ChinaPage() {
       {transition && (
         <section className="px-4 py-8 max-w-5xl mx-auto">
           <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">China Transition Radar</h2>
-          <p className="text-xs text-[#555] mb-1">When Beijing acts, these are the ETFs to watch</p>
+          <p className="text-xs text-[#555] mb-1">Current regime ETFs + what to rotate into when the regime shifts</p>
           <p className="text-xs text-[#888] mb-4">
             Current: <span className="font-bold" style={{ color: REGIME_COLORS[transition.currentRegime] || "#888" }}>{transition.currentRegime}</span> — Month {transition.durationStats.months}
           </p>
+
+          {/* Current regime ETFs */}
+          {allocation && (
+            <div className="mb-6 p-4 rounded-lg border" style={{ borderColor: (REGIME_COLORS[transition.currentRegime] || "#888") + "40", backgroundColor: (REGIME_COLORS[transition.currentRegime] || "#888") + "10" }}>
+              <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: REGIME_COLORS[transition.currentRegime] || "#888" }}>
+                Current picks — {transition.currentRegime}
+              </div>
+              <div className="space-y-1.5">
+                {allocation.overweight.map((etf) => (
+                  <div key={etf.ticker} className="flex items-center justify-between text-xs">
+                    <div>
+                      <span className="font-bold text-[#e0e0e0]">{etf.ticker}</span>
+                      <span className="text-[#555] ml-2">{etf.name}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      {typeof etf.returnSinceRegime === "number" && (
+                        <span className={`font-bold ${etf.returnSinceRegime >= 0 ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                          {etf.returnSinceRegime >= 0 ? "+" : ""}{etf.returnSinceRegime}%
+                        </span>
+                      )}
+                      <span className="text-[#555]">{etf.weight}%</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-3">If the regime shifts → rotate to:</div>
           <div className="space-y-4">
             {transition.outlook.map((o) => {
               const color = REGIME_COLORS[o.regime] || "#888";
@@ -334,13 +363,16 @@ export default function ChinaPage() {
                         ))}
                       </div>
                     )}
-                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">ETFs to watch</div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">ETFs to buy if this transition confirms</div>
+                    <div className="space-y-1.5">
                       {o.etfs.map((e) => (
-                        <span key={e.ticker} className="text-xs px-2 py-1 rounded bg-[#0a0a0a] border border-[#222]">
-                          <span className="font-bold text-[#e0e0e0]">{e.ticker}</span>{" "}
-                          <span className="text-[#555]">{e.name}</span>
-                        </span>
+                        <div key={e.ticker} className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a] flex items-center justify-between">
+                          <div>
+                            <span className="text-xs font-bold text-[#e0e0e0]">{e.ticker}</span>
+                            <span className="text-[10px] text-[#555] ml-2">{e.name}</span>
+                          </div>
+                          <span className="text-[10px] text-[#555]">Conviction: {e.conviction}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
