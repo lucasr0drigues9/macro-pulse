@@ -19,11 +19,13 @@ export default function HomePage() {
   const [euAlloc, setEuAlloc] = useState<RegimeAllocation | null>(null);
   const [cnAlloc, setCnAlloc] = useState<RegimeAllocation | null>(null);
   const [usPerformance, setUsPerformance] = useState<{ assets: { ticker: string; name: string; returnPct: number; category: string }[]; regimeStartDate: string } | null>(null);
+  const [timing, setTiming] = useState<{ ticker: string; theme: string; color: string; isUcits: boolean; price: number; rsi: number; vsMa200: number; drawdown: number; high52w: number; low52w: number; score: number; signal: string }[]>([]);
   useEffect(() => {
     fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUsAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/eu/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setEuAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setCnAlloc(d); }).catch(() => {});
     fetch(apiUrl("/api/performance")).then((r) => r.json()).then((d) => { if (d.assets) setUsPerformance(d); }).catch(() => {});
+    fetch(apiUrl("/api/structural-timing")).then((r) => r.json()).then((d) => { if (d.themes) setTiming(d.themes); }).catch(() => {});
   }, []);
 
   function AllocationColumn({ flag, label, data, href, source }: {
@@ -356,6 +358,73 @@ export default function HomePage() {
           suggestions={["How do I size structural vs regime positions?", "Which theme has the strongest catalyst right now?", "Are there other structural themes I'm missing?"]}
         />
       </section>
+
+      {/* ══ ENTRY TIMING ══ */}
+      {timing.length > 0 && (
+        <section className="px-4 py-8 max-w-5xl mx-auto">
+          <h2 className="text-lg font-bold text-[#e0e0e0] mb-1">Entry Timing</h2>
+          <p className="text-xs text-[#555] mb-4">Should you buy now or wait for a pullback? RSI, distance from 200-day moving average, and drawdown from 52-week high.</p>
+
+          <div className="space-y-2 mb-4">
+            {timing.filter((t) => !t.isUcits).map((t) => {
+              const signalColor = t.signal === "Strong Buy" ? "#22c55e" : t.signal === "Buy" ? "#22c55e" : t.signal === "Wait for pullback" ? "#eab308" : "#ef4444";
+              const rsiColor = t.rsi < 30 ? "#22c55e" : t.rsi < 50 ? "#eab308" : t.rsi > 70 ? "#ef4444" : "#888";
+              const maColor = t.vsMa200 < 0 ? "#22c55e" : t.vsMa200 < 10 ? "#eab308" : "#ef4444";
+              const ucitsMatch = timing.find((u) => u.isUcits && u.theme === t.theme);
+              return (
+                <div key={t.ticker} className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-1 h-8 rounded" style={{ backgroundColor: t.color }} />
+                      <div>
+                        <span className="text-sm font-bold text-[#e0e0e0]">{t.ticker}</span>
+                        <span className="text-[10px] text-[#555] ml-2">{t.theme}</span>
+                        {ucitsMatch && <span className="text-[10px] text-[#333] ml-2">UCITS: {ucitsMatch.ticker}</span>}
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold px-2 py-1 rounded" style={{ color: signalColor, backgroundColor: signalColor + "20" }}>
+                      {t.signal}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-3 text-center">
+                    <div>
+                      <div className="text-[10px] text-[#555]">Price</div>
+                      <div className="text-xs font-bold text-[#e0e0e0]">${t.price}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[#555]">RSI</div>
+                      <div className="text-xs font-bold" style={{ color: rsiColor }}>{t.rsi}</div>
+                      <div className="text-[8px] text-[#333]">{t.rsi < 30 ? "Oversold" : t.rsi > 70 ? "Overbought" : "Neutral"}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[#555]">vs 200MA</div>
+                      <div className="text-xs font-bold" style={{ color: maColor }}>{t.vsMa200 >= 0 ? "+" : ""}{t.vsMa200}%</div>
+                      <div className="text-[8px] text-[#333]">{t.vsMa200 < 0 ? "Below — dip" : t.vsMa200 < 10 ? "Near" : "Extended"}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] text-[#555]">From High</div>
+                      <div className="text-xs font-bold" style={{ color: t.drawdown < -10 ? "#22c55e" : t.drawdown < -5 ? "#eab308" : "#888" }}>{t.drawdown}%</div>
+                      <div className="text-[8px] text-[#333]">{t.drawdown < -20 ? "Deep dip" : t.drawdown < -10 ? "Pullback" : "Near high"}</div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="p-3 rounded bg-[#111] border border-[#222]">
+            <p className="text-[10px] text-[#888] leading-relaxed">
+              <span className="text-[#e0e0e0] font-bold">How to read this:</span> &quot;Strong Buy&quot; = RSI oversold + below 200MA + significant drawdown from high. These moments are rare for structural themes — they typically happen during broad market panics (COVID crash, banking crisis). &quot;Extended&quot; = the thesis is intact but the price has run ahead. Consider waiting for a pullback or dollar-cost averaging instead of a lump sum.
+            </p>
+          </div>
+
+          <SectionChat
+            context="Entry timing for structural theme ETFs. Shows RSI, distance from 200-day moving average, and drawdown from 52-week high. Scoring: Strong Buy (oversold + below MA + deep drawdown), Buy, Wait for pullback, Extended. For long-term structural positions, timing matters less but buying dips improves returns."
+            label="Ask about entry timing"
+            suggestions={["Should I wait for a pullback on COPX?", "What RSI level is a good entry?", "Is dollar-cost averaging better than timing?"]}
+          />
+        </section>
+      )}
 
       <div className="border-t border-[#181818]" />
 

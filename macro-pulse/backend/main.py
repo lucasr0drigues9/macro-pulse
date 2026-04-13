@@ -1346,6 +1346,89 @@ Rules:
         return {"error": str(e)}
 
 
+@app.get("/api/structural-timing")
+def get_structural_timing():
+    """Entry timing signals for structural theme ETFs."""
+    import requests as _req
+
+    themes = [
+        {"ticker": "COPX", "ucits": "COPP.L", "theme": "Energy Transition", "color": "#22c55e"},
+        {"ticker": "GLD", "ucits": "SGLD.L", "theme": "De-dollarisation", "color": "#eab308"},
+        {"ticker": "SMH", "ucits": "SEMI.L", "theme": "AI Infrastructure", "color": "#3b82f6"},
+    ]
+
+    results = []
+    for t in themes:
+        for variant in [t["ticker"], t["ucits"]]:
+            try:
+                url = f"https://query2.finance.yahoo.com/v8/finance/chart/{variant}"
+                r = _req.get(url, params={"interval": "1d", "range": "1y"},
+                            headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+                data = r.json()["chart"]["result"][0]
+                closes = data["indicators"]["quote"][0]["close"]
+                valid = [c for c in closes if c is not None]
+
+                if len(valid) < 50:
+                    continue
+
+                current = valid[-1]
+                high_52w = max(valid)
+                low_52w = min(valid)
+                ma200 = sum(valid[-200:]) / 200 if len(valid) >= 200 else sum(valid) / len(valid)
+                ma50 = sum(valid[-50:]) / 50
+
+                # RSI 14
+                gains, losses = [], []
+                for i in range(-14, 0):
+                    diff = valid[i] - valid[i - 1]
+                    gains.append(max(0, diff))
+                    losses.append(max(0, -diff))
+                avg_gain = sum(gains) / 14
+                avg_loss = sum(losses) / 14
+                rs = avg_gain / avg_loss if avg_loss > 0 else 100
+                rsi = round(100 - (100 / (1 + rs)))
+
+                drawdown = round((current - high_52w) / high_52w * 100, 1)
+                vs_ma200 = round((current - ma200) / ma200 * 100, 1)
+
+                # Score
+                score = 0
+                if vs_ma200 < -10: score += 3
+                elif vs_ma200 < 0: score += 2
+                elif vs_ma200 < 5: score += 1
+                if rsi < 30: score += 3
+                elif rsi < 40: score += 2
+                elif rsi < 50: score += 1
+                if drawdown < -20: score += 3
+                elif drawdown < -10: score += 2
+                elif drawdown < -5: score += 1
+
+                if score >= 7: signal = "Strong Buy"
+                elif score >= 5: signal = "Buy"
+                elif score >= 3: signal = "Wait for pullback"
+                else: signal = "Extended"
+
+                results.append({
+                    "ticker": variant,
+                    "theme": t["theme"],
+                    "color": t["color"],
+                    "isUcits": variant == t["ucits"],
+                    "price": round(current, 2),
+                    "rsi": rsi,
+                    "ma200": round(ma200, 2),
+                    "vsMa200": vs_ma200,
+                    "high52w": round(high_52w, 2),
+                    "low52w": round(low_52w, 2),
+                    "drawdown": drawdown,
+                    "score": score,
+                    "signal": signal,
+                })
+            except Exception:
+                continue
+
+    return {"themes": results}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "version": "0.2.0", "modes": list(MODE_CONFIG.keys())}
