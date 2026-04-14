@@ -878,12 +878,11 @@ export default function ChinaPage() {
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <SubscribeForm
-          title="Track China's Real Economy"
-          description="Get notified when proxy indicators shift significantly or when Taiwan risk level changes."
-          buttonLabel="Track China"
+          title="The AI Race — Weekly"
+          description="One email per week: new factory announcements, supply chain disruptions, ETF entry opportunities, and robotics milestones. What happened and does it change the plan."
+          buttonLabel="Subscribe"
           source="china"
-          waitlistFeature="china"
-          accent={ACCENT}
+          waitlistFeature="ai_race_weekly"
         />
       </section>
 
