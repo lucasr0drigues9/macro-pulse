@@ -310,11 +310,10 @@ def send_welcome(email: str, source: str = "default") -> bool:
 
     <div style="background:#111;border:1px solid #222;border-radius:8px;padding:16px;margin:24px 0;">
         <p style="margin:0 0 8px;font-size:11px;color:#eab308;text-transform:uppercase;letter-spacing:1px;">
-            One small favour
+            Confirm your email
         </p>
         <p style="margin:0;font-size:13px;color:#888;line-height:1.6;">
-            Click the button below to confirm you received this email. This
-            tells us our delivery pipeline is working and helps future alerts
+            Click below to confirm delivery. This helps future updates
             land in your inbox instead of spam.
         </p>
         <p style="text-align:center;margin:16px 0 0;">
