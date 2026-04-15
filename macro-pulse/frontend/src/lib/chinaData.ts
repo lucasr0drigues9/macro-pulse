@@ -131,18 +131,21 @@ export const strategicCards = [
     content: "Core allies: Russia, Iran, North Korea, Pakistan. Growing Global South influence via Belt and Road (140+ countries). SCO, BRICS+, RCEP provide institutional framework. Key shift: Saudi Arabia joining BRICS+ signals oil-for-yuan era beginning.",
     keyMetric: "140+ BRI member countries",
     status: "Expanding",
+    worldOrderAnchor: "#china-rising",
   },
   {
     title: "Economic Decoupling",
     content: "US tech export restrictions (semiconductors, AI chips) forcing domestic substitution. Huawei's Kirin 9000s chip showed workaround capability. CIPS alternative to SWIFT processing $20T+ annually. Yuan share of global trade settlements reached 4.7%, up from 1.9% in 2020. Bilateral currency swaps with 40+ countries.",
     keyMetric: "CIPS: $20T+ annual volume",
     status: "Accelerating",
+    worldOrderAnchor: "#china-rising",
   },
   {
     title: "Taiwan Risk",
     content: "Dalio estimates 30-40% probability of military conflict by 2028. PLA conducting regular large-scale exercises. US strategic ambiguity increasingly strained by arms sales and diplomatic visits. A Taiwan conflict would destroy semiconductor supply chains (TSMC makes 90% of advanced chips) and end the US-China economic relationship entirely.",
     keyMetric: "30-40% conflict probability (Dalio)",
     status: "Elevated",
+    worldOrderAnchor: "#china-rising",
   },
 ];
 

@@ -332,22 +332,23 @@ export default function HomePage() {
         <p className="text-xs text-[#555] mb-4">The geopolitical context that accelerates the AI & Robotics Race thesis.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {/* Race to Automate */}
+          {/* Big Cycle — Dalio framework */}
           <Link href="/world-order" className="block">
-            <div className="p-4 rounded-lg bg-[#111] border border-[#b4530930] hover:bg-[#151515] transition-colors h-full flex flex-col">
+            <div className="p-4 rounded-lg bg-[#111] border border-[#a855f730] hover:bg-[#151515] transition-colors h-full flex flex-col">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-[10px] font-bold text-[#b45309] uppercase tracking-wider">The Big Picture</div>
+                <div className="text-[10px] font-bold text-[#a855f7] uppercase tracking-wider">The Framework</div>
                 <span className="text-[#555] text-xs">→</span>
               </div>
-              <h3 className="text-sm font-bold text-[#e0e0e0] mb-1">The Race to Automate</h3>
+              <h3 className="text-sm font-bold text-[#e0e0e0] mb-1">Dalio&apos;s 6 stages of empire</h3>
               <p className="text-[10px] text-[#555] leading-relaxed mb-3">
-                The race to automate will decide who leads the next world order. Nations pouring money into the same supply chain.
+                Applied to the US. Where we are now, what comes next, and what history says about every prior transition.
               </p>
-              <div className="flex flex-wrap gap-1 mt-auto">
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#f9731620] text-[#f97316]">🇺🇸 Terafab</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef444420] text-[#ef4444]">🇨🇳 Robots</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#3b82f620] text-[#3b82f6]">🇪🇺 ASML</span>
+              <div className="flex items-center gap-1.5 mt-auto">
+                {[1, 2, 3, 4, 5, 6].map((n) => (
+                  <div key={n} className={`flex-1 h-1.5 rounded ${n === 5 ? "bg-[#a855f7]" : n < 5 ? "bg-[#a855f740]" : "bg-[#222]"}`} />
+                ))}
               </div>
+              <div className="text-[10px] text-[#a855f7] mt-1.5">← Stage 5 now</div>
             </div>
           </Link>
 

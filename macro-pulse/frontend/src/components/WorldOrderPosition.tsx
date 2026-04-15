@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import SectionChat from "@/components/SectionChat";
 
 type StrategicCard = {
@@ -8,6 +9,7 @@ type StrategicCard = {
   content: string;
   keyMetric: string;
   status: string;
+  worldOrderAnchor?: string;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -41,7 +43,10 @@ export default function WorldOrderPosition({
 
   return (
     <section className="px-4 py-8 max-w-5xl mx-auto">
-      <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">{title}</h2>
+      <div className="flex items-baseline justify-between mb-1 gap-3">
+        <h2 className="text-xl font-bold text-[#e0e0e0]">{title}</h2>
+        <Link href="/world-order" className="text-[10px] text-[#3b82f6] hover:underline shrink-0">Full World Order monitor →</Link>
+      </div>
       <p className="text-xs text-[#555] mb-6">{subtitle}</p>
 
       <div className="space-y-3">
@@ -73,6 +78,11 @@ export default function WorldOrderPosition({
                     <span className="font-bold" style={{ color: accent || "#e0e0e0" }}>
                       {card.keyMetric}
                     </span>
+                  </div>
+                  <div className="mt-3">
+                    <Link href={card.worldOrderAnchor ? `/world-order${card.worldOrderAnchor}` : "/world-order"} className="text-[10px] text-[#3b82f6] hover:underline">
+                      Read more on the World Order page →
+                    </Link>
                   </div>
                 </div>
               )}

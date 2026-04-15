@@ -543,6 +543,67 @@ const INDICATOR_DETAILS: Record<string, {
   },
 };
 
+// ── Dollar Decline card drill-downs ──
+const DOLLAR_CARD_DETAILS: Record<string, {
+  title: string;
+  value: string;
+  subtitle: string;
+  color: string;
+  context: string;
+  keyFacts: string[];
+  historicalParallel: string;
+  investmentImplication: string;
+}> = {
+  reserve_share: {
+    title: "USD Reserve Share",
+    value: "58%",
+    subtitle: "Down from 72% in 2000",
+    color: "#3b82f6",
+    context: "The USD has lost 14 percentage points of reserve share over 25 years. This isn't a trading volatility — it's a structural shift. Central banks, not speculators, are making this decision. The trigger: 2022's freezing of Russia's $300B FX reserves convinced every non-aligned central bank that dollar reserves carry political risk. Since then, gold purchases hit record levels and yuan settlement agreements have proliferated. Dalio calls this the 'slow then sudden' phase.",
+    keyFacts: [
+      "USD reserves 2000: 72% of global",
+      "USD reserves 2008: 64%",
+      "USD reserves 2024: 58%",
+      "Pace accelerating: last 5 years -6 points",
+      "Replacement basket: EUR, JPY, CNY, gold",
+    ],
+    historicalParallel: "The Dutch guilder lost reserve status over 40 years (1780-1820). The pound over 30 years (1914-1944). Every transition looks slow for decades then suddenly accelerates — capital flight happens before institutions adjust. The current USD decline is on the same trajectory.",
+    investmentImplication: "Strongest structural case for gold (GLD, SGLD.L). Central banks are price-insensitive buyers — they don't care about technical levels. Also supports emerging market bonds and non-USD reserve currencies (Swiss franc, Norwegian krone, Australian dollar).",
+  },
+  dedollarisation: {
+    title: "De-dollarisation",
+    value: "Accelerating",
+    subtitle: "6+ countries actively moving",
+    color: "#eab308",
+    context: "The BRICS+ expansion to 10 members (2024) added Saudi Arabia, UAE, Egypt, Ethiopia, and Iran — creating a bloc that represents 46% of global population and 36% of GDP. These countries are building real financial infrastructure to bypass the dollar: China's CIPS processes $20T+ annually, Russia settles 40% of trade in yuan, Saudi Arabia accepts yuan for oil, India uses rupee-ruble for Russian oil. This is not a talking point — it's operational.",
+    keyFacts: [
+      "Russia: 40% of trade settled in yuan (2025)",
+      "Saudi Arabia: accepts yuan for oil, joined BRICS+",
+      "China CIPS volume: $20T+/year",
+      "India: rupee-ruble trade with Russia growing",
+      "Iran: entirely sanctioned from USD system",
+    ],
+    historicalParallel: "The 1971 Nixon Shock (ending USD gold convertibility) triggered OPEC's oil embargo and the birth of the petrodollar system. Today's equivalent: weaponising SWIFT (2022 Russia sanctions) triggered the current de-dollarisation wave. Financial systems are fragile when they're weaponised — users find alternatives faster than incumbents expect.",
+    investmentImplication: "The parallel financial system is real and growing. Gold benefits directly. BRICS+ currencies gain settlement share. US Treasuries lose a structural buyer (foreign central banks). Long-term: US must pay higher yields to attract buyers, which compounds the debt burden.",
+  },
+  gold_buying: {
+    title: "Central Bank Gold Buying",
+    value: "Record",
+    subtitle: "1,037 tonnes in 2023",
+    color: "#eab308",
+    context: "Central banks bought 1,037 tonnes of gold in 2023 — the highest on record. 2024 was similar. This is 2-3x the average of the 2010s. The buyers are mostly non-Western: China (officially 225t, likely much more), Poland (130t, a NATO member hedging the dollar), India (16t then 45t), Turkey (76t). This isn't speculation — it's sovereign-level hedging against USD risk.",
+    keyFacts: [
+      "2023 purchases: 1,037 tonnes (record)",
+      "China PBOC: 225t (2023), likely understated",
+      "Poland NBP: 130t — largest European buyer",
+      "India RBI: 16t (2023) → 45t (2024), accelerating",
+      "Turkey: 76t (2023), 52t (2024)",
+    ],
+    historicalParallel: "Between 1933-1941, US gold reserves grew from 6,000 to 20,000 tonnes as Europeans fled to the dollar ahead of WWII. Gold flows are the fastest, most honest indicator of capital flight — they happen before policy changes. The current pattern is the reverse: gold flowing OUT of USD-denominated reserves.",
+    investmentImplication: "Direct beneficiary: gold (GLD, SGLD.L). Secondary beneficiary: gold miners (GDX, GDXJ) which lever to gold price moves. Central bank demand provides a structural floor under gold prices — they don't sell on corrections.",
+  },
+};
+
 // ── Big Cycle stage drill-downs ──
 const STAGE_DETAILS: Record<number, {
   context: string;
@@ -994,6 +1055,7 @@ export default function WorldOrderPage() {
   const [expandedBloc, setExpandedBloc] = useState<AllianceCamp | null>(null);
   const [expandedRanking, setExpandedRanking] = useState<string | null>(null);
   const [expandedStage, setExpandedStage] = useState<number | null>(null);
+  const [expandedDollarCard, setExpandedDollarCard] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -1681,7 +1743,7 @@ export default function WorldOrderPage() {
       </section>
 
       {/* Military Overextension */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
+      <section id="military-overextension" className="px-4 py-8 max-w-5xl mx-auto scroll-mt-20">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Fighting on Multiple Fronts</h2>
         <p className="text-xs text-[#555] mb-4">History shows dominant powers cannot sustain wars on multiple fronts simultaneously. Click any row for detail.</p>
         <div className="overflow-x-auto mb-4">
@@ -1770,7 +1832,7 @@ export default function WorldOrderPage() {
       </section>
 
       {/* Debt */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
+      <section id="financial-burden" className="px-4 py-8 max-w-5xl mx-auto scroll-mt-20">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Financial Burden</h2>
         <p className="text-xs text-[#555] mb-4">Wars are financed by debt. Debt devalues currency. Dalio&apos;s principle: sell debt, buy gold.</p>
 
@@ -1869,17 +1931,31 @@ export default function WorldOrderPage() {
       </section>
 
       {/* Dollar Erosion */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
+      <section id="dollar-decline" className="px-4 py-8 max-w-5xl mx-auto scroll-mt-20">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Dollar Dominance in Decline</h2>
         <p className="text-xs text-[#555] mb-6">Reserve currency erosion is both symptom and accelerant of decline.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-            <div className="text-xs text-[#555] uppercase tracking-wider mb-2">USD Reserve Share</div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+          <button
+            onClick={() => setExpandedDollarCard(expandedDollarCard === "reserve_share" ? null : "reserve_share")}
+            className="p-4 rounded-lg bg-[#111] border text-left transition-colors hover:bg-[#151515]"
+            style={{ borderColor: expandedDollarCard === "reserve_share" ? "#3b82f660" : "#222" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-[#555] uppercase tracking-wider mb-2">USD Reserve Share</div>
+              <span className="text-[#555] text-[10px] leading-none">{expandedDollarCard === "reserve_share" ? "−" : "+"}</span>
+            </div>
             <div className="text-2xl font-bold text-[#3b82f6] mb-1">58%</div>
             <div className="text-xs text-[#555]">Down from 72% in 2000</div>
-          </div>
-          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-            <div className="text-xs text-[#555] uppercase tracking-wider mb-2">De-dollarisation</div>
+          </button>
+          <button
+            onClick={() => setExpandedDollarCard(expandedDollarCard === "dedollarisation" ? null : "dedollarisation")}
+            className="p-4 rounded-lg bg-[#111] border text-left transition-colors hover:bg-[#151515]"
+            style={{ borderColor: expandedDollarCard === "dedollarisation" ? "#eab30860" : "#222" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-[#555] uppercase tracking-wider mb-2">De-dollarisation</div>
+              <span className="text-[#555] text-[10px] leading-none">{expandedDollarCard === "dedollarisation" ? "−" : "+"}</span>
+            </div>
             <div className="space-y-1.5 mt-2">
               {dedollarisation.map((d) => (
                 <div key={d.country} className="text-xs">
@@ -1888,9 +1964,16 @@ export default function WorldOrderPage() {
                 </div>
               ))}
             </div>
-          </div>
-          <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
-            <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Central Bank Gold Buying</div>
+          </button>
+          <button
+            onClick={() => setExpandedDollarCard(expandedDollarCard === "gold_buying" ? null : "gold_buying")}
+            className="p-4 rounded-lg bg-[#111] border text-left transition-colors hover:bg-[#151515]"
+            style={{ borderColor: expandedDollarCard === "gold_buying" ? "#eab30860" : "#222" }}
+          >
+            <div className="flex items-center justify-between">
+              <div className="text-xs text-[#555] uppercase tracking-wider mb-2">Central Bank Gold Buying</div>
+              <span className="text-[#555] text-[10px] leading-none">{expandedDollarCard === "gold_buying" ? "−" : "+"}</span>
+            </div>
             <div className="space-y-1.5 mt-2">
               {centralBankGold.slice(0, 4).map((cb) => (
                 <div key={cb.bank} className="text-xs">
@@ -1899,8 +1982,49 @@ export default function WorldOrderPage() {
                 </div>
               ))}
             </div>
-          </div>
+          </button>
         </div>
+
+        {/* Dollar card drill-down drawer */}
+        {expandedDollarCard && DOLLAR_CARD_DETAILS[expandedDollarCard] && (() => {
+          const d = DOLLAR_CARD_DETAILS[expandedDollarCard];
+          return (
+            <div className="mb-4 p-4 rounded-lg border" style={{ borderColor: d.color + "40", backgroundColor: d.color + "06" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div className="text-sm font-bold text-[#e0e0e0]">{d.title}</div>
+                  <div className="text-[10px]" style={{ color: d.color }}>{d.value} · {d.subtitle}</div>
+                </div>
+                <button onClick={() => setExpandedDollarCard(null)} className="text-[#555] text-xs hover:text-[#888]">close ×</button>
+              </div>
+
+              <p className="text-xs text-[#888] leading-relaxed mb-4">{d.context}</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <div className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                  <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: d.color }}>Key facts</div>
+                  <ul className="space-y-1">
+                    {d.keyFacts.map((f) => (
+                      <li key={f} className="text-[10px] text-[#888] leading-relaxed flex gap-1.5">
+                        <span style={{ color: d.color }}>•</span>
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                  <div className="text-[10px] text-[#888] uppercase tracking-wider mb-2">Historical parallel</div>
+                  <p className="text-[10px] text-[#888] leading-relaxed">{d.historicalParallel}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded border" style={{ borderColor: d.color + "30", backgroundColor: d.color + "08" }}>
+                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: d.color }}>Investment implication</div>
+                <p className="text-[10px] text-[#888] leading-relaxed">{d.investmentImplication}</p>
+              </div>
+            </div>
+          );
+        })()}
         <div className="mt-4 space-y-2">
           <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818] text-[10px] text-[#555] leading-relaxed">
             <span className="text-[#888] font-bold">Guilder → Pound (1780-1820):</span> The Dutch guilder was the world&apos;s reserve currency for 80 years. The transition to sterling took ~40 years and was accelerated by war debt, not a single event. Gold flowed from Amsterdam to London gradually, then suddenly.
@@ -1937,7 +2061,7 @@ export default function WorldOrderPage() {
       <div className="border-t border-[#181818]" />
 
       {/* ══ ACT II — The rising challenger ══ */}
-      <section className="px-4 py-6 max-w-5xl mx-auto">
+      <section id="china-rising" className="px-4 py-6 max-w-5xl mx-auto scroll-mt-20">
         <div className="flex items-center gap-3 mb-1">
           <div className="h-0.5 w-8 bg-[#ef4444]" />
           <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#ef4444]">Act II — The Rising Challenger</span>
@@ -2038,7 +2162,7 @@ export default function WorldOrderPage() {
       <div className="border-t border-[#181818]" />
 
       {/* ══ ACT III — The third pole ══ */}
-      <section className="px-4 py-6 max-w-5xl mx-auto">
+      <section id="european-autonomy" className="px-4 py-6 max-w-5xl mx-auto scroll-mt-20">
         <div className="flex items-center gap-3 mb-1">
           <div className="h-0.5 w-8 bg-[#3b82f6]" />
           <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#3b82f6]">Act III — The Third Pole</span>

@@ -113,11 +113,6 @@ export default function ChinaPage() {
 
   const r = regime || { regime: "Deflation", proxyRegime: "Deflation", geoRegime: "Deflation", geoContext: "", lagWarning: false, growth: "falling", inflation: "falling", confidence: "Medium", consecutiveMonths: 18 };
   const regimeColor = REGIME_COLORS[r.regime] || "#888";
-  const proxyRegime = r.proxyRegime || r.regime;
-  const geoRegime = r.geoRegime || r.regime;
-  const proxyColor = REGIME_COLORS[proxyRegime] || "#888";
-  const geoColor = REGIME_COLORS[geoRegime] || "#888";
-  const signalsDiverge = proxyRegime !== geoRegime;
 
   return (
     <main className="min-h-screen">
@@ -164,44 +159,13 @@ export default function ChinaPage() {
           </div>
         </div>
 
-        {/* Dual signal display — Proxy Data vs AI Geo */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
-            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Proxy Data Signal</div>
-            <div className="text-lg font-bold" style={{ color: proxyColor }}>{proxyRegime}</div>
-            <div className="text-[10px] text-[#555] mt-1">Li Keqiang index, Caixin PMI, PPI, property, ports</div>
-          </div>
-          <div className="p-3 rounded-lg border" style={{
-            backgroundColor: signalsDiverge ? geoColor + "10" : "#111",
-            borderColor: signalsDiverge ? geoColor + "40" : "#222",
-          }}>
-            <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: signalsDiverge ? "#eab308" : "#555" }}>
-              AI Geopolitical Signal {signalsDiverge && "⚡"}
-            </div>
-            <div className="text-lg font-bold" style={{ color: geoColor }}>{geoRegime}</div>
-            <div className="text-[10px] text-[#555] mt-1">
-              {r.geoContext || "No override — agrees with proxy data"}
-            </div>
+        {/* Proxy signal source */}
+        <div className="mt-4 p-3 rounded-lg bg-[#111] border border-[#222]">
+          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Proxy Data Signal</div>
+          <div className="text-xs text-[#888] leading-relaxed">
+            Based on Li Keqiang index, Caixin PMI, PPI, property prices, port throughput, and copper imports — the same metrics Chinese officials reportedly track internally. Confidence is still lower than the US tracker due to Chinese data opacity.
           </div>
         </div>
-
-        {signalsDiverge && (
-          <div className="mt-3 p-3 rounded bg-[#111] border border-[#eab30840]" style={{ backgroundColor: "#eab30810" }}>
-            <p className="text-xs text-[#eab308] font-bold mb-1">Signals diverging — geopolitical events moving faster than proxy data</p>
-            <p className="text-xs text-[#888] leading-relaxed">
-              Proxy indicators lag by weeks to months. When a major event happens (Hormuz closure, PBOC emergency action, Taiwan escalation),
-              the AI geo layer detects the regime shift before proxy data catches up. The confirmed regime above uses the more current signal.
-            </p>
-          </div>
-        )}
-
-        {!signalsDiverge && (
-          <div className="mt-3 p-3 rounded bg-[#111] border border-[#222]">
-            <p className="text-xs text-[#eab308] leading-relaxed">
-              Both signals agree on {proxyRegime}. Proxy indicators and geopolitical analysis point in the same direction — but confidence is still lower than the US tracker due to Chinese data opacity.
-            </p>
-          </div>
-        )}
 
         <SectionChat
           context="Current China regime signal. Shows the regime based on proxy indicators (not official data). Current reading and growth/inflation direction."
@@ -255,13 +219,6 @@ export default function ChinaPage() {
                       </svg>
                     );
                   })()}
-                  {ind.recent6mAvg !== undefined && ind.prior6mAvg !== undefined && (
-                    <div className="text-[10px] text-[#555] mt-1">
-                      6m avg: <span style={{ color: trendColor }}>{prefix}{ind.recent6mAvg}</span>
-                      <span className="text-[#333] mx-1">vs prior</span>
-                      {prefix}{ind.prior6mAvg}
-                    </div>
-                  )}
                   <div className="text-[10px] text-[#555] mt-1">{subtitle}</div>
                 </div>
               );
@@ -307,13 +264,6 @@ export default function ChinaPage() {
                       </svg>
                     );
                   })()}
-                  {cpi.recent6mAvg !== undefined && cpi.prior6mAvg !== undefined && (
-                    <div className="text-[10px] text-[#555] mt-1">
-                      6m avg: <span style={{ color: trendColor }}>{cpi.recent6mAvg > 0 ? "+" : ""}{cpi.recent6mAvg}%</span>
-                      <span className="text-[#333] mx-1">vs prior</span>
-                      {cpi.prior6mAvg > 0 ? "+" : ""}{cpi.prior6mAvg}%
-                    </div>
-                  )}
                   <div className="text-[10px] text-[#333] mt-1">FRED — {cpi.date.slice(0, 7)}</div>
                 </div>
               );
@@ -782,18 +732,17 @@ export default function ChinaPage() {
                         })}
                       </div>
 
-                      {/* 3-way comparison: Proxy Data / AI Geo / Winner */}
-                      {p.aiRegime && p.bestRegime && (() => {
-                        const aiReg = p.aiRegime!;
+                      {/* 2-way comparison: Proxy signal vs actual winner */}
+                      {p.bestRegime && (() => {
                         const bestReg = p.bestRegime!;
                         const bestRet = p.allRegimeReturns?.[bestReg];
+                        const frameworkCorrect = p.frameworkCorrect;
                         return (
                         <div className="mt-3 p-2 rounded bg-[#111] border border-[#222]">
-                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Proxy data vs AI geopolitical vs actual winner</div>
-                          <div className="grid grid-cols-3 gap-2">
-                            {/* Proxy Data */}
+                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Proxy signal vs actual winner</div>
+                          <div className="grid grid-cols-2 gap-2">
                             <div className="p-2 rounded bg-[#0a0a0a]">
-                              <div className="text-[9px] text-[#555] uppercase">Proxy data</div>
+                              <div className="text-[9px] text-[#555] uppercase">Proxy signal</div>
                               <div className="text-xs font-bold" style={{ color: REGIME_COLORS[p.regime] || "#555" }}>{p.regime}</div>
                               {typeof p.picksReturn === "number" && (
                                 <div className="text-[10px] mt-0.5" style={{ color: p.picksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
@@ -801,29 +750,6 @@ export default function ChinaPage() {
                                 </div>
                               )}
                             </div>
-                            {/* AI Geo */}
-                            <div className="p-2 rounded" style={{
-                              backgroundColor: p.aiDiffersFromProxy ? "#9ca3af15" : "#0a0a0a",
-                              border: p.aiDiffersFromProxy ? "1px solid #9ca3af40" : "1px solid transparent",
-                            }}>
-                              <div className="text-[9px] text-[#9ca3af] uppercase">AI geo</div>
-                              {p.aiDiffersFromProxy ? (
-                                <>
-                                  <div className="text-xs font-bold" style={{ color: REGIME_COLORS[aiReg] || "#555" }}>{aiReg}</div>
-                                  {typeof p.aiPicksReturn === "number" && (
-                                    <div className="text-[10px] mt-0.5" style={{ color: p.aiPicksReturn >= 0 ? "#22c55e" : "#ef4444" }}>
-                                      {p.aiPicksReturn >= 0 ? "+" : ""}{p.aiPicksReturn.toFixed(1)}%
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <>
-                                  <div className="text-xs font-bold text-[#555]">= same as data</div>
-                                  <div className="text-[10px] mt-0.5 text-[#333]">no override</div>
-                                </>
-                              )}
-                            </div>
-                            {/* Winner */}
                             <div className="p-2 rounded" style={{ backgroundColor: "#22c55e10", border: "1px solid #22c55e40" }}>
                               <div className="text-[9px] text-[#22c55e] uppercase">Actual winner ★</div>
                               <div className="text-xs font-bold" style={{ color: REGIME_COLORS[bestReg] || "#555" }}>{bestReg}</div>
@@ -832,19 +758,11 @@ export default function ChinaPage() {
                               )}
                             </div>
                           </div>
-                          {/* Summary */}
                           <div className="mt-2 text-[10px] leading-relaxed">
-                            {p.frameworkCorrect && p.aiCorrect && (
-                              <span className="text-[#22c55e]">✓ Both proxy data and AI agreed with the winner — strongest signal.</span>
-                            )}
-                            {!p.frameworkCorrect && p.aiCorrect && (
-                              <span className="text-[#9ca3af]">✓ AI geo would have correctly called {bestReg} while proxy data was wrong.</span>
-                            )}
-                            {p.frameworkCorrect && !p.aiCorrect && (
-                              <span className="text-[#eab308]">⚠ Proxy data got it right but AI would have missed it.</span>
-                            )}
-                            {!p.frameworkCorrect && !p.aiCorrect && (
-                              <span className="text-[#ef4444]">✗ Both proxy data and AI missed — {bestReg} picks outperformed.</span>
+                            {frameworkCorrect ? (
+                              <span className="text-[#22c55e]">✓ Proxy signal correctly called {bestReg}.</span>
+                            ) : (
+                              <span className="text-[#ef4444]">✗ Proxy signal missed — {bestReg} picks outperformed.</span>
                             )}
                           </div>
                         </div>
@@ -856,7 +774,6 @@ export default function ChinaPage() {
                         start: p.start,
                         end: p.end,
                         regime: p.regime,
-                        aiRegime: p.aiRegime,
                         bestRegime: p.bestRegime || undefined,
                         allRegimeReturns: p.allRegimeReturns,
                       }} />

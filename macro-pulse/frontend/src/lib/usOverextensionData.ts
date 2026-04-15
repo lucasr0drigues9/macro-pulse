@@ -130,23 +130,27 @@ export const usStrategicCards = [
     content: "750+ bases in 80 countries. Three active theaters (Middle East/Iran, Ukraine support, Pacific deterrence). Defence budget $886B (3.4% GDP) but cost of simultaneous commitments exceeds capacity. Hormuz blockade enforcement adds a fourth operational demand on an already stretched Navy.",
     keyMetric: "3 active theaters + Hormuz enforcement",
     status: "Critical",
+    worldOrderAnchor: "#military-overextension",
   },
   {
     title: "Dollar Reserve Status Erosion",
     content: "USD share of global reserves fell from 72% (2000) to 58% (2025). BRICS+ nations actively building alternatives: CIPS ($20T+), yuan oil contracts, bilateral settlement agreements. Gold reserves accumulation by China, India, Poland signals central banks hedging USD. Weaponising SWIFT (Russia sanctions) accelerated the diversification trend.",
     keyMetric: "USD reserve share: 58% (was 72%)",
     status: "Declining",
+    worldOrderAnchor: "#dollar-decline",
   },
   {
     title: "Debt Trajectory",
     content: "National debt $36.2T (125% GDP). Interest payments exceeded defence spending in 2024 for the first time. CBO projects debt-to-GDP reaching 166% by 2054. Fiscal space to respond to next crisis is constrained. Each rate hike costs ~$200B in additional annual interest. This is Dalio's 'printing money' phase of the big cycle.",
     keyMetric: "Interest > Defence spending (2024)",
     status: "Unsustainable",
+    worldOrderAnchor: "#financial-burden",
   },
   {
     title: "Internal Polarisation",
     content: "Dalio identifies internal conflict as a late-stage imperial indicator. Wealth inequality at 1920s levels. Political polarisation at highest since Civil War era by Pew Research metrics. Institutional trust (Congress, media, courts) at historic lows. Social cohesion erosion reduces capacity for collective sacrifice — critical during great power competition.",
     keyMetric: "Institutional trust: historic lows",
     status: "Elevated",
+    worldOrderAnchor: "",
   },
 ];
