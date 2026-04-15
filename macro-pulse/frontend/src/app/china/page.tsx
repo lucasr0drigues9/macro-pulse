@@ -127,10 +127,10 @@ export default function ChinaPage() {
       <section className="px-4 pt-12 pb-4 max-w-5xl mx-auto">
         <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">China Tracker</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          How China affects the AI Race
+          How China affects the AI & Robotics Race
         </p>
         <p className="text-xs text-[#555] max-w-2xl mb-4">
-          China controls 60% of rare earth mining, 90% of processing, and installs more industrial robots than the rest of the world combined. The Chinese regime determines rare earth supply risk (REMX), copper demand (COPX), and whether the AI Race supply chain faces bottlenecks or abundance.
+          China controls 60% of rare earth mining, 90% of processing, and installs more industrial robots than the rest of the world combined. The Chinese regime determines rare earth supply risk (REMX), copper demand (COPX), and whether the AI & Robotics Race supply chain faces bottlenecks or abundance.
         </p>
         <div className="p-3 rounded bg-[#111] border border-[#222] mt-4">
           <p className="text-xs text-[#555] italic leading-relaxed">
@@ -878,7 +878,7 @@ export default function ChinaPage() {
       {/* Email signup */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <SubscribeForm
-          title="The AI Race — Weekly"
+          title="The AI & Robotics Race — Weekly"
           description="One email per week: new factory announcements, supply chain disruptions, ETF entry opportunities, and robotics milestones. What happened and does it change the plan."
           buttonLabel="Subscribe"
           source="china"

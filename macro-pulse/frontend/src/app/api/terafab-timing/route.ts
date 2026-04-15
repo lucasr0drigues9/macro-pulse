@@ -9,6 +9,8 @@ const LAYERS = [
   { ticker: "LIT",  ucits: null,       layer: "Lithium & Batteries", color: "#a855f7" },
   { ticker: "REMX", ucits: null,       layer: "Rare Earths",         color: "#ef4444" },
   { ticker: "ICLN", ucits: "INRG.L",  layer: "Energy & Power",      color: "#eab308" },
+  { ticker: "KWEB", ucits: null,       layer: "China AI & Internet", color: "#ef4444" },
+  { ticker: "FXI",  ucits: null,       layer: "China Large-Cap",     color: "#ef4444" },
 ];
 
 async function fetchOne(symbol: string, layer: string, color: string, isUcits: boolean) {

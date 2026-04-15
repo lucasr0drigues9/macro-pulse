@@ -124,6 +124,21 @@ const SUPPLY_CHAIN = [
     ],
     parallel: "Amazon, Google, Microsoft signed $20B+ in power purchase agreements in 2024 alone. Terafab will need similar scale.",
   },
+  {
+    layer: "China AI (High Risk / High Reward)",
+    color: "#ef4444",
+    description: "Xi Jinping has stated China's goal to be the world's biggest AI producer by 2030. Beijing is pouring state capital into domestic chip fabs, humanoid robots, and AI models. High-risk exposure via Chinese equity, high reward if China executes.",
+    etfs: [
+      { ticker: "KWEB", ucits: "—", name: "KraneShares CSI China Internet ETF", why: "Alibaba, Tencent, Baidu, JD, Meituan. Direct exposure to Chinese AI/internet giants pouring billions into AI models and datacenters." },
+      { ticker: "FXI", ucits: "—", name: "iShares China Large-Cap ETF", why: "Top 50 Chinese large-caps. Broad exposure to the companies benefiting from state AI policy and industrial subsidies." },
+    ],
+    catalysts: [
+      { date: "2026-2028", event: "Beijing's 'AI +' Initiative: state-led AI integration across industries" },
+      { date: "2030", event: "Xi's target: China as world's largest AI producer" },
+      { date: "Ongoing", event: "Humanoid robot programs (Unitree, Fourier) scaling" },
+    ],
+    parallel: "Risk: VIE structure (Western investors own Cayman shells, not actual shares), tech crackdowns (2021 wiped $1.5T), delisting risk. Reward: asymmetric upside if Beijing executes. Small allocation only.",
+  },
 ];
 
 const FORWARD_CATALYSTS = [
@@ -352,6 +367,9 @@ export default function HomePage() {
   const [timingLoading, setTimingLoading] = useState(true);
   const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
   const [expandedCatalyst, setExpandedCatalyst] = useState<string | null>(null);
+  const [expandedCatalystCategory, setExpandedCatalystCategory] = useState<string | null>(null);
+  const [expandedHorizon, setExpandedHorizon] = useState<"short" | "medium" | "long" | null>(null);
+  const [expandedProfile, setExpandedProfile] = useState<"hold" | "balanced" | "tactical" | null>(null);
 
   useEffect(() => {
     fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUs(d); }).catch(() => {});
@@ -374,15 +392,15 @@ export default function HomePage() {
 
       <section className="px-4 pt-20 pb-12 max-w-3xl mx-auto text-center">
         <h1 className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold leading-tight mb-4">
-          The AI Race is creating the next materials supercycle
+          The AI & Robotics Race is creating the next materials supercycle
         </h1>
         <p className="text-sm text-[#555] max-w-xl mx-auto mb-6">
           Every AI fab, robot factory, and datacenter needs chips, copper, lithium, and rare earths. The supply chain is investable today — and the current macro regime tells you exactly when to enter.
         </p>
         <SectionChat
-          context="Welcome to Macro World View. The AI Race is creating the next materials supercycle — every AI fab, robot factory, and datacenter needs chips (SMH), robotics (BOTZ), copper (COPX), lithium (LIT), rare earths (REMX), energy (ICLN). The supply chain is investable today. Current macro regime affects entry timing: stagflation suppresses growth ETFs (buy now at discount), materials are inflated (wait for regime shift). The site covers the AI Race thesis, US/EU/China regime trackers, and the world order transition."
+          context="Welcome to Macro World View. The AI & Robotics Race is creating the next materials supercycle — every AI fab, robot factory, and datacenter needs chips (SMH), robotics (BOTZ), copper (COPX), lithium (LIT), rare earths (REMX), energy (ICLN). The supply chain is investable today. Current macro regime affects entry timing: stagflation suppresses growth ETFs (buy now at discount), materials are inflated (wait for regime shift). The site covers the AI & Robotics Race thesis, US/EU/China regime trackers, and the world order transition."
           label="Ask about this thesis"
-          suggestions={["What is the AI Race supply chain?", "Which ETFs should I start with?", "How does the macro regime affect entry timing?"]}
+          suggestions={["What is the AI & Robotics Race supply chain?", "Which ETFs should I start with?", "How does the macro regime affect entry timing?"]}
         />
       </section>
 
@@ -417,10 +435,10 @@ export default function HomePage() {
               </div>
             )}
             <p className="text-xs text-[#888] leading-relaxed">
-              {regime === "Stagflation" && <>Stagflation suppresses growth stocks (AI, robotics) while inflating materials (copper, lithium). <span className="text-[#e0e0e0] font-bold">Growth ETFs are discounted right now</span> — the AI Race thesis hasn&apos;t changed, only the macro headwind. Buy growth now, add materials after the regime shifts.</>}
-              {regime === "Goldilocks" && <>Goldilocks is the <span className="text-[#e0e0e0] font-bold">best regime for the AI Race</span> — low inflation + growth benefits tech and robotics directly. Spread across the full supply chain.</>}
-              {regime === "Reflation" && <>Reflation lifts the <span className="text-[#e0e0e0] font-bold">entire AI Race supply chain</span> — both growth and materials benefit. Equal-weight across all layers.</>}
-              {regime === "Deflation" && <>Deflation puts everything on sale. <span className="text-[#e0e0e0] font-bold">Best time to build your AI Race position</span> — buy aggressively across the full supply chain at deep discounts.</>}
+              {regime === "Stagflation" && <>Stagflation suppresses growth stocks (AI, robotics) while inflating materials (copper, lithium). <span className="text-[#e0e0e0] font-bold">Growth ETFs are discounted right now</span> — the AI & Robotics Race thesis hasn&apos;t changed, only the macro headwind. Buy growth now, add materials after the regime shifts.</>}
+              {regime === "Goldilocks" && <>Goldilocks is the <span className="text-[#e0e0e0] font-bold">best regime for the AI & Robotics Race</span> — low inflation + growth benefits tech and robotics directly. Spread across the full supply chain.</>}
+              {regime === "Reflation" && <>Reflation lifts the <span className="text-[#e0e0e0] font-bold">entire AI & Robotics Race supply chain</span> — both growth and materials benefit. Equal-weight across all layers.</>}
+              {regime === "Deflation" && <>Deflation puts everything on sale. <span className="text-[#e0e0e0] font-bold">Best time to build your AI & Robotics Race position</span> — buy aggressively across the full supply chain at deep discounts.</>}
             </p>
           </div>
         </section>
@@ -432,47 +450,36 @@ export default function HomePage() {
           AI RACE — THE THESIS
       ════════════════════════════════════════════ */}
 
-      {/* Pattern */}
-      <section id="ai-race" className="px-4 pt-12 pb-4 max-w-5xl mx-auto">
-        <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The AI Race</h2>
-        <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
-          Terafab → AI Chips → Robots → Materials Supercycle
+      {/* Hero — Big Cycle framing */}
+      <section id="ai-race" className="px-4 pt-12 pb-8 max-w-5xl mx-auto">
+        <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The AI &amp; Robotics Race</h2>
+        <p className="text-lg sm:text-xl text-[#e0e0e0] font-bold mb-2 max-w-2xl">
+          The Big Cycle context
         </p>
-        <p className="text-xs text-[#555] max-w-2xl mb-4">
-          The same person who proved the EV thesis (Tesla Gigafactory → lithium/copper supercycle) is now building the largest chip factory ever. The supply chain that feeds it is investable today.
+        <p className="text-[10px] text-[#555] mb-4">
+          Energy → Rare Earths → Lithium → Copper → Chips → Robots
         </p>
-        <div className="p-3 rounded bg-[#111] border border-[#3b82f630]" style={{ backgroundColor: "#3b82f608" }}>
-          <p className="text-xs text-[#888] leading-relaxed">
-            <span className="text-[#3b82f6] font-bold">The pattern:</span> Musk announced the Gigafactory in 2014. Tesla stock was $10 — today it&apos;s $353 (35x). But the real story was the industry he created: every major automaker followed, and COPX went from $15 to $83 (5x) because ALL of them needed the same materials. Terafab is the same playbook. Musk is the first mover, but Google, Amazon, Meta, Samsung, and Intel are all building AI fabs and robots. The competitors don&apos;t dilute the thesis — they multiply it. Every new entrant needs chips, copper, lithium, and rare earths.
+
+        <div className="p-4 rounded-lg bg-[#111] border border-[#222]">
+          {/* Header with Stage 5 label */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="h-0.5 w-6 bg-[#a855f7]" />
+            <span className="text-[10px] font-bold tracking-[0.3em] uppercase text-[#a855f7]">Stage 5 — Great Power Conflict</span>
+          </div>
+
+          <p className="text-xs text-[#888] leading-relaxed mb-3">
+            This isn&apos;t a stock pick. It&apos;s a structural bet tied to a specific moment in history: <span className="text-[#e0e0e0] font-bold">Dalio&apos;s Big Cycle</span>. Every major empire transition in the last 250 years (Dutch→British, British→US, Cold War) produced the same two things: a commodity supercycle driven by military demand, and a technology revolution driven by war-accelerated R&amp;D. The AI &amp; Robotics Race is how <span className="text-[#e0e0e0]">this</span> transition expresses itself.
           </p>
-        </div>
-      </section>
 
-      <div className="border-t border-[#181818]" />
+          <div className="flex items-center gap-4 mb-3 text-[10px] text-[#888]">
+            <span>Historical duration: <span className="text-[#e0e0e0] font-bold">20-40 years</span></span>
+            <span className="text-[#333]">·</span>
+            <span>We are here: <span className="text-[#e0e0e0] font-bold">~2-3 years in</span></span>
+          </div>
 
-      {/* Proven Playbook */}
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Proven Playbook</h2>
-        <p className="text-xs text-[#555] mb-4">Musk doesn&apos;t need to win. He just needs to prove the market exists — the same way he did with EVs.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <div className="p-3 rounded-lg bg-[#111] border border-[#22c55e30]">
-            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">The EV precedent</div>
-            <div className="space-y-1.5 text-xs text-[#888]">
-              <p><span className="text-[#22c55e] font-bold">2014:</span> Musk announces Gigafactory. Skeptics say EVs are a niche.</p>
-              <p><span className="text-[#22c55e] font-bold">2017:</span> VW, BMW, GM announce their own EV programs.</p>
-              <p><span className="text-[#22c55e] font-bold">2020:</span> Every major automaker is building EVs. Industry &gt; Tesla.</p>
-              <p><span className="text-[#22c55e] font-bold">Result:</span> Tesla stock 35x. But COPX 5x, lithium 5x — because <span className="text-[#e0e0e0]">all competitors needed the same materials.</span></p>
-            </div>
-          </div>
-          <div className="p-3 rounded-lg bg-[#111] border border-[#3b82f630]">
-            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">The AI/Robot repeat</div>
-            <div className="space-y-1.5 text-xs text-[#888]">
-              <p><span className="text-[#3b82f6] font-bold">2026:</span> Musk announces Terafab. Skeptics say humanoid robots are years away.</p>
-              <p><span className="text-[#3b82f6] font-bold">Already:</span> Google, Amazon, Figure AI, Apptronik, 1X all building robots.</p>
-              <p><span className="text-[#3b82f6] font-bold">Already:</span> Samsung, Intel, TSMC all expanding chip fabs.</p>
-              <p><span className="text-[#3b82f6] font-bold">Thesis:</span> The industry Musk catalyses will be <span className="text-[#e0e0e0]">10-100x the EV wave</span> — and they all need the same supply chain.</p>
-            </div>
-          </div>
+          <Link href="/world-order" className="text-[10px] text-[#a855f7] hover:underline">
+            See the full Big Cycle framework on the World Order page →
+          </Link>
         </div>
       </section>
 
@@ -484,137 +491,258 @@ export default function HomePage() {
 
       <section id="when-to-enter" className="px-4 py-8 max-w-5xl mx-auto scroll-mt-20">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">When to Enter</h2>
-        <p className="text-xs text-[#555] mb-4">This is a 5-10 year thesis. The question isn&apos;t IF — it&apos;s HOW to build your position across the supply chain.</p>
+        <p className="text-xs text-[#555] mb-4 max-w-2xl">
+          Two frameworks stacked: a structural one (Stage 5, 20-40 years) tells you what to own, and a tactical one (current regime, 3-9 months) tells you which side to tilt toward right now. They work together — don&apos;t pick one.
+        </p>
+
+        {/* Two-layer framework explainer */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <div className="p-3 rounded-lg bg-[#111] border border-[#a855f730]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-bold text-[#a855f7] bg-[#a855f720] px-2 py-0.5 rounded">LAYER 1 — STRUCTURAL</span>
+              <span className="text-[10px] text-[#555]">20-40 yrs</span>
+            </div>
+            <div className="text-xs text-[#888] leading-relaxed">
+              <span className="text-[#e0e0e0] font-bold">Dalio Big Cycle Stage 5.</span> Commit to the AI &amp; Robotics Race supply chain for the full structural period. Both materials AND growth compound over 20+ years. This is your CORE position — don&apos;t time it.
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-[#111] border border-[#ef444430]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-bold text-[#ef4444] bg-[#ef444420] px-2 py-0.5 rounded">LAYER 2 — TACTICAL</span>
+              <span className="text-[10px] text-[#555]">3-9 months</span>
+            </div>
+            <div className="text-xs text-[#888] leading-relaxed">
+              <span className="text-[#e0e0e0] font-bold">Current regime tilts.</span> Within the structural thesis, use the regime tracker to shift weight between growth and materials. Stagflation now = materials tilt. Goldilocks later = growth tilt. Multiple rotations over 20 years.
+            </div>
+          </div>
+        </div>
+
+        <div className="p-3 rounded bg-[#111] border border-[#222] mb-4">
+          <p className="text-[10px] text-[#888] leading-relaxed">
+            <span className="text-[#e0e0e0] font-bold">How to think about it:</span> Stage 5 will go through multiple regime cycles over 20-40 years (stagflation, goldilocks, reflation, deflation — each lasting 3-9 months). Historical example: in WWI era (1914-1945), stocks boomed in the 1920s, crashed in 1929, stagnated in the 1930s, then BOTH materials and stocks rose in WWII. Within our Stage 5, expect 5-10 similar rotations. Your structural position stays constant. Your tactical tilts change with the regime.
+          </p>
+        </div>
 
         {timingLoading ? (
           <div className="text-xs text-[#555] py-8 text-center">Loading live market data...</div>
         ) : (() => {
           const usEtfs = timing.filter((t) => !t.isUcits);
+          const materials = usEtfs.filter((e) => ["Copper & Wiring", "Lithium & Batteries", "Rare Earths", "Energy & Power"].includes(e.layer));
+          const tech = usEtfs.filter((e) => ["AI Chips", "AI & Autonomous", "Autonomous Tech", "Robotics"].includes(e.layer));
+          const matAvg = materials.length > 0 ? Math.round(materials.reduce((s, e) => s + e.ret1y, 0) / materials.length) : 0;
+          const techAvg = tech.length > 0 ? Math.round(tech.reduce((s, e) => s + e.ret1y, 0) / tech.length) : 0;
+
+          type HorizonId = "short" | "medium" | "long";
+          type ProfileId = "hold" | "balanced" | "tactical";
+
+          const horizons: { id: HorizonId; label: string; range: string; color: string; headline: string; summary: string; detail: string; etfs: typeof materials }[] = [
+            {
+              id: "short",
+              label: "Commodity Supercycle",
+              range: "2-10 yrs",
+              color: "#e09030",
+              headline: "Materials lead (we're early)",
+              summary: "Multi-year commodity supercycle driven by military demand, rearmament, and supply constraints",
+              detail: "We're only 2-3 years into what history suggests is a 5-15 year commodity supercycle. Current returns (COPX +133%, REMX +163%, LIT +123%) look like a lot — but the Napoleonic, WWI, and WWII supercycles all ran 5-10x higher from similar early-cycle levels. Mine pipelines take 10-15 years to bring online. Rearmament programs are multi-decade. Inflation hedging is structural. Materials are NOT a short-term trade — they're a multi-year structural play, potentially early-to-mid cycle.",
+              etfs: materials,
+            },
+            {
+              id: "medium",
+              label: "Growth Catches Up",
+              range: "10-20 yrs",
+              color: "#eab308",
+              headline: "Tech compounds faster",
+              summary: "Stage 5 tech revolution accelerates — AI capex, Terafab-era production, humanoid robots at scale",
+              detail: "Between 10-20 years into Stage 5, technology capex becomes the dominant theme. WWII produced jet engines, nuclear, radar, and computing — mostly in the last 6 years of Stage 5. The Cold War produced the internet and GPS in the last decade. Today's equivalent: AI models, humanoid robots, and chip production at scale. This is when growth starts outperforming materials as the new order becomes visible.",
+              etfs: [],
+            },
+            {
+              id: "long",
+              label: "Stage 6 — New Order",
+              range: "20+ yrs",
+              color: "#3b82f6",
+              headline: "Growth defines the new order",
+              summary: "Whoever has the chips and robots writes the rules for the next 80 years",
+              detail: "Stage 6 is the payoff. Every prior Stage 5 produced a tech revolution that defined the next 80 years — steam engines (post-Napoleonic), computing (post-WWII), the internet (post-Cold War). AI and robotics are this era's equivalent. The companies and countries that dominate the AI & Robotics Race supply chain in Stage 5 will define the economic order that follows.",
+              etfs: tech,
+            },
+          ];
+
+          const profiles: { id: ProfileId; label: string; horizon: string; strategy: string; growthPct: number; matPct: number; color: string; rationale: string }[] = [
+            { id: "hold", label: "Buy & Hold", horizon: "20+ yrs", strategy: "Growth-heavy", growthPct: 65, matPct: 35, color: "#3b82f6", rationale: "You have the full Stage 5 → Stage 6 transition to compound. Growth ETFs at today's discount capture 20+ years of tech revolution. Still hold materials (35%) because the commodity supercycle runs for 10+ years. Rebalance annually." },
+            { id: "balanced", label: "Balanced", horizon: "10-15 yrs", strategy: "50/50 mix", growthPct: 50, matPct: 50, color: "#eab308", rationale: "You capture both the commodity supercycle (early-to-mid cycle) and the tech acceleration. Rebalance annually. If Stage 5 extends, both legs compound. If it resolves earlier, the growth leg catches up fast." },
+            { id: "tactical", label: "Supercycle", horizon: "5-10 yrs", strategy: "Materials-heavy", growthPct: 35, matPct: 65, color: "#e09030", rationale: "Ride the commodity supercycle for its full length. Materials +133% to +163% is likely early-to-mid cycle, not late. Rotate gradually into growth as Stage 5 matures. Still hold growth (35%) for structural exposure." },
+          ];
+
           return (
             <>
-              {/* Regime context */}
-              {regime && (() => {
-                const r = regime.toLowerCase();
-                const isStagflation = r.includes("stagflation");
-                const isDeflation = r.includes("deflation");
-                const isGoldilocks = r.includes("goldilocks");
-                const isReflation = r.includes("reflation");
+              {/* Current state — neutral, just numbers */}
+              <div className="p-3 rounded bg-[#111] border border-[#222] mb-4 flex items-center gap-4 flex-wrap">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider">Now</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#555]">Materials</span>
+                  <span className="text-xs font-bold text-[#e09030]">+{matAvg}%</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-[#555]">Growth</span>
+                  <span className="text-xs font-bold text-[#3b82f6]">+{techAvg}%</span>
+                </div>
+                <div className="text-[10px] text-[#555] ml-auto">1Y avg · Stagflation regime</div>
+              </div>
 
-                const materials = usEtfs.filter((e) => ["Copper & Wiring", "Lithium & Batteries", "Rare Earths"].includes(e.layer));
-                const tech = usEtfs.filter((e) => ["AI Chips", "AI & Autonomous", "Autonomous Tech", "Robotics"].includes(e.layer));
-                const matAvg = materials.length > 0 ? Math.round(materials.reduce((s, e) => s + e.ret1y, 0) / materials.length) : 0;
-                const techAvg = tech.length > 0 ? Math.round(tech.reduce((s, e) => s + e.ret1y, 0) / tech.length) : 0;
-                const rc = isStagflation ? "#ef4444" : isDeflation ? "#3b82f6" : isGoldilocks ? "#22c55e" : "#eab308";
-
-                return (
-                  <div className="p-4 rounded-lg bg-[#111] border mb-4" style={{ borderColor: rc + "30" }}>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[10px] uppercase tracking-wider text-[#555]">Current macro regime</span>
-                      <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: rc, backgroundColor: rc + "20" }}>{regime}</span>
-                      {duration && <span className="text-[10px] text-[#555] ml-auto">typically lasts {duration.avg} months (range {duration.min}–{duration.max})</span>}
-                    </div>
-
-                    {isStagflation && (
-                      <div className="space-y-2">
-                        <p className="text-xs text-[#888] leading-relaxed">
-                          Stagflation is a <span className="text-[#e0e0e0] font-bold">tailwind for materials</span> and a <span className="text-[#e0e0e0] font-bold">headwind for growth/tech</span>:
-                        </p>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="p-2 rounded bg-[#0a0a0a] border border-[#22c55e30]">
-                            <div className="text-[10px] text-[#555]">Materials (COPX, LIT, REMX)</div>
-                            <div className="text-sm font-bold text-[#22c55e]">+{matAvg}% avg</div>
-                            <div className="text-[10px] text-[#888] mt-1">Running hot <span className="text-[#e0e0e0]">because of stagflation</span>.</div>
+              {/* Three-horizon framework — neutral rows */}
+              <div className="mb-4">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Three horizons — click to expand</div>
+                <div className="space-y-1.5">
+                  {horizons.map((h) => {
+                    const isOpen = expandedHorizon === h.id;
+                    return (
+                      <div key={h.id}>
+                        <button
+                          onClick={() => setExpandedHorizon(isOpen ? null : h.id)}
+                          className="w-full flex items-center gap-3 p-3 rounded bg-[#111] border border-[#222] text-left transition-colors hover:bg-[#151515]"
+                        >
+                          <span className="text-[10px] text-[#555] shrink-0 whitespace-nowrap w-16">{h.range}</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-xs font-bold text-[#e0e0e0]">{h.headline}</div>
+                            <div className="text-[10px] text-[#555] truncate">{h.summary}</div>
                           </div>
-                          <div className="p-2 rounded bg-[#0a0a0a] border border-[#3b82f630]">
-                            <div className="text-[10px] text-[#555]">Growth/Robotics (SMH, BOTZ, AIQ)</div>
-                            <div className="text-sm font-bold text-[#3b82f6]">+{techAvg}% avg</div>
-                            <div className="text-[10px] text-[#888] mt-1">Suppressed — <span className="text-[#e0e0e0]">this is the dip</span>.</div>
-                          </div>
-                        </div>
-                        <div className="p-3 rounded border border-[#3b82f640]" style={{ backgroundColor: "#3b82f608" }}>
-                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Recommended two-phase entry</div>
-                          <div className="space-y-2">
-                            <div className="flex gap-3">
-                              <span className="text-xs font-bold text-[#3b82f6] bg-[#3b82f620] w-6 h-6 rounded-full flex items-center justify-center shrink-0">1</span>
-                              <div>
-                                <div className="text-xs font-bold text-[#e0e0e0]">Now — Buy the growth laggards</div>
-                                <p className="text-[10px] text-[#888] mt-0.5">Same structural demand, lower price. The macro is handing you a discount.</p>
-                                <div className="flex gap-2 mt-1.5 flex-wrap">
-                                  {tech.map((e) => <span key={e.ticker} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#3b82f620] text-[#3b82f6]">{e.ticker} ${e.price}</span>)}
-                                </div>
+                          <span className="text-[#555] text-[10px] leading-none shrink-0">{isOpen ? "−" : "+"}</span>
+                        </button>
+                        {isOpen && (
+                          <div className="mt-1.5 p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                            <p className="text-[10px] text-[#888] leading-relaxed">{h.detail}</p>
+                            {h.etfs.length > 0 && (
+                              <div className="flex gap-1.5 mt-2 flex-wrap">
+                                {h.etfs.map((e) => (
+                                  <span key={e.ticker} className="text-[10px] px-1.5 py-0.5 rounded bg-[#111] border border-[#222] text-[#e0e0e0]">
+                                    {e.ticker} <span className="text-[#888]">+{e.ret1y}%</span>
+                                  </span>
+                                ))}
                               </div>
-                            </div>
-                            <div className="flex gap-3">
-                              <span className="text-xs font-bold text-[#e09030] bg-[#e0903020] w-6 h-6 rounded-full flex items-center justify-center shrink-0">2</span>
-                              <div>
-                                <div className="text-xs font-bold text-[#e0e0e0]">After regime shifts — Rebalance into materials</div>
-                                <p className="text-[10px] text-[#888] mt-0.5">Materials shed their inflation premium (-15-20%). Add at a discount while growth surges.</p>
-                                <div className="flex gap-2 mt-1.5 flex-wrap">
-                                  {materials.map((e) => <span key={e.ticker} className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#e0903020] text-[#e09030]">{e.ticker} ${e.price}</span>)}
-                                </div>
-                              </div>
-                            </div>
+                            )}
                           </div>
-                        </div>
+                        )}
                       </div>
-                    )}
-                    {isGoldilocks && <p className="text-xs text-[#888]">Goldilocks is the <span className="text-[#e0e0e0]">best regime for tech/robotics</span>. Spread across the full supply chain.</p>}
-                    {isReflation && <p className="text-xs text-[#888]">Reflation benefits the <span className="text-[#e0e0e0]">entire supply chain</span>. Equal-weight across all layers.</p>}
-                    {isDeflation && <p className="text-xs text-[#888]">Deflation is the <span className="text-[#e0e0e0]">best time to build positions</span> at deep discounts across the full supply chain.</p>}
-                  </div>
-                );
-              })()}
+                    );
+                  })}
+                </div>
+              </div>
 
-              {/* Growth vs Materials grid */}
-              {(() => {
-                const growthETFs = usEtfs.filter((e) => ["AI Chips", "AI & Autonomous", "Autonomous Tech", "Robotics"].includes(e.layer));
-                const materialsETFs = usEtfs.filter((e) => ["Copper & Wiring", "Lithium & Batteries", "Rare Earths", "Energy & Power"].includes(e.layer));
-                const growthAvg = growthETFs.length > 0 ? Math.round(growthETFs.reduce((s, e) => s + e.ret1y, 0) / growthETFs.length) : 0;
-                const matAvgRet = materialsETFs.length > 0 ? Math.round(materialsETFs.reduce((s, e) => s + e.ret1y, 0) / materialsETFs.length) : 0;
-                const EtfCard = ({ t }: { t: TimingETF }) => {
-                  const retColor = t.ret1y > 20 ? "#22c55e" : t.ret1y > 0 ? "#888" : "#ef4444";
+              {/* By investor profile — neutral rows */}
+              <div className="mb-4">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">By investor profile — click to expand</div>
+                <div className="space-y-1.5">
+                  {profiles.map((p) => {
+                    const isOpen = expandedProfile === p.id;
+                    return (
+                      <div key={p.id}>
+                        <button
+                          onClick={() => setExpandedProfile(isOpen ? null : p.id)}
+                          className="w-full flex items-center gap-3 p-2 rounded bg-[#111] border border-[#222] text-left transition-colors hover:bg-[#151515]"
+                        >
+                          <span className="text-xs font-bold text-[#e0e0e0] shrink-0 w-24">{p.label}</span>
+                          <span className="text-[10px] text-[#555] shrink-0 hidden sm:inline w-16">{p.horizon}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex h-1.5 rounded overflow-hidden w-16">
+                              <div className="bg-[#3b82f6]" style={{ width: `${p.growthPct}%` }} />
+                              <div className="bg-[#e09030]" style={{ width: `${p.matPct}%` }} />
+                            </div>
+                            <span className="text-[10px]"><span className="text-[#3b82f6]">{p.growthPct}</span>/<span className="text-[#e09030]">{p.matPct}</span></span>
+                          </div>
+                          <span className="text-[10px] text-[#555] flex-1 min-w-0 truncate hidden sm:inline">{p.strategy}</span>
+                          <span className="text-[#555] text-[10px] leading-none shrink-0">{isOpen ? "−" : "+"}</span>
+                        </button>
+                        {isOpen && (
+                          <div className="mt-1 p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                            <p className="text-[10px] text-[#888] leading-relaxed">{p.rationale}</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* ETF-level detail — always visible */}
+              <div className="mb-2">
+                <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">The ETFs</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Growth &amp; Tech</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {tech.map((t) => {
+                        const retColor = t.ret1y > 20 ? "#22c55e" : t.ret1y > 0 ? "#888" : "#ef4444";
+                        return (
+                          <div key={t.ticker} className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a] text-center">
+                            <div className="text-xs font-bold text-[#e0e0e0]">{t.ticker}</div>
+                            <div className="text-[10px] text-[#555]">{t.layer}</div>
+                            <div className="text-[10px] font-bold mt-1" style={{ color: retColor }}>{t.ret1y >= 0 ? "+" : ""}{t.ret1y}% 1Y</div>
+                            <div className="text-[10px] text-[#555]">${t.price}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#111] border border-[#222]">
+                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Materials &amp; Energy</div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {materials.map((t) => {
+                        const retColor = t.ret1y > 20 ? "#22c55e" : t.ret1y > 0 ? "#888" : "#ef4444";
+                        return (
+                          <div key={t.ticker} className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a] text-center">
+                            <div className="text-xs font-bold text-[#e0e0e0]">{t.ticker}</div>
+                            <div className="text-[10px] text-[#555]">{t.layer}</div>
+                            <div className="text-[10px] font-bold mt-1" style={{ color: retColor }}>{t.ret1y >= 0 ? "+" : ""}{t.ret1y}% 1Y</div>
+                            <div className="text-[10px] text-[#555]">${t.price}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* China — High Risk / High Reward card */}
+                {(() => {
+                  const chinaEtfs = usEtfs.filter((e) => e.layer.includes("China"));
+                  if (chinaEtfs.length === 0) return null;
                   return (
-                    <div className="p-2 rounded bg-[#0a0a0a] border text-center" style={{ borderColor: t.color + "30" }}>
-                      <div className="text-xs font-bold text-[#e0e0e0]">{t.ticker}</div>
-                      <div className="text-[10px] text-[#555]">{t.layer}</div>
-                      <div className="text-[10px] font-bold mt-1" style={{ color: retColor }}>{t.ret1y >= 0 ? "+" : ""}{t.ret1y}% <span className="text-[#333]">1Y</span></div>
-                      <div className="text-[10px] text-[#555] mt-0.5">${t.price}</div>
+                    <div className="mt-3 p-3 rounded-lg bg-[#111] border border-[#ef444430]" style={{ backgroundColor: "#ef444406" }}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#ef4444]" />
+                        <span className="text-[10px] text-[#ef4444] uppercase tracking-wider">China AI — High Risk / High Reward</span>
+                      </div>
+                      <p className="text-[10px] text-[#888] leading-relaxed mb-3">
+                        Xi Jinping has stated China&apos;s goal to be the <span className="text-[#e0e0e0] font-bold">world&apos;s biggest AI producer by 2030</span>. Beijing is pouring state capital into domestic chip fabs, humanoid robots, and AI models. But investing in Chinese equity comes with unique risks: VIE structure (Western investors own Cayman shell companies, not actual Chinese shares), tech crackdowns (2021 wiped out $1.5T), and delisting risk. Small allocation only — this is asymmetric: low downside floor (already heavily discounted), high upside if China executes.
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 mb-2">
+                        {chinaEtfs.map((t) => {
+                          const retColor = t.ret1y > 20 ? "#22c55e" : t.ret1y > 0 ? "#888" : "#ef4444";
+                          return (
+                            <div key={t.ticker} className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a] text-center">
+                              <div className="text-xs font-bold text-[#e0e0e0]">{t.ticker}</div>
+                              <div className="text-[10px] text-[#555]">{t.layer}</div>
+                              <div className="text-[10px] font-bold mt-1" style={{ color: retColor }}>{t.ret1y >= 0 ? "+" : ""}{t.ret1y}% 1Y</div>
+                              <div className="text-[10px] text-[#555]">${t.price}</div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="text-[10px] text-[#555]">
+                        <span className="text-[#ef4444]">Risk:</span> VIE structure, tech crackdowns, delisting · <span className="text-[#22c55e]">Reward:</span> world&apos;s largest AI market, state-backed capital
+                      </div>
                     </div>
                   );
-                };
-                return (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-                    <div className="p-3 rounded-lg bg-[#111] border border-[#3b82f630]">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-[10px] text-[#555] uppercase tracking-wider">Growth &amp; Tech</div>
-                        <span className="text-[10px] font-bold text-[#3b82f6]">avg +{growthAvg}% 1Y</span>
-                      </div>
-                      <p className="text-[10px] text-[#888] mb-2">AI chips, robotics, autonomous systems. These lag in stagflation but surge when growth returns.</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {growthETFs.map((t) => <EtfCard key={t.ticker} t={t} />)}
-                      </div>
-                    </div>
-                    <div className="p-3 rounded-lg bg-[#111] border border-[#e0903030]">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="text-[10px] text-[#555] uppercase tracking-wider">Materials &amp; Energy</div>
-                        <span className="text-[10px] font-bold text-[#e09030]">avg +{matAvgRet}% 1Y</span>
-                      </div>
-                      <p className="text-[10px] text-[#888] mb-2">Copper, lithium, rare earths, energy. Inflation hedges — they run hot in stagflation.</p>
-                      <div className="grid grid-cols-2 gap-2">
-                        {materialsETFs.map((t) => <EtfCard key={t.ticker} t={t} />)}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })()}
+                })()}
+              </div>
             </>
           );
         })()}
 
         <SectionChat
-          context="AI Race entry strategy. In stagflation: buy growth/robotics ETFs (BOTZ, AIQ, ARKQ, SMH) at a regime-driven discount. After regime shifts: rebalance into materials (COPX, LIT, REMX, ICLN)."
+          context="AI & Robotics Race entry strategy with Dalio Stage 5 framework. Three horizons (short/medium/long) and three investor profiles (Buy & Hold 70/30 growth, Balanced 50/50, Tactical 30/70 materials). Stage 5 creates a commodity supercycle short term and tech acceleration long term."
           label="Ask about entry strategy"
-          suggestions={["Why buy growth now instead of materials?", "How much should I allocate monthly?", "What if stagflation lasts longer than expected?"]}
+          suggestions={["Which profile fits a 10-year horizon?", "How often should I rebalance?", "What if Stage 5 lasts 5+ years?"]}
         />
       </section>
 
@@ -633,77 +761,89 @@ export default function HomePage() {
           Stan Druckenmiller&apos;s rule: the market prices in what&apos;s known. Alpha comes from what <span className="text-[#e0e0e0]">will</span> become known but isn&apos;t yet. These are events and facts that are mathematically or politically certain but not yet in the price.
         </p>
 
-        {/* 4 categories — data-driven with expandable cards */}
-        <div className="space-y-3">
-          {FORWARD_CATALYSTS.map((cat, idx) => (
-            <div key={cat.category} className="p-4 rounded-lg bg-[#111] border" style={{ borderColor: cat.color + "30" }}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center" style={{ color: cat.color, backgroundColor: cat.color + "20" }}>{idx + 1}</span>
-                <span className="text-sm font-bold text-[#e0e0e0]">{cat.category}</span>
-                <span className="text-[10px] text-[#555] ml-auto">{cat.categoryBadge}</span>
-              </div>
-              <p className="text-[10px] text-[#888] leading-relaxed mb-3">{cat.intro}</p>
+        {/* 4 categories — collapsed by default */}
+        <div className="space-y-1.5">
+          {FORWARD_CATALYSTS.map((cat, idx) => {
+            const catOpen = expandedCatalystCategory === cat.category;
+            return (
+            <div key={cat.category}>
+              <button
+                onClick={() => setExpandedCatalystCategory(catOpen ? null : cat.category)}
+                className="w-full flex items-center gap-2 p-3 rounded-lg bg-[#111] border border-[#222] text-left transition-colors hover:bg-[#151515]"
+              >
+                <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                <span className="text-[10px] text-[#555]">{idx + 1}.</span>
+                <span className="text-xs font-bold text-[#e0e0e0]">{cat.category}</span>
+                <span className="text-[10px] text-[#555] ml-auto hidden sm:inline">{cat.items.length} catalysts · {cat.categoryBadge}</span>
+                <span className="text-[#555] text-[10px] leading-none shrink-0">{catOpen ? "−" : "+"}</span>
+              </button>
 
-              <div className={`grid gap-2 ${cat.items.length === 4 ? "grid-cols-1 sm:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"}`}>
+              {catOpen && (
+              <div className="mt-2 p-3 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
+                <p className="text-[10px] text-[#888] leading-relaxed mb-3">{cat.intro}</p>
+
+                <div className={`grid gap-2 ${cat.items.length === 4 ? "grid-cols-1 sm:grid-cols-4" : "grid-cols-1 sm:grid-cols-3"}`}>
+                  {cat.items.map((item) => {
+                    const id = `${cat.category}-${item.title}`;
+                    const isOpen = expandedCatalyst === id;
+                    return (
+                      <button
+                        key={item.title}
+                        onClick={() => setExpandedCatalyst(isOpen ? null : id)}
+                        className="p-2 rounded bg-[#111] border border-[#222] text-left transition-colors hover:bg-[#151515]"
+                      >
+                        <div className="flex items-center justify-between mb-0.5">
+                          <div className="text-[10px] font-bold text-[#e0e0e0]">{item.title}</div>
+                          <span className="text-[#555] text-[10px] leading-none">{isOpen ? "−" : "+"}</span>
+                        </div>
+                        <div className="text-[10px] text-[#555]">{item.short}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Expanded detail drawer */}
                 {cat.items.map((item) => {
                   const id = `${cat.category}-${item.title}`;
-                  const isOpen = expandedCatalyst === id;
+                  if (expandedCatalyst !== id) return null;
                   return (
-                    <button
-                      key={item.title}
-                      onClick={() => setExpandedCatalyst(isOpen ? null : id)}
-                      className="p-2 rounded bg-[#0a0a0a] border text-left transition-colors hover:bg-[#141414]"
-                      style={{ borderColor: isOpen ? cat.color + "60" : "#1a1a1a" }}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="text-[10px] font-bold mb-0.5" style={{ color: cat.color }}>{item.title}</div>
-                        <span className="text-[#555] text-[10px] leading-none">{isOpen ? "−" : "+"}</span>
+                    <div key={`detail-${id}`} className="mt-3 p-3 rounded bg-[#111] border border-[#1a1a1a]">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-xs font-bold text-[#e0e0e0]">{item.title}</div>
+                        <button onClick={() => setExpandedCatalyst(null)} className="text-[#555] text-xs hover:text-[#888]">close ×</button>
                       </div>
-                      <div className="text-[10px] text-[#555]">{item.short} <span className="text-[#e0e0e0]">Triggers: {item.triggers}</span></div>
-                    </button>
-                  );
-                })}
-              </div>
 
-              {/* Expanded detail drawer */}
-              {cat.items.map((item) => {
-                const id = `${cat.category}-${item.title}`;
-                if (expandedCatalyst !== id) return null;
-                return (
-                  <div key={`detail-${id}`} className="mt-3 p-3 rounded border" style={{ borderColor: cat.color + "40", backgroundColor: cat.color + "06" }}>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-xs font-bold" style={{ color: cat.color }}>{item.title}</div>
-                      <button onClick={() => setExpandedCatalyst(null)} className="text-[#555] text-xs hover:text-[#888]">close ×</button>
-                    </div>
+                      <p className="text-[11px] text-[#888] leading-relaxed mb-3">{item.fullThesis}</p>
 
-                    <p className="text-[11px] text-[#888] leading-relaxed mb-3">{item.fullThesis}</p>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
-                        <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1.5">Key facts</div>
-                        <ul className="space-y-1">
-                          {item.keyFacts.map((f) => (
-                            <li key={f} className="text-[10px] text-[#888] leading-relaxed flex gap-1.5">
-                              <span style={{ color: cat.color }}>•</span>
-                              <span>{f}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
-                        <div className="text-[10px] text-[#ef4444] uppercase tracking-wider mb-1.5">What would break this</div>
-                        <p className="text-[10px] text-[#888] leading-relaxed">{item.whatWouldBreak}</p>
-                        <div className="mt-2 pt-2 border-t border-[#181818]">
-                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">How to position</div>
-                          <div className="text-[10px] text-[#e0e0e0]">{item.triggers}</div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1.5">Key facts</div>
+                          <ul className="space-y-1">
+                            {item.keyFacts.map((f) => (
+                              <li key={f} className="text-[10px] text-[#888] leading-relaxed flex gap-1.5">
+                                <span className="text-[#555]">•</span>
+                                <span>{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="p-2 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                          <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1.5">What would break this</div>
+                          <p className="text-[10px] text-[#888] leading-relaxed">{item.whatWouldBreak}</p>
+                          <div className="mt-2 pt-2 border-t border-[#181818]">
+                            <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Triggers</div>
+                            <div className="text-[10px] text-[#e0e0e0]">{item.triggers}</div>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+              )}
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="mt-4 p-3 rounded bg-[#111] border border-[#222]">
@@ -728,56 +868,53 @@ export default function HomePage() {
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">The Supply Chain — Layer by Layer</h2>
         <p className="text-xs text-[#555] mb-6">A deeper look at each layer. Click to expand for catalysts, parallels, and timing.</p>
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {SUPPLY_CHAIN.map((layer, i) => {
             const isOpen = expandedLayer === i;
             return (
-              <div key={layer.layer} className="rounded-lg bg-[#111] border overflow-hidden" style={{ borderColor: layer.color + "30" }}>
-                <button onClick={() => setExpandedLayer(isOpen ? null : i)} className="w-full p-4 text-left hover:bg-[#151515] transition-colors">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-1 h-8 rounded" style={{ backgroundColor: layer.color }} />
-                      <div>
-                        <span className="text-sm font-bold text-[#e0e0e0]">{layer.layer}</span>
-                        <div className="flex gap-2 mt-1">
-                          {layer.etfs.map((e) => (
-                            <span key={e.ticker} className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ color: layer.color, backgroundColor: layer.color + "20" }}>
-                              {e.ticker} {e.ucits !== "—" && `/ ${e.ucits}`}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-[#555] text-sm">{isOpen ? "−" : "+"}</span>
+              <div key={layer.layer}>
+                <button onClick={() => setExpandedLayer(isOpen ? null : i)} className="w-full flex items-center gap-2 p-3 rounded-lg bg-[#111] border border-[#222] text-left transition-colors hover:bg-[#151515]">
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: layer.color }} />
+                  <span className="text-xs font-bold text-[#e0e0e0]">{layer.layer}</span>
+                  <div className="flex gap-1 ml-2 flex-wrap">
+                    {layer.etfs.map((e) => (
+                      <span key={e.ticker} className="text-[10px] px-1.5 py-0.5 rounded bg-[#0a0a0a] border border-[#1a1a1a] text-[#888]">
+                        {e.ticker}
+                      </span>
+                    ))}
                   </div>
-                  <p className="text-xs text-[#888] leading-relaxed">{layer.description}</p>
+                  <span className="text-[#555] text-[10px] leading-none shrink-0 ml-auto">{isOpen ? "−" : "+"}</span>
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 border-t" style={{ borderColor: layer.color + "20" }}>
-                    <div className="mt-4 mb-4">
-                      <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">How to invest</div>
+                  <div className="mt-2 p-3 rounded-lg bg-[#0a0a0a] border border-[#1a1a1a]">
+                    <p className="text-[10px] text-[#888] leading-relaxed mb-3">{layer.description}</p>
+
+                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1.5">How to invest</div>
+                    <div className="space-y-1.5 mb-3">
                       {layer.etfs.map((e) => (
-                        <div key={e.ticker} className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a] mb-2">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="text-sm font-bold text-[#e0e0e0]">{e.ticker}</span>
+                        <div key={e.ticker} className="p-2 rounded bg-[#111] border border-[#1a1a1a]">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="text-xs font-bold text-[#e0e0e0]">{e.ticker}</span>
                             {e.ucits !== "—" && <span className="text-[10px] text-[#555]">UCITS: {e.ucits}</span>}
                           </div>
                           <div className="text-[10px] text-[#555]">{e.name}</div>
-                          <p className="text-[10px] text-[#888] mt-1">{e.why}</p>
+                          <p className="text-[10px] text-[#888] mt-0.5 leading-relaxed">{e.why}</p>
                         </div>
                       ))}
                     </div>
-                    <div className="mb-4">
-                      <div className="text-[10px] text-[#555] uppercase tracking-wider mb-2">Catalysts &amp; Timeline</div>
+
+                    <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1.5">Catalysts &amp; timeline</div>
+                    <div className="mb-3">
                       {layer.catalysts.map((c) => (
-                        <div key={c.event} className="flex gap-3 text-xs mb-1.5">
-                          <span className="font-bold shrink-0 w-20" style={{ color: layer.color }}>{c.date}</span>
+                        <div key={c.event} className="flex gap-2 text-[10px] mb-1">
+                          <span className="text-[#888] shrink-0 w-20">{c.date}</span>
                           <span className="text-[#888]">{c.event}</span>
                         </div>
                       ))}
                     </div>
-                    <div className="p-3 rounded bg-[#0a0a0a] border border-[#181818]">
-                      <div className="text-[10px] text-[#555] uppercase tracking-wider mb-1">Historical parallel</div>
+
+                    <div className="p-2 rounded bg-[#111] border border-[#1a1a1a]">
+                      <div className="text-[10px] text-[#555] uppercase tracking-wider mb-0.5">Historical parallel</div>
                       <p className="text-[10px] text-[#888] leading-relaxed">{layer.parallel}</p>
                     </div>
                   </div>
@@ -787,42 +924,10 @@ export default function HomePage() {
           })}
         </div>
         <SectionChat
-          context="AI Race supply chain. 7 layers: AI & Autonomous (AIQ, BOTZ), AI Chips (SMH), Robotics (BOTZ, ROBO), Copper (COPX), Lithium (LIT), Rare Earths (REMX), Energy (ICLN). Each has specific catalysts and timelines."
+          context="AI & Robotics Race supply chain. 7 layers: AI & Autonomous (AIQ, BOTZ), AI Chips (SMH), Robotics (BOTZ, ROBO), Copper (COPX), Lithium (LIT), Rare Earths (REMX), Energy (ICLN). Each has specific catalysts and timelines."
           label="Ask about the supply chain"
           suggestions={["Which layer moves first?", "What's the lithium risk after the 2022 crash?", "Is rare earth supply a real bottleneck?"]}
         />
-      </section>
-
-      <div className="border-t border-[#181818]" />
-
-      {/* ════════════════════════════════════════════
-          WAR ACCELERATES TECHNOLOGY
-      ════════════════════════════════════════════ */}
-
-      <section className="px-4 py-8 max-w-5xl mx-auto">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">War Accelerates Technology</h2>
-        <p className="text-xs text-[#555] mb-4">Every major technological leap in history was funded by nations competing to survive. The AI Race is no different.</p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-          {[
-            { era: "WW2", tech: "Jet engines, radar, nuclear", result: "Created the aerospace and energy industries" },
-            { era: "Cold War", tech: "Internet, GPS, satellites", result: "Created the tech industry worth $10T+" },
-            { era: "Space Race", tech: "Microchips, materials science", result: "Enabled the semiconductor revolution" },
-            { era: "Now", tech: "AI, robots, autonomous systems", result: "Creating the next industrial revolution" },
-          ].map((e) => (
-            <div key={e.era} className="p-2 rounded-lg bg-[#111] border border-[#222]">
-              <div className="text-xs font-bold text-[#e0e0e0] mb-1">{e.era}</div>
-              <div className="text-[10px] text-[#888]">{e.tech}</div>
-              <div className="text-[10px] text-[#555] mt-1">{e.result}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="p-3 rounded bg-[#111] border border-[#3b82f630]" style={{ backgroundColor: "#3b82f608" }}>
-          <p className="text-xs text-[#888] leading-relaxed">
-            <span className="text-[#3b82f6] font-bold">Why this matters now:</span> The US ($52B CHIPS Act + Terafab), China (290k robots/year + chip independence push), and Europe (€43B Chips Act + ASML monopoly protection) are all pouring unprecedented money into AI and automation — not because it&apos;s profitable, but because <span className="text-[#e0e0e0]">falling behind is an existential threat</span>. Governments don&apos;t cut defence spending during a war, and they won&apos;t cut AI spending during the automation race. This makes the supply chain demand <span className="text-[#e0e0e0]">government-backed and recession-resistant</span> — even in stagflation, the spending continues.
-          </p>
-        </div>
       </section>
 
       <div className="border-t border-[#181818]" />
@@ -833,7 +938,7 @@ export default function HomePage() {
 
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <h2 className="text-lg font-bold text-[#e0e0e0] mb-1">Regime Trackers</h2>
-        <p className="text-xs text-[#555] mb-4">The macro context that drives the AI Race entry timing.</p>
+        <p className="text-xs text-[#555] mb-4">The macro context that drives the AI & Robotics Race entry timing.</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[
             { flag: "🇺🇸", label: "US", data: us, href: "/regimetracker" },
@@ -864,7 +969,7 @@ export default function HomePage() {
       {/* Subscribe */}
       <section className="px-4 py-12 max-w-5xl mx-auto">
         <SubscribeForm
-          title="The AI Race — Weekly"
+          title="The AI & Robotics Race — Weekly"
           description="One email per week: new factory announcements, supply chain disruptions, ETF entry opportunities, and robotics milestones. What happened and does it change the plan."
           buttonLabel="Subscribe"
           source="home_ai_race"
@@ -874,7 +979,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
-        <p className="text-xs text-[#555]">Macro World View — Tracking the AI Race and the world order transition</p>
+        <p className="text-xs text-[#555]">Macro World View — Tracking the AI & Robotics Race and the world order transition</p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
           This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. Past performance does not guarantee future results.
         </p>

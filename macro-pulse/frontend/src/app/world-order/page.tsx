@@ -120,51 +120,66 @@ function CountryDetail({ country }: { country: CountryData }) {
   const overall = getOverallScore(country.scores);
   const sig = country.investment;
 
-  return (
-    <div className="border-t border-[#222] bg-[#0a0a0a] p-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Radar chart */}
-        <div>
-          <h4 className="text-xs text-[#555] uppercase tracking-wider mb-2">Power Profile — {country.name}</h4>
-          <RadarChart scores={country.scores} color={color} />
-          <div className="text-center mt-2">
-            <span className="text-2xl font-bold" style={{ color }}>{overall}</span>
-            <span className="text-xs text-[#555] ml-1">/ 10</span>
-          </div>
-        </div>
+  // Group determinants into thematic categories
+  const DETERMINANT_GROUPS: { label: string; keys: string[] }[] = [
+    { label: "Economy", keys: ["economicOutput", "tradeShare", "debtLevels", "costCompetitiveness"] },
+    { label: "Finance", keys: ["financialCenter", "reserveCurrency", "competitiveness"] },
+    { label: "Power", keys: ["military", "alliances", "technology", "naturalResources"] },
+    { label: "Society", keys: ["education", "infrastructure", "ruleOfLaw", "politicalCohesion", "wealthGaps", "characterValues", "leadershipQuality"] },
+  ];
 
-        {/* Scores table */}
-        <div>
-          <h4 className="text-xs text-[#555] uppercase tracking-wider mb-2">18 Determinants</h4>
-          <div className="space-y-1 max-h-[400px] overflow-y-auto pr-2">
+  return (
+    <div className="border-t border-[#222] bg-[#0a0a0a] p-3">
+      {/* Compact header: overall + theme groups */}
+      <div className="flex items-baseline gap-2 mb-3">
+        <span className="text-xl font-bold" style={{ color }}>{overall}</span>
+        <span className="text-[10px] text-[#555]">/ 10 overall</span>
+        <span className="text-[10px] text-[#555] ml-auto uppercase tracking-wider">18 determinants — grouped</span>
+      </div>
+
+      <div className="space-y-2">
+        {DETERMINANT_GROUPS.map((group) => (
+          <div key={group.label}>
+            <div className="text-[9px] text-[#555] uppercase tracking-wider mb-1">{group.label}</div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
+              {group.keys.map((k) => {
+                const score = country.scores[k] || 0;
+                const label = DETERMINANT_LABELS[k];
+                return (
+                  <div key={k} className="px-1.5 py-1 rounded bg-[#111] border border-[#1a1a1a]">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[10px] text-[#888] truncate">{label}</span>
+                      <div className="flex items-center gap-0.5 shrink-0">
+                        <span className="text-[10px] font-bold" style={{ color }}>{score}</span>
+                        <TrendArrow trend={country.scoreTrends[k]} />
+                      </div>
+                    </div>
+                    <div className="h-0.5 bg-[#181818] rounded overflow-hidden mt-0.5">
+                      <div className="h-full rounded" style={{ width: `${score * 10}%`, backgroundColor: color }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Radar + evidence — both collapsible */}
+      <details className="mt-3">
+        <summary className="text-[10px] text-[#555] cursor-pointer hover:text-[#888] uppercase tracking-wider">View radar chart + evidence ↓</summary>
+        <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-1 flex flex-col items-center justify-center">
+            <RadarChart scores={country.scores} color={color} />
+          </div>
+          <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             {DETERMINANT_KEYS.map((k) => (
-              <div key={k} className="flex items-center gap-2 text-xs">
-                <span className="w-24 text-[#888] shrink-0">{DETERMINANT_LABELS[k]}</span>
-                <div className="flex-1 h-2 bg-[#181818] rounded overflow-hidden">
-                  <div
-                    className="h-full rounded"
-                    style={{ width: `${(country.scores[k] || 0) * 10}%`, backgroundColor: color }}
-                  />
-                </div>
-                <span className="w-6 text-right font-bold" style={{ color }}>{country.scores[k]}</span>
-                <TrendArrow trend={country.scoreTrends[k]} />
+              <div key={k} className="p-1.5 rounded bg-[#111] border border-[#1a1a1a]">
+                <div className="text-[10px] font-bold" style={{ color }}>{DETERMINANT_LABELS[k]}</div>
+                <div className="text-[10px] text-[#888] leading-snug mt-0.5">{country.scoreEvidence[k]}</div>
               </div>
             ))}
           </div>
-          <div className="mt-3 text-xs text-[#333]">Click a score for evidence</div>
-        </div>
-      </div>
-
-      {/* Evidence */}
-      <details className="mt-4">
-        <summary className="text-xs text-[#555] cursor-pointer hover:text-[#888]">View evidence for all determinants</summary>
-        <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {DETERMINANT_KEYS.map((k) => (
-            <div key={k} className="p-2 rounded bg-[#111] text-xs">
-              <span className="text-[#888] font-bold">{DETERMINANT_LABELS[k]}:</span>{" "}
-              <span className="text-[#555]">{country.scoreEvidence[k]}</span>
-            </div>
-          ))}
         </div>
       </details>
 
@@ -286,7 +301,7 @@ const COMPETITORS = [
     headline: "ASML Monopoly",
     oneLine: "EUV lithography · €43B Chips Act",
     color: "#3b82f6",
-    thesis: "Europe holds the single most important chokepoint in the AI Race: ASML's EUV lithography machines. Every advanced chip in the world — Nvidia, TSMC, Samsung — requires ASML equipment. No substitute exists. Europe is also fast-tracking defence automation (€800B ReArm Europe) and building domestic chip capacity (€43B Chips Act). The autonomy push is government-funded and decade-long.",
+    thesis: "Europe holds the single most important chokepoint in the AI & Robotics Race: ASML's EUV lithography machines. Every advanced chip in the world — Nvidia, TSMC, Samsung — requires ASML equipment. No substitute exists. Europe is also fast-tracking defence automation (€800B ReArm Europe) and building domestic chip capacity (€43B Chips Act). The autonomy push is government-funded and decade-long.",
     strengths: [
       "100% monopoly on EUV lithography (ASML)",
       "€43B Chips Act committed",
@@ -307,7 +322,7 @@ const COMPETITORS = [
       "Infineon + STMicro — automotive chip leaders",
       "Siemens + ABB — industrial automation giants",
     ],
-    aiRaceExposure: "SMH is heavily weighted toward ASML (Europe's entry into the AI Race). EUAD for defence automation. ICLN for the European energy buildout. Europe is the most direct play on the supply chain's bottleneck layer.",
+    aiRaceExposure: "SMH is heavily weighted toward ASML (Europe's entry into the AI & Robotics Race). EUAD for defence automation. ICLN for the European energy buildout. Europe is the most direct play on the supply chain's bottleneck layer.",
   },
 ];
 
@@ -528,6 +543,87 @@ const INDICATOR_DETAILS: Record<string, {
   },
 };
 
+// ── Big Cycle stage drill-downs ──
+const STAGE_DETAILS: Record<number, {
+  context: string;
+  keyEvents: string[];
+  historicalParallel: string;
+  investmentLens: string;
+}> = {
+  1: {
+    context: "After WWII, the US emerged as the dominant global power. Bretton Woods (1944) established the dollar as the world's reserve currency, tied to gold at $35/oz. The US held 75% of global gold reserves. The Marshall Plan rebuilt Europe. The UN, IMF, World Bank were founded under US leadership. This is when the 'American Century' officially began — Dalio's Stage 1: the winner of the last conflict sets the rules for the next cycle.",
+    keyEvents: [
+      "1944: Bretton Woods conference — USD tied to gold",
+      "1945: WWII ends — US controls 50% of world GDP",
+      "1945: UN founded, US leads Security Council",
+      "1947: Marshall Plan — $13B to rebuild Europe",
+      "1949: NATO established — Western military alliance",
+    ],
+    historicalParallel: "1815: The Congress of Vienna established British dominance after Napoleon's defeat. 1648: Treaty of Westphalia established Dutch dominance after the Thirty Years' War. Every major cycle begins with a winner setting the rules.",
+    investmentLens: "Stage 1 is the most prosperous investment era — new infrastructure, rebuilding, stable currency. Bonds yield well, equities compound, real assets appreciate. The losers: holders of the previous reserve currency (pound sterling fell 30% vs USD in this decade).",
+  },
+  2: {
+    context: "The 1950s-1970s were the 'golden age' of the American century. GDP grew 4-5% annually. The middle class expanded dramatically. Interstate highways, space program, civil rights movement, mass consumerism. The dollar was strong, debt was low, productivity was high. Dalio identifies this as Stage 2: peace and prosperity — where capital compounds, education rises, and standards of living improve across the board.",
+    keyEvents: [
+      "1950s: GI Bill, suburban expansion, highway system",
+      "1960s: Space race, civil rights, Apollo 11",
+      "1964: Medicare/Medicaid established",
+      "1965-75: Global productivity peak",
+      "End of era: Nixon ends gold standard (1971)",
+    ],
+    historicalParallel: "Britain 1815-1870: the Pax Britannica. Europe stable, Britain dominant, industrial revolution compounding wealth. Ended with rising challengers (Germany, US). Every peace & prosperity stage ends when the losers of the last war catch up.",
+    investmentLens: "Stage 2 is the best decade for equities and productivity growth. Long-duration bonds work. Real estate appreciates. Innovation and tech lead. But the end of Stage 2 is always masked by optimism — the 1960s looked like endless prosperity until the 1970s happened.",
+  },
+  3: {
+    context: "The 1970s-2000s saw the US start to over-extend. Vietnam War debt forced Nixon off the gold standard (1971). Stagflation, oil crises, and rising Soviet power challenged the order. Reagan rebuilt military power (beating the USSR) but also tripled national debt. The US shifted from creditor to debtor nation. Financialisation replaced manufacturing. The 2000s brought tax cuts, two wars, and the biggest debt buildup since WWII. Dalio's Stage 3: excess and overextension — where the declining power stops being disciplined.",
+    keyEvents: [
+      "1971: Nixon ends gold standard",
+      "1973: Oil crisis, stagflation",
+      "1985: US becomes net debtor nation",
+      "1991: Soviet Union collapses — sole superpower moment",
+      "2001-08: Iraq + Afghanistan wars, housing bubble",
+    ],
+    historicalParallel: "Britain 1870-1914: high empire but financial leverage building. Germany catching up in industry. Britain still dominant but increasingly fragile. Dutch Republic 1650-1780 went through the same phase — still dominant but overextended.",
+    investmentLens: "Stage 3 looks like continued prosperity but debt is compounding faster than GDP. Equities still work but volatility rises. Gold starts outperforming. Long bonds become risky. The key: wealth concentrates at the top, middle class gets squeezed — a marker of late Stage 3.",
+  },
+  4: {
+    context: "2008-2020 was the financial crisis era. The 2008 Global Financial Crisis nearly collapsed the banking system. QE (money printing) began. Debt doubled as the Fed pumped $4T into markets. Wealth inequality exploded — asset owners benefited while workers' real wages stagnated. Social cohesion frayed (Tea Party, Occupy, 2016 populism, 2020 riots). Dalio identifies this as Stage 4: financial crisis and internal conflict. The empire is still dominant externally but cracking internally.",
+    keyEvents: [
+      "2008: Lehman collapses, $700B TARP bailout",
+      "2009-14: QE1, QE2, QE3 — Fed balance sheet $900B → $4.5T",
+      "2016: Brexit + Trump election (populist revolts)",
+      "2020: COVID pandemic, $5T+ stimulus, riots",
+      "2020: Debt/GDP crosses 125% (wartime levels)",
+    ],
+    historicalParallel: "Britain 1914-1945: WWI devastated finances, 1930s brought populism and Great Depression, WWII finished the empire despite 'winning'. France 1780-1789: financial crisis from American war debt, internal conflict, Revolution. Stage 4 always precedes Stage 5.",
+    investmentLens: "Stage 4 is when gold starts to shine — central banks begin diversifying, debt monetization accelerates, traditional bonds stop working. Equities still rise in nominal terms but lose purchasing power. Hard assets (commodities, real estate) outperform financial assets.",
+  },
+  5: {
+    context: "This is where we are now. 2020-present: Great Power Conflict. Ukraine war (2022), Iran-Hormuz crisis (2026), Taiwan tensions, chip export wars, BRICS+ expansion, rare earth weaponization. The US is fighting three active theaters. China is building a parallel order. Russia is at war with NATO via Ukraine. Alliances are fragmenting. Dalio's Stage 5 is the most dangerous phase — every historical transition has either ended in open war or grudging accommodation. No escape from Stage 5 is peaceful.",
+    keyEvents: [
+      "2022: Russia invades Ukraine — largest European war since WWII",
+      "2022: US-China chip export controls begin",
+      "2024: BRICS+ expands to include Saudi, UAE, Iran",
+      "2026: Iran war, Hormuz closure",
+      "Ongoing: Taiwan tensions, AUKUS submarines, defence buildups",
+    ],
+    historicalParallel: "1914-1918 (WWI): Stage 5 transitioned to open war between declining Britain and rising Germany. 1939-1945 (WWII): Second Stage 5 with Britain, US, USSR, Germany, Japan. 1775-1783: Stage 5 was the American Revolution — Britain couldn't hold its empire cheaply. Every Stage 5 ends in conflict of some form.",
+    investmentLens: "Stage 5 is when gold goes parabolic — central banks are buyers, not speculators. Defence stocks (EUAD, ITA) lead. Commodities (COPX, LIT, REMX) benefit from military spending. The AI & Robotics Race supply chain is Stage 5 investing — governments will spend regardless of the economy because falling behind is existential.",
+  },
+  6: {
+    context: "Stage 6 is the reset — where the new world order is established after the conflict. Who emerges dominant depends on: (1) who survives Stage 5 with their productive capacity intact, (2) who controls the critical resources, (3) who wins the hearts of the neutral bloc. The US might retain dominance in a diminished form. China might emerge as equal or superior. A multipolar world might stabilise. It's genuinely uncertain — Dalio's framework doesn't predict the outcome, only that a transition is happening.",
+    keyEvents: [
+      "Pending: end of current Stage 5 (unclear timing)",
+      "Possible outcomes: negotiated settlement, cold war continuation, open conflict",
+      "Key variables: Taiwan, Hormuz, Ukraine peace terms",
+      "Capital flows: where do central bank reserves go?",
+      "Technology leadership: who wins the AI & Robotics Race?",
+    ],
+    historicalParallel: "1945: Bretton Woods established the USD system. 1815: Congress of Vienna established the British system. 1648: Westphalia established the Dutch system. Each Stage 6 creates the rules for the next 80-100 years — the winners of Stage 5 write them.",
+    investmentLens: "Stage 6 is when the biggest fortunes are made — being positioned for the NEW order before it's established. The AI & Robotics Race supply chain is this bet: the new industrial order will be built on AI and robotics, regardless of who wins politically. Materials, chips, and automation will be the foundation of whatever comes next.",
+  },
+};
+
 // ── Alliance bloc drill-downs ──
 const BLOC_DETAILS: Record<AllianceCamp, {
   context: string;
@@ -691,7 +787,7 @@ const COMMITMENT_DETAILS: Record<string, {
       "AUKUS commitment: nuclear subs to Australia ($368B over 30 years)",
     ],
     historicalParallel: "The British maintained a similar 'balance of power' role in the Pacific before WWII. The strategy worked until Japan struck first in 1941. Maintaining deterrence requires unambiguous capability — any perceived US weakness invites Chinese testing.",
-    investmentImplication: "Central to the AI Race thesis — the Indo-Pacific competition IS the AI Race in geopolitical form. SMH (chip supply chain), BOTZ (defence automation), EUAD (allied defence buildout) all benefit. Taiwan exposure (EWT) is high-risk/high-reward given Taiwan Strait tensions.",
+    investmentImplication: "Central to the AI & Robotics Race thesis — the Indo-Pacific competition IS the AI & Robotics Race in geopolitical form. SMH (chip supply chain), BOTZ (defence automation), EUAD (allied defence buildout) all benefit. Taiwan exposure (EWT) is high-risk/high-reward given Taiwan Strait tensions.",
   },
   "NATO Europe": {
     context: "NATO Article 5 obligations have been the cornerstone of US foreign policy since 1949. After the Ukraine invasion, NATO expanded to include Finland and Sweden, adding new borders with Russia. US forward-deployed forces in Europe grew from 65,000 (2020) to 100,000+ (2024). The annual cost is small in peacetime but would scale massively in any direct conflict with Russia.",
@@ -741,7 +837,7 @@ const EU_POSITIONS = [
       "Political shift in key member states",
       "Execution capacity constraints",
     ],
-    aiRaceConnection: "Defence automation is the AI Race in uniform. Modern weapons systems require AI targeting, autonomous drones, and robotic ammo production. Every defence dollar increasingly flows to chips, copper, rare earths, and lithium. EUAD captures this spend directly.",
+    aiRaceConnection: "Defence automation is the AI & Robotics Race in uniform. Modern weapons systems require AI targeting, autonomous drones, and robotic ammo production. Every defence dollar increasingly flows to chips, copper, rare earths, and lithium. EUAD captures this spend directly.",
   },
   {
     id: "iogp",
@@ -786,7 +882,7 @@ const EU_POSITIONS = [
       "Cyclical semiconductor downturns",
       "Next-gen lithography breakthroughs (unlikely 5+ years)",
     ],
-    aiRaceConnection: "ASML is Europe's entry ticket into the AI Race. Every AI chip goes through ASML machines. SMH (VanEck Semiconductor ETF) holds ~10% in ASML — the cleanest way to capture both US design leadership and European equipment dominance.",
+    aiRaceConnection: "ASML is Europe's entry ticket into the AI & Robotics Race. Every AI chip goes through ASML machines. SMH (VanEck Semiconductor ETF) holds ~10% in ASML — the cleanest way to capture both US design leadership and European equipment dominance.",
   },
   {
     id: "nhy",
@@ -795,7 +891,7 @@ const EU_POSITIONS = [
     stat: "NOK listed",
     color: "#a855f7",
     note: "Stag + Reflation",
-    fullThesis: "Norsk Hydro (NHY.OL) is Europe's largest aluminum producer and a sleeper AI Race play. Aluminum is critical for datacenter cooling systems, chip packaging, and EV/robot structural components. NHY is also a leading renewable energy producer in Norway (hydro, wind) which powers its low-carbon aluminum. The company's 'green aluminum' commands a premium from tech buyers (Apple, Microsoft) that need to meet sustainability targets. Listed in Oslo in NOK — currency hedged exposure to commodities + European industrial production.",
+    fullThesis: "Norsk Hydro (NHY.OL) is Europe's largest aluminum producer and a sleeper AI & Robotics Race play. Aluminum is critical for datacenter cooling systems, chip packaging, and EV/robot structural components. NHY is also a leading renewable energy producer in Norway (hydro, wind) which powers its low-carbon aluminum. The company's 'green aluminum' commands a premium from tech buyers (Apple, Microsoft) that need to meet sustainability targets. Listed in Oslo in NOK — currency hedged exposure to commodities + European industrial production.",
     catalysts: [
       "Apple, Microsoft, Google premium green aluminum contracts",
       "Datacenter cooling aluminum demand (+40% by 2028)",
@@ -809,7 +905,7 @@ const EU_POSITIONS = [
       "Energy cost pressure in European smelters",
       "Chinese aluminium oversupply",
     ],
-    aiRaceConnection: "Overlooked AI Race angle — every datacenter needs aluminum heat sinks and structural frames. Every humanoid robot uses aluminum. NHY has low-carbon aluminum pricing premium as tech companies hit scope 3 emissions targets. Niche but high-conviction European industrial play.",
+    aiRaceConnection: "Overlooked AI & Robotics Race angle — every datacenter needs aluminum heat sinks and structural frames. Every humanoid robot uses aluminum. NHY has low-carbon aluminum pricing premium as tech companies hit scope 3 emissions targets. Niche but high-conviction European industrial play.",
   },
 ];
 
@@ -896,6 +992,8 @@ export default function WorldOrderPage() {
   const [expandedCommitment, setExpandedCommitment] = useState<string | null>(null);
   const [expandedDebtCard, setExpandedDebtCard] = useState<string | null>(null);
   const [expandedBloc, setExpandedBloc] = useState<AllianceCamp | null>(null);
+  const [expandedRanking, setExpandedRanking] = useState<string | null>(null);
+  const [expandedStage, setExpandedStage] = useState<number | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -919,7 +1017,7 @@ export default function WorldOrderPage() {
           The race to automate will decide who leads the next world order
         </p>
         <p className="text-sm text-[#555] max-w-lg mx-auto mb-6">
-          Empires used to compete with armies and navies. Now they compete with chips, robots, and AI. Whoever automates production fastest — building the most advanced fabs, deploying the most robots, controlling the supply chain — wins. That&apos;s why the AI Race is a geopolitical thesis, not just an investment one.
+          Empires used to compete with armies and navies. Now they compete with chips, robots, and AI. Whoever automates production fastest — building the most advanced fabs, deploying the most robots, controlling the supply chain — wins. That&apos;s why the AI & Robotics Race is a geopolitical thesis, not just an investment one.
         </p>
       </section>
 
@@ -1002,7 +1100,7 @@ export default function WorldOrderPage() {
               </div>
 
               <div className="p-3 rounded border" style={{ borderColor: c.color + "30", backgroundColor: c.color + "08" }}>
-                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: c.color }}>How to capture this via the AI Race supply chain</div>
+                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: c.color }}>How to capture this via the AI & Robotics Race supply chain</div>
                 <p className="text-[10px] text-[#888] leading-relaxed">{c.aiRaceExposure}</p>
               </div>
             </div>
@@ -1011,7 +1109,7 @@ export default function WorldOrderPage() {
 
         <div className="p-3 mt-3 rounded bg-[#111] border border-[#222]">
           <p className="text-[10px] text-[#888] leading-relaxed text-center">
-            <span className="text-[#e0e0e0] font-bold">Why this matters for your portfolio:</span> Every nation pouring money into AI and robotics = structural demand for the same supply chain: chips (SMH), copper (COPX), lithium (LIT), rare earths (REMX). The geopolitical competition <span className="text-[#e0e0e0]">accelerates</span> the AI Race thesis — governments are subsidising the demand.
+            <span className="text-[#e0e0e0] font-bold">Why this matters for your portfolio:</span> Every nation pouring money into AI and robotics = structural demand for the same supply chain: chips (SMH), copper (COPX), lithium (LIT), rare earths (REMX). The geopolitical competition <span className="text-[#e0e0e0]">accelerates</span> the AI & Robotics Race thesis — governments are subsidising the demand.
           </p>
         </div>
       </section>
@@ -1218,11 +1316,11 @@ export default function WorldOrderPage() {
         </div>
       </section>
 
-      {/* Emerging Markets — positioned for the AI Race */}
+      {/* Emerging Markets — positioned for the AI & Robotics Race */}
       <section id="emerging-markets" className="px-4 py-8 max-w-5xl mx-auto scroll-mt-20">
-        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Emerging Markets in the AI Race</h2>
+        <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Emerging Markets in the AI & Robotics Race</h2>
         <p className="text-xs text-[#555] mb-4 max-w-2xl">
-          The world order shift isn&apos;t just US vs China — it creates winners among countries that sit on the right resources or geography. Each of these nations holds a specific piece of the AI Race supply chain that becomes more valuable as the established powers compete.
+          The world order shift isn&apos;t just US vs China — it creates winners among countries that sit on the right resources or geography. Each of these nations holds a specific piece of the AI & Robotics Race supply chain that becomes more valuable as the established powers compete.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
@@ -1331,14 +1429,14 @@ export default function WorldOrderPage() {
 
         <div className="p-3 rounded bg-[#111] border border-[#222]">
           <p className="text-[10px] text-[#888] leading-relaxed">
-            <span className="text-[#e0e0e0] font-bold">How to think about these:</span> These aren&apos;t core positions — they&apos;re optionality. The core AI Race thesis is supply chain ETFs (SMH, BOTZ, COPX, LIT, REMX) which capture the demand from all competitors. Emerging market ETFs are a way to bet on specific countries that host the resources or manufacturing capacity as the world order reshuffles. Small allocations, long horizons, and only the countries with durable structural advantages.
+            <span className="text-[#e0e0e0] font-bold">How to think about these:</span> These aren&apos;t core positions — they&apos;re optionality. The core AI & Robotics Race thesis is supply chain ETFs (SMH, BOTZ, COPX, LIT, REMX) which capture the demand from all competitors. Emerging market ETFs are a way to bet on specific countries that host the resources or manufacturing capacity as the world order reshuffles. Small allocations, long horizons, and only the countries with durable structural advantages.
           </p>
         </div>
 
         <SectionChat
-          context="Emerging Markets positioned for the AI Race: India (neutral chip alternative), Indonesia (nickel/battery metals), Brazil (iron ore and lithium), Saudi Arabia (oil-to-AI conversion via Vision 2030), Vietnam (China+1 manufacturing beneficiary), Mexico (nearshoring via USMCA). Each holds a specific piece of the AI Race supply chain that becomes more valuable as US-China competition intensifies. Three meta-themes: Non-alignment premium, supply chain rerouting, commodity leverage. Historical parallels: Switzerland in WWI/WWII, Asian Tigers during Cold War."
+          context="Emerging Markets positioned for the AI & Robotics Race: India (neutral chip alternative), Indonesia (nickel/battery metals), Brazil (iron ore and lithium), Saudi Arabia (oil-to-AI conversion via Vision 2030), Vietnam (China+1 manufacturing beneficiary), Mexico (nearshoring via USMCA). Each holds a specific piece of the AI & Robotics Race supply chain that becomes more valuable as US-China competition intensifies. Three meta-themes: Non-alignment premium, supply chain rerouting, commodity leverage. Historical parallels: Switzerland in WWI/WWII, Asian Tigers during Cold War."
           label="Ask about emerging market positioning"
-          suggestions={["Which EM has the strongest AI Race exposure?", "How do I size EM positions vs supply chain ETFs?", "Is India a better bet than Vietnam for chip manufacturing?"]}
+          suggestions={["Which EM has the strongest AI & Robotics Race exposure?", "How do I size EM positions vs supply chain ETFs?", "Is India a better bet than Vietnam for chip manufacturing?"]}
         />
       </section>
 
@@ -1347,38 +1445,75 @@ export default function WorldOrderPage() {
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Global Power Rankings</h2>
         <p className="text-xs text-[#555] mb-4">Dalio&apos;s 18 determinants — who leads, who&apos;s closing the gap</p>
 
-        {/* Top 3 highlighted */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        {/* Top 3 highlighted — clickable */}
+        <div className="grid grid-cols-3 gap-3 mb-3">
           {ranked.slice(0, 3).map((c, i) => {
             const score = getOverallScore(c.scores);
             const color = CAMP_COLORS[c.allianceCamp];
+            const isOpen = expandedRanking === c.code;
             return (
-              <div key={c.code} className="p-3 rounded-lg border text-center" style={{ borderColor: color + "40", backgroundColor: color + "08" }}>
-                <div className="text-xs text-[#555]">#{i + 1}</div>
+              <button
+                key={c.code}
+                onClick={() => setExpandedRanking(isOpen ? null : c.code)}
+                className="p-3 rounded-lg border text-center transition-colors hover:bg-[#151515]"
+                style={{ borderColor: color + (isOpen ? "80" : "40"), backgroundColor: color + (isOpen ? "15" : "08") }}
+              >
+                <div className="flex items-center justify-center gap-1">
+                  <div className="text-xs text-[#555]">#{i + 1}</div>
+                  <span className="text-[#555] text-[10px] leading-none">{isOpen ? "−" : "+"}</span>
+                </div>
                 <div className="text-lg font-bold text-[#e0e0e0]">{c.name}</div>
                 <div className="text-2xl font-bold mt-1" style={{ color }}>{score}</div>
                 <div className="text-[10px] text-[#555] mt-1">Best: {getStrongestDeterminant(c.scores)}</div>
                 <div className="text-[10px] text-[#555]">Weak: {getWeakestDeterminant(c.scores)}</div>
-              </div>
+              </button>
             );
           })}
         </div>
 
-        {/* Compact list for rest */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+        {/* Compact list for rest — clickable */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">
           {ranked.slice(3).map((c, i) => {
             const score = getOverallScore(c.scores);
             const color = CAMP_COLORS[c.allianceCamp];
+            const isOpen = expandedRanking === c.code;
             return (
-              <div key={c.code} className="flex items-center gap-2 p-2 rounded bg-[#111] border border-[#222]">
+              <button
+                key={c.code}
+                onClick={() => setExpandedRanking(isOpen ? null : c.code)}
+                className="flex items-center gap-2 p-2 rounded bg-[#111] border text-left transition-colors hover:bg-[#151515]"
+                style={{ borderColor: isOpen ? color + "60" : "#222" }}
+              >
                 <span className="text-xs text-[#333]">#{i + 4}</span>
                 <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
                 <span className="text-xs font-bold text-[#e0e0e0] flex-1">{c.name}</span>
                 <span className="text-xs font-bold" style={{ color }}>{score}</span>
-              </div>
+                <span className="text-[#555] text-[10px] leading-none">{isOpen ? "−" : "+"}</span>
+              </button>
             );
           })}
         </div>
+
+        {/* Expanded country detail drawer */}
+        {expandedRanking && (() => {
+          const country = ranked.find((c) => c.code === expandedRanking);
+          if (!country) return null;
+          const color = CAMP_COLORS[country.allianceCamp];
+          return (
+            <div className="mb-4 rounded-lg border overflow-hidden" style={{ borderColor: color + "40" }}>
+              <div className="flex items-center justify-between px-4 py-2" style={{ backgroundColor: color + "10" }}>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-[#e0e0e0]">{country.name}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ color, backgroundColor: color + "20" }}>
+                    {country.allianceCamp.replace("_", "-").toUpperCase()}
+                  </span>
+                </div>
+                <button onClick={() => setExpandedRanking(null)} className="text-[#555] text-xs hover:text-[#888]">close ×</button>
+              </div>
+              <CountryDetail country={country} />
+            </div>
+          );
+        })()}
 
         <SectionChat
           context="Global power rankings. Top 3: US, China, and the next closest. Based on Dalio's 18 determinants (education, tech, military, trade, finance, reserves, debt, equality, rule of law, infrastructure, resources, alliances, leadership)."
@@ -1404,18 +1539,57 @@ export default function WorldOrderPage() {
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Where the US Sits in the Big Cycle</h2>
         <p className="text-xs text-[#555] mb-6">Dalio&apos;s six stages of empire — applied to the United States</p>
         <div className="space-y-2 mb-6">
-          {bigCycleStages.map((s) => (
-            <div key={s.stage} className="flex items-center gap-3 p-3 rounded-lg border"
-              style={{ backgroundColor: s.active ? ACCENT + "15" : "#111", borderColor: s.active ? ACCENT + "40" : "#222" }}>
-              <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                style={{ backgroundColor: s.active ? ACCENT : "#222", color: s.active ? "#000" : "#555" }}>{s.stage}</span>
-              <div className="flex-1">
-                <span className={`text-sm font-bold ${s.active ? "text-[#e0e0e0]" : "text-[#555]"}`}>{s.label}</span>
-                <span className="text-xs text-[#333] ml-2">{s.period}</span>
+          {bigCycleStages.map((s) => {
+            const isOpen = expandedStage === s.stage;
+            const detail = STAGE_DETAILS[s.stage];
+            return (
+              <div key={s.stage}>
+                <button
+                  onClick={() => setExpandedStage(isOpen ? null : s.stage)}
+                  className="w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors hover:bg-[#151515]"
+                  style={{ backgroundColor: s.active ? ACCENT + "15" : "#111", borderColor: isOpen ? ACCENT + "60" : s.active ? ACCENT + "40" : "#222" }}
+                >
+                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{ backgroundColor: s.active ? ACCENT : "#222", color: s.active ? "#000" : "#555" }}>{s.stage}</span>
+                  <div className="flex-1">
+                    <span className={`text-sm font-bold ${s.active ? "text-[#e0e0e0]" : "text-[#555]"}`}>{s.label}</span>
+                    <span className="text-xs text-[#333] ml-2">{s.period}</span>
+                  </div>
+                  {s.active && <span className="text-xs font-bold" style={{ color: ACCENT }}>← NOW</span>}
+                  <span className="text-[#555] text-[10px] leading-none shrink-0 ml-2">{isOpen ? "−" : "+"}</span>
+                </button>
+
+                {isOpen && detail && (
+                  <div className="mt-2 p-4 rounded-lg border" style={{ borderColor: ACCENT + "40", backgroundColor: ACCENT + "06" }}>
+                    <p className="text-xs text-[#888] leading-relaxed mb-4">{detail.context}</p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                      <div className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                        <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color: ACCENT }}>Key events</div>
+                        <ul className="space-y-1">
+                          {detail.keyEvents.map((e) => (
+                            <li key={e} className="text-[10px] text-[#888] leading-relaxed flex gap-1.5">
+                              <span style={{ color: ACCENT }}>•</span>
+                              <span>{e}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                        <div className="text-[10px] text-[#888] uppercase tracking-wider mb-2">Historical parallel</div>
+                        <p className="text-[10px] text-[#888] leading-relaxed">{detail.historicalParallel}</p>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded border" style={{ borderColor: ACCENT + "30", backgroundColor: ACCENT + "08" }}>
+                      <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: ACCENT }}>Investment lens</div>
+                      <p className="text-[10px] text-[#888] leading-relaxed">{detail.investmentLens}</p>
+                    </div>
+                  </div>
+                )}
               </div>
-              {s.active && <span className="text-xs font-bold" style={{ color: ACCENT }}>← NOW</span>}
-            </div>
-          ))}
+            );
+          })}
         </div>
         <SectionChat
           context="Big Cycle position. US is at Stage 5 of 6 (great power conflict). Same indicators as British Empire 1940s and Soviet Union 1980s."
@@ -1936,7 +2110,7 @@ export default function WorldOrderPage() {
               </div>
 
               <div className="p-3 rounded border" style={{ borderColor: p.color + "30", backgroundColor: p.color + "08" }}>
-                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: p.color }}>AI Race connection</div>
+                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color: p.color }}>AI & Robotics Race connection</div>
                 <p className="text-[10px] text-[#888] leading-relaxed">{p.aiRaceConnection}</p>
               </div>
             </div>

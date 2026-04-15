@@ -53,7 +53,7 @@ export default function HomePage() {
       ═══════════════════════════════ */}
       <section className="px-4 pt-20 pb-12 max-w-3xl mx-auto text-center">
         <h1 className="text-2xl sm:text-3xl text-[#e0e0e0] font-bold leading-tight mb-4">
-          The AI Race is creating the next materials supercycle
+          The AI & Robotics Race is creating the next materials supercycle
         </h1>
         <p className="text-sm text-[#555] max-w-xl mx-auto mb-6">
           Every AI fab, robot factory, and datacenter needs chips, copper, lithium, and rare earths. The supply chain is investable today — and the current macro regime tells you exactly when to enter.
@@ -63,9 +63,9 @@ export default function HomePage() {
         </Link>
         <div className="mt-4">
           <SectionChat
-            context="Welcome to Macro World View. The AI Race thesis: every AI fab, robot factory, and datacenter needs the same materials — chips, copper, lithium, rare earths. Supply chain ETFs (SMH, BOTZ, COPX, LIT, REMX, ICLN) benefit regardless of which company wins. Current macro regime affects entry timing. The site has dedicated pages for the full AI Race thesis, US/EU/China regime trackers, and the world order transition."
+            context="Welcome to Macro World View. The AI & Robotics Race thesis: every AI fab, robot factory, and datacenter needs the same materials — chips, copper, lithium, rare earths. Supply chain ETFs (SMH, BOTZ, COPX, LIT, REMX, ICLN) benefit regardless of which company wins. Current macro regime affects entry timing. The site has dedicated pages for the full AI & Robotics Race thesis, US/EU/China regime trackers, and the world order transition."
             label="Ask about this thesis"
-            suggestions={["What is the AI Race supply chain?", "Which ETFs should I start with?", "How does the macro regime affect entry timing?"]}
+            suggestions={["What is the AI & Robotics Race supply chain?", "Which ETFs should I start with?", "How does the macro regime affect entry timing?"]}
           />
         </div>
       </section>
@@ -103,7 +103,7 @@ export default function HomePage() {
 
           {regime === "Stagflation" && (
             <p className="text-xs text-[#888] mt-2 leading-relaxed">
-              Growth ETFs (AI, robotics) are <span className="text-[#e0e0e0] font-bold">discounted right now</span> — the macro is handing you a regime-driven discount on the AI Race thesis.
+              Growth ETFs (AI, robotics) are <span className="text-[#e0e0e0] font-bold">discounted right now</span> — the macro is handing you a regime-driven discount on the AI & Robotics Race thesis.
             </p>
           )}
           {regime === "Goldilocks" && <p className="text-xs text-[#888] mt-2">Best regime for AI/robotics ETFs. Spread across the full supply chain.</p>}
@@ -115,11 +115,11 @@ export default function HomePage() {
       <div className="border-t border-[#181818]" />
 
       {/* ═══════════════════════════════
-          DASHBOARD 1 — AI Race
+          DASHBOARD 1 — AI & Robotics Race
       ═══════════════════════════════ */}
       <section className="px-4 py-8 max-w-5xl mx-auto">
         <div className="flex items-baseline justify-between mb-1">
-          <h2 className="text-lg font-bold text-[#e0e0e0]">The AI Race</h2>
+          <h2 className="text-lg font-bold text-[#e0e0e0]">The AI & Robotics Race</h2>
           <Link href="/ai-race" className="text-[10px] text-[#3b82f6] hover:underline">Full thesis →</Link>
         </div>
         <p className="text-xs text-[#555] mb-4">The main investment thesis: supply chain ETFs for the AI and robotics industrial revolution.</p>
@@ -205,7 +205,7 @@ export default function HomePage() {
           <h2 className="text-lg font-bold text-[#e0e0e0]">Regime Trackers</h2>
           <span className="text-[10px] text-[#555]">Live macro context</span>
         </div>
-        <p className="text-xs text-[#555] mb-4">Track the three economies that drive the AI Race entry timing. The US regime is the primary signal.</p>
+        <p className="text-xs text-[#555] mb-4">Track the three economies that drive the AI & Robotics Race entry timing. The US regime is the primary signal.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* US — Primary */}
@@ -329,7 +329,7 @@ export default function HomePage() {
           <h2 className="text-lg font-bold text-[#e0e0e0]">World Order</h2>
           <Link href="/world-order" className="text-[10px] text-[#b45309] hover:underline">Full monitor →</Link>
         </div>
-        <p className="text-xs text-[#555] mb-4">The geopolitical context that accelerates the AI Race thesis.</p>
+        <p className="text-xs text-[#555] mb-4">The geopolitical context that accelerates the AI & Robotics Race thesis.</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {/* Race to Automate */}
@@ -379,7 +379,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-sm font-bold text-[#e0e0e0] mb-1">Emerging Markets</h3>
               <p className="text-[10px] text-[#555] leading-relaxed mb-3">
-                6 countries holding pieces of the AI Race supply chain. Small-allocation bets on structural advantages.
+                6 countries holding pieces of the AI & Robotics Race supply chain. Small-allocation bets on structural advantages.
               </p>
               <div className="flex flex-wrap gap-1 mt-auto text-[10px]">
                 <span>🇮🇳</span><span>🇮🇩</span><span>🇧🇷</span><span>🇸🇦</span><span>🇻🇳</span><span>🇲🇽</span>
@@ -396,7 +396,7 @@ export default function HomePage() {
       ═══════════════════════════════ */}
       <section className="px-4 py-12 max-w-5xl mx-auto">
         <SubscribeForm
-          title="The AI Race — Weekly"
+          title="The AI & Robotics Race — Weekly"
           description="One email per week: new factory announcements, supply chain disruptions, ETF entry opportunities, and robotics milestones. What happened and does it change the plan."
           buttonLabel="Subscribe"
           source="home_ai_race"
@@ -406,7 +406,7 @@ export default function HomePage() {
 
       {/* Footer */}
       <footer className="px-4 py-8 text-center border-t border-[#181818]">
-        <p className="text-xs text-[#555]">Macro World View — Tracking the AI Race and the world order transition</p>
+        <p className="text-xs text-[#555]">Macro World View — Tracking the AI & Robotics Race and the world order transition</p>
         <p className="text-xs text-[#333] mt-2 max-w-xl mx-auto">
           This website is for educational and informational purposes only. Nothing on this site constitutes personalised financial advice. Past performance does not guarantee future results.
         </p>

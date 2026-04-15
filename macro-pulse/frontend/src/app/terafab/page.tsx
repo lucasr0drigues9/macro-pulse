@@ -162,7 +162,7 @@ export default function TerafabPage() {
 
       {/* Header */}
       <section className="px-4 pt-12 pb-4 max-w-5xl mx-auto">
-        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The AI Race</h1>
+        <h1 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-3">The AI & Robotics Race</h1>
         <p className="text-xl sm:text-2xl text-[#e0e0e0] font-bold mb-3">
           Terafab → AI Chips → Robots → Materials Supercycle
         </p>
