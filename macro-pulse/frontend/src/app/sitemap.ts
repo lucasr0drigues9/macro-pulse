@@ -4,7 +4,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://macroworldview.com";
   return [
     { url: base, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
-    { url: `${base}/terafab`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/ai-race`, lastModified: new Date(), changeFrequency: "daily", priority: 0.95 },
+    { url: `${base}/terafab`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
     { url: `${base}/regimetracker`, lastModified: new Date(), changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/europe`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
     { url: `${base}/china`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },

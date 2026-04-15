@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
-  { href: "/", label: "AI Race", enabled: true },
+  { href: "/", label: "Home", enabled: true },
+  { href: "/ai-race", label: "AI Race", enabled: true },
   { href: "/regimetracker", label: "US", enabled: true },
   { href: "/europe", label: "Europe", enabled: true },
   { href: "/china", label: "China", enabled: true },
