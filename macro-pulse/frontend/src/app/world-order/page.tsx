@@ -528,6 +528,51 @@ const INDICATOR_DETAILS: Record<string, {
   },
 };
 
+// ── Alliance bloc drill-downs ──
+const BLOC_DETAILS: Record<AllianceCamp, {
+  context: string;
+  keyDynamics: string[];
+  historicalParallel: string;
+  investmentImplication: string;
+}> = {
+  us_nato: {
+    context: "The US-NATO bloc was the dominant Western alliance for 75 years. After the Ukraine invasion, NATO expanded (Finland, Sweden) and defence spending accelerated. But internal tensions are rising: Germany is under economic pressure from losing cheap Russian energy, the US is pushing European allies to pay more, and Japan is being pulled harder into the Indo-Pacific containment strategy. The alliance is still strong but less cohesive than during the Cold War — members increasingly pursue independent defence and industrial strategies.",
+    keyDynamics: [
+      "NATO 32 members after Finland (2023) and Sweden (2024) joined",
+      "Germany: economic strain from energy transition, pivoting military spending",
+      "Japan: doubling defence budget 2022-2027, closer US ties",
+      "Norway: non-NATO energy exporter, benefits from all sides",
+      "US pushing 2% → 2.5% GDP defence commitment",
+    ],
+    historicalParallel: "NATO's closest precedent is the Anglo-Japanese Alliance (1902-1923) — a treaty system that worked brilliantly for 20 years but couldn't adapt when the rising power (Japan) had different priorities than the declining power (Britain). Alliances work when interests align. They fray when they diverge.",
+    investmentImplication: "US-aligned defence spending drives EUAD (European defence ETF — Rheinmetall, BAE, Leonardo) and ITA (US defence). German industrial automation (BOTZ holds Siemens) benefits from rebuilding. Norwegian energy (NHY, Equinor) benefits from European energy autonomy.",
+  },
+  neutral: {
+    context: "The neutral bloc is the most important group in the current world order — they're the swing voters. India, Saudi Arabia, Turkey, Brazil, Indonesia, Mexico and other middle powers are actively playing both sides, extracting concessions from US and China. India buys Russian oil at a discount AND receives US semiconductor investment. Saudi Arabia joined BRICS+ but maintains US security guarantees. This group captures disproportionate value by refusing to commit. Most are members of BRICS+ even while maintaining Western economic ties.",
+    keyDynamics: [
+      "Saudi Arabia: joined BRICS+, accepts yuan for oil, still hosts US CENTCOM",
+      "India: largest democracy, non-aligned, building domestic chip industry",
+      "Turkey: NATO member that buys Russian S-400s, controls Bosphorus",
+      "Brazil: BRICS+ founding member, keeps US trade open, commodity superpower",
+      "Most neutral countries are trending 'more neutral' (not picking sides)",
+    ],
+    historicalParallel: "The Non-Aligned Movement during the Cold War (1961-1991) — India, Egypt, Yugoslavia, Indonesia — extracted massive development aid from both the US and Soviet Union by refusing to commit to either side. Today's neutral bloc is following the same playbook with better leverage (they control critical commodities, population, geography).",
+    investmentImplication: "This is the group with the best risk-adjusted returns. INDA (India), EWZ (Brazil), EIDO (Indonesia), KSA (Saudi Arabia), EWW (Mexico), TUR (Turkey). Small allocations but structural upside. See the Emerging Markets section above for full country breakdowns.",
+  },
+  china_russia: {
+    context: "The China-Russia bloc is a marriage of convenience between the rising challenger and the wounded former superpower. China provides economic lifeline, Russia provides commodities, energy, and a distraction from Chinese ambitions in Asia. The 'no-limits partnership' declared in 2022 hasn't produced a formal military alliance but has created economic interdependence. North Korea and Iran are adjacent members. The bloc is small but geographically enormous and controls critical commodities.",
+    keyDynamics: [
+      "China + Russia 'no-limits partnership' (Feb 2022)",
+      "Russia: increasingly dependent on Chinese yuan + trade",
+      "China: buying discounted Russian oil and gas",
+      "Adjacent: North Korea, Iran, Belarus, Myanmar",
+      "Bloc controls 25%+ of global landmass and energy",
+    ],
+    historicalParallel: "The Axis powers (Germany-Italy-Japan 1940-1945) were a similar marriage of convenience among revisionist powers. Each had distinct goals but shared an interest in overturning the existing order. The partnership lasted as long as they were winning — it didn't survive contact with setbacks.",
+    investmentImplication: "Avoid direct exposure to this bloc's equities due to sanctions risk and VIE structure issues for Chinese stocks. Capture the commodity flow indirectly through global resource ETFs — COPX, REMX, LIT benefit from Russian and Chinese commodity production regardless of political risk. Gold (GLD) is the safest hedge against escalation.",
+  },
+};
+
 // ── Financial Burden card drill-downs ──
 const DEBT_CARD_DETAILS: Record<string, {
   title: string;
@@ -850,6 +895,7 @@ export default function WorldOrderPage() {
   const [expandedIndicator, setExpandedIndicator] = useState<string | null>(null);
   const [expandedCommitment, setExpandedCommitment] = useState<string | null>(null);
   const [expandedDebtCard, setExpandedDebtCard] = useState<string | null>(null);
+  const [expandedBloc, setExpandedBloc] = useState<AllianceCamp | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
@@ -977,17 +1023,24 @@ export default function WorldOrderPage() {
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">Which Side Is Each Country On?</h2>
         <p className="text-xs text-[#555] mb-4">Click any country to see its full power scorecard and investment signal.</p>
 
-        {/* Visual summary — 3 blocs */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        {/* Visual summary — 3 blocs (clickable for detail) */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {(["us_nato", "neutral", "china_russia"] as AllianceCamp[]).map((camp) => {
             const campCountries = sorted.filter((c) => c.allianceCamp === camp);
             const shifting = campCountries.filter((c) => c.stability !== "Stable");
+            const isOpen = expandedBloc === camp;
             return (
-              <div key={camp} className="p-4 rounded-lg border" style={{ borderColor: CAMP_COLORS[camp] + "40", backgroundColor: CAMP_COLORS[camp] + "08" }}>
+              <button
+                key={camp}
+                onClick={() => setExpandedBloc(isOpen ? null : camp)}
+                className="p-4 rounded-lg border text-left transition-colors hover:bg-[#151515]"
+                style={{ borderColor: CAMP_COLORS[camp] + (isOpen ? "80" : "40"), backgroundColor: CAMP_COLORS[camp] + (isOpen ? "15" : "08") }}
+              >
                 <div className="flex items-center gap-2 mb-3">
                   <span className="w-3 h-3 rounded-full" style={{ backgroundColor: CAMP_COLORS[camp] }} />
                   <span className="text-sm font-bold text-[#e0e0e0]">{CAMP_LABELS[camp]}</span>
                   <span className="text-xs text-[#555] ml-auto">{campCountries.length} countries</span>
+                  <span className="text-[#555] text-[10px] leading-none">{isOpen ? "−" : "+"}</span>
                 </div>
                 <div className="space-y-2">
                   {campCountries.map((c) => {
@@ -1012,10 +1065,52 @@ export default function WorldOrderPage() {
                     {shifting.length} shifting — watch for realignment
                   </div>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
+
+        {/* Bloc drill-down drawer */}
+        {expandedBloc && BLOC_DETAILS[expandedBloc] && (() => {
+          const detail = BLOC_DETAILS[expandedBloc];
+          const color = CAMP_COLORS[expandedBloc];
+          return (
+            <div className="mb-6 p-4 rounded-lg border" style={{ borderColor: color + "40", backgroundColor: color + "06" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+                  <div className="text-sm font-bold text-[#e0e0e0]">{CAMP_LABELS[expandedBloc]}</div>
+                </div>
+                <button onClick={() => setExpandedBloc(null)} className="text-[#555] text-xs hover:text-[#888]">close ×</button>
+              </div>
+
+              <p className="text-xs text-[#888] leading-relaxed mb-4">{detail.context}</p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <div className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                  <div className="text-[10px] uppercase tracking-wider mb-2" style={{ color }}>Key dynamics</div>
+                  <ul className="space-y-1">
+                    {detail.keyDynamics.map((d) => (
+                      <li key={d} className="text-[10px] text-[#888] leading-relaxed flex gap-1.5">
+                        <span style={{ color }}>•</span>
+                        <span>{d}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="p-3 rounded bg-[#0a0a0a] border border-[#1a1a1a]">
+                  <div className="text-[10px] text-[#888] uppercase tracking-wider mb-2">Historical parallel</div>
+                  <p className="text-[10px] text-[#888] leading-relaxed">{detail.historicalParallel}</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded border" style={{ borderColor: color + "30", backgroundColor: color + "08" }}>
+                <div className="text-[10px] uppercase tracking-wider mb-1" style={{ color }}>Investment implication</div>
+                <p className="text-[10px] text-[#888] leading-relaxed">{detail.investmentImplication}</p>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Key insight */}
         {(() => {
@@ -1301,7 +1396,7 @@ export default function WorldOrderPage() {
 
       <section className="px-4 pt-8 pb-4 max-w-5xl mx-auto text-center">
         <h2 className="text-sm tracking-[0.3em] uppercase text-[#888] mb-2">Historical Framework</h2>
-        <p className="text-xs text-[#555] max-w-xl mx-auto">The long-cycle evidence behind the world order transition — Dalio's 6 stages, US decline indicators, and the rise of the challengers.</p>
+        <p className="text-xs text-[#555] max-w-xl mx-auto">The long-cycle evidence behind the world order transition — Dalio&apos;s 6 stages, US decline indicators, and the rise of the challengers.</p>
       </section>
 
       {/* Big Cycle */}
