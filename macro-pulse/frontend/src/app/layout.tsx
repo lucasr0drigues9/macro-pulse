@@ -10,9 +10,26 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Macro World View — The AI Race Supply Chain",
+  title: "Macro World View — The AI Race Supply Chain Investment Thesis",
   description:
-    "Track economic regimes in real time using Ray Dalio's four-season framework. Free macro investing dashboard with live FRED data, geopolitical AI synthesis, and ETF allocation recommendations.",
+    "The AI Race is creating the next materials supercycle. Every AI fab, robot factory, and datacenter needs chips, copper, lithium, and rare earths. Track the supply chain ETFs (SMH, BOTZ, COPX, LIT, REMX) and use macro regime data to time your entry.",
+  keywords: "AI investing, robotics ETF, semiconductor ETF, copper ETF, lithium ETF, rare earth ETF, SMH, BOTZ, COPX, LIT, REMX, ARKQ, AIQ, macro regime, Terafab, supply chain investing, materials supercycle, AI race",
+  openGraph: {
+    title: "Macro World View — The AI Race Supply Chain",
+    description: "The AI Race is creating the next materials supercycle. Track supply chain ETFs and use macro regimes to time your entry.",
+    url: "https://macroworldview.com",
+    siteName: "Macro World View",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Macro World View — The AI Race Supply Chain",
+    description: "The AI Race is creating the next materials supercycle. Track supply chain ETFs and use macro regimes to time your entry.",
+  },
+  metadataBase: new URL("https://macroworldview.com"),
+  alternates: {
+    canonical: "https://macroworldview.com",
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
