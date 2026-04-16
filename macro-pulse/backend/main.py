@@ -1748,6 +1748,120 @@ def get_performance():
     }
 
 
+@app.get("/api/internals")
+def get_internals():
+    """Macro Internals — Druckenmiller-style cross-asset confirmation signals.
+
+    Computes 4 ratios/levels that reveal risk-on vs risk-off:
+    - Copper/Gold: industrial demand vs safe haven
+    - HYG/LQD: junk vs investment-grade credit spread
+    - IWM/SPY: small caps vs large caps
+    - UUP: dollar index (risk-off = strong dollar)
+
+    Compares each against the current regime's expected signature and returns
+    a confirmation score (how many agree with the stated regime).
+    """
+    import yfinance as _yf
+    from macro_kelly import get_current_regime
+
+    regime, _, _ = get_current_regime()
+
+    tickers = ["COPX", "GLD", "HYG", "LQD", "IWM", "SPY", "UUP"]
+    hist: dict[str, list[float]] = {}
+    for t in tickers:
+        try:
+            h = _yf.Ticker(t).history(period="6mo")
+            if len(h) > 0:
+                hist[t] = h["Close"].tolist()
+        except Exception:
+            pass
+
+    def _ratio_trend(series: list[float]) -> tuple[float, float | None, float | None, str]:
+        """Return (current, pct_change_1m, pct_change_3m, trend)."""
+        current = series[-1]
+        one_m = None
+        three_m = None
+        if len(series) >= 22:
+            past = series[-22]
+            if past != 0:
+                one_m = round((current - past) / past * 100, 1)
+        if len(series) >= 64:
+            past = series[-64]
+            if past != 0:
+                three_m = round((current - past) / past * 100, 1)
+        trend = "flat"
+        if three_m is not None:
+            if three_m > 2:
+                trend = "rising"
+            elif three_m < -2:
+                trend = "falling"
+        return round(current, 3), one_m, three_m, trend
+
+    # Build ratio series
+    def _div(a: list[float], b: list[float]) -> list[float]:
+        n = min(len(a), len(b))
+        return [a[-n + i] / b[-n + i] for i in range(n) if b[-n + i] != 0]
+
+    ratio_definitions = []
+    if "COPX" in hist and "GLD" in hist:
+        ratio_definitions.append(("Copper/Gold", _div(hist["COPX"], hist["GLD"]), "risk-on=rising"))
+    if "HYG" in hist and "LQD" in hist:
+        ratio_definitions.append(("Credit spread (HYG/LQD)", _div(hist["HYG"], hist["LQD"]), "risk-on=rising"))
+    if "IWM" in hist and "SPY" in hist:
+        ratio_definitions.append(("Small/Large (IWM/SPY)", _div(hist["IWM"], hist["SPY"]), "risk-on=rising"))
+    if "UUP" in hist:
+        ratio_definitions.append(("Dollar (UUP)", hist["UUP"], "risk-on=falling"))
+
+    # Regime is "risk-on" (Goldilocks, Reflation) or "risk-off" (Stagflation, Deflation)
+    risk_on_regimes = {"Goldilocks", "Reflation"}
+    current_risk_on = regime in risk_on_regimes
+
+    internals = []
+    for name, series, signal_meaning in ratio_definitions:
+        if not series or len(series) < 5:
+            continue
+        value, one_m, three_m, trend = _ratio_trend(series)
+
+        # Determine the risk tone the trend implies (risk-on / risk-off / neutral)
+        if trend == "flat":
+            signal_desc = "neutral"
+        elif signal_meaning == "risk-on=rising":
+            signal_desc = "risk-on" if trend == "rising" else "risk-off"
+        else:  # risk-on=falling
+            signal_desc = "risk-off" if trend == "rising" else "risk-on"
+
+        # 3-way alignment: agrees, disagrees, or neutral
+        if signal_desc == "neutral":
+            alignment = "neutral"
+        elif (signal_desc == "risk-on" and current_risk_on) or (signal_desc == "risk-off" and not current_risk_on):
+            alignment = "agrees"
+        else:
+            alignment = "disagrees"
+
+        internals.append({
+            "name": name,
+            "value": value,
+            "change1m": one_m,
+            "change3m": three_m,
+            "trend": trend,
+            "signal": signal_desc,
+            "alignment": alignment,
+        })
+
+    confirmation = sum(1 for i in internals if i["alignment"] == "agrees")
+    contradictions = sum(1 for i in internals if i["alignment"] == "disagrees")
+    total = len(internals)
+
+    return {
+        "regime": regime,
+        "regimeType": "risk-on" if current_risk_on else "risk-off",
+        "internals": internals,
+        "confirmationScore": confirmation,
+        "contradictionScore": contradictions,
+        "total": total,
+    }
+
+
 @app.get("/api/allocation")
 def get_allocation(mode: str = "active"):
     """Section 3 Part A — Regime weights with smart buy guidance. Mode changes allocation."""
