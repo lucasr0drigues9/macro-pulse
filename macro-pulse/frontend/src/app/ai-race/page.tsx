@@ -5,6 +5,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import SectionChat from "@/components/SectionChat";
 import SubscribeForm from "@/components/SubscribeForm";
+import MarketContext from "@/components/MarketContext";
 import { apiUrl } from "@/lib/api";
 
 const REGIME_COLORS: Record<string, string> = {
@@ -16,6 +17,14 @@ type TimingETF = {
   ticker: string; layer: string; color: string; isUcits: boolean;
   price: number; rsi: number; vsMa200: number; drawdown: number;
   high52w: number; low52w: number; ret1y: number; score: number; signal: string;
+};
+type LiquidityData = {
+  latest: { date: string; netLiquidity: number; fedBalanceSheet: number; tga: number; rrp: number };
+  changes: { oneMonth: number | null; threeMonth: number | null; twelveMonth: number | null };
+  trend: "expanding" | "contracting" | "flat";
+  peak: { date: string; value: number };
+  trough: { date: string; value: number };
+  pctFromPeak: number;
 };
 
 // ── Supply Chain Data ──
@@ -362,9 +371,9 @@ export default function HomePage() {
   const [us, setUs] = useState<RegimeData | null>(null);
   const [eu, setEu] = useState<RegimeData | null>(null);
   const [cn, setCn] = useState<RegimeData | null>(null);
-  const [duration, setDuration] = useState<{ avg: number; min: number; max: number; periods: number } | null>(null);
   const [timing, setTiming] = useState<TimingETF[]>([]);
   const [timingLoading, setTimingLoading] = useState(true);
+  const [liquidity, setLiquidity] = useState<LiquidityData | null>(null);
   const [expandedLayer, setExpandedLayer] = useState<number | null>(null);
   const [expandedCatalyst, setExpandedCatalyst] = useState<string | null>(null);
   const [expandedCatalystCategory, setExpandedCatalystCategory] = useState<string | null>(null);
@@ -375,12 +384,9 @@ export default function HomePage() {
     fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUs(d); }).catch(() => {});
     fetch(apiUrl("/api/eu/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setEu(d); }).catch(() => {});
     fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setCn(d); }).catch(() => {});
-    fetch(apiUrl("/api/transition")).then((r) => r.json()).then((d) => { if (d.durationStats) setDuration(d.durationStats); }).catch(() => {});
     fetch("/api/terafab-timing").then((r) => r.json()).then((d) => { if (d.etfs) setTiming(d.etfs); }).catch(() => {}).finally(() => setTimingLoading(false));
+    fetch("/api/liquidity").then((r) => r.json()).then((d) => { if (!d.error) setLiquidity(d); }).catch(() => {});
   }, []);
-
-  const regime = us?.regime || null;
-  const regimeColor = regime ? REGIME_COLORS[regime] || "#888" : "#888";
 
   return (
     <main className="min-h-screen">
@@ -404,45 +410,7 @@ export default function HomePage() {
         />
       </section>
 
-      {/* Regime context */}
-      {regime && (
-        <section className="px-4 pb-8 max-w-4xl mx-auto">
-          <div className="p-4 rounded-lg border" style={{ borderColor: regimeColor + "40", backgroundColor: regimeColor + "08" }}>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-[10px] uppercase tracking-wider text-[#555]">Current macro regime</span>
-              <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>
-                {regime}
-              </span>
-              {duration && (
-                <span className="text-[10px] text-[#555]">typically lasts {duration.avg} months (range {duration.min}–{duration.max})</span>
-              )}
-            </div>
-            {us && eu && cn && (
-              <div className="flex gap-2 mb-3">
-                {[
-                  { label: "US", r: us.regime },
-                  { label: "EU", r: eu.regime },
-                  { label: "CN", r: cn.regime },
-                ].map((x) => {
-                  const c = REGIME_COLORS[x.r] || "#555";
-                  return (
-                    <div key={x.label} className="flex-1 p-2 rounded text-center" style={{ backgroundColor: c + "15", border: `1px solid ${c}40` }}>
-                      <div className="text-[10px] text-[#555]">{x.label}</div>
-                      <div className="text-xs font-bold" style={{ color: c }}>{x.r}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-            <p className="text-xs text-[#888] leading-relaxed">
-              {regime === "Stagflation" && <>Stagflation suppresses growth stocks (AI, robotics) while inflating materials (copper, lithium). <span className="text-[#e0e0e0] font-bold">Growth ETFs are discounted right now</span> — the AI & Robotics Race thesis hasn&apos;t changed, only the macro headwind. Buy growth now, add materials after the regime shifts.</>}
-              {regime === "Goldilocks" && <>Goldilocks is the <span className="text-[#e0e0e0] font-bold">best regime for the AI & Robotics Race</span> — low inflation + growth benefits tech and robotics directly. Spread across the full supply chain.</>}
-              {regime === "Reflation" && <>Reflation lifts the <span className="text-[#e0e0e0] font-bold">entire AI & Robotics Race supply chain</span> — both growth and materials benefit. Equal-weight across all layers.</>}
-              {regime === "Deflation" && <>Deflation puts everything on sale. <span className="text-[#e0e0e0] font-bold">Best time to build your AI & Robotics Race position</span> — buy aggressively across the full supply chain at deep discounts.</>}
-            </p>
-          </div>
-        </section>
-      )}
+      <MarketContext />
 
       <div className="border-t border-[#181818]" />
 
@@ -492,16 +460,16 @@ export default function HomePage() {
       <section id="when-to-enter" className="px-4 py-8 max-w-5xl mx-auto scroll-mt-20">
         <h2 className="text-xl font-bold text-[#e0e0e0] mb-1">When to Enter</h2>
         <p className="text-xs text-[#555] mb-4 max-w-2xl">
-          Two frameworks stacked: a structural one (Stage 5, 20-40 years) tells you what to own, and a tactical one (current regime, 3-9 months) tells you which side to tilt toward right now. They work together — don&apos;t pick one.
+          Three frameworks stacked: <span className="text-[#888]">structural</span> (Stage 5, 20-40 yrs) tells you what to own, <span className="text-[#888]">tactical</span> (regime, 3-9 months) tells you which side to tilt toward, and <span className="text-[#888]">liquidity</span> (Fed flows, weeks-months) tells you whether the tide is rising or falling under both. All three work together.
         </p>
 
-        {/* Two-layer framework explainer */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        {/* Three-layer framework explainer */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           <div className="p-3 rounded-lg bg-[#111] border border-[#a855f730]">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-bold text-[#a855f7] bg-[#a855f720] px-2 py-0.5 rounded">LAYER 1 — STRUCTURAL</span>
-              <span className="text-[10px] text-[#555]">20-40 yrs</span>
             </div>
+            <div className="text-[10px] text-[#555] mb-2">20-40 yrs</div>
             <div className="text-xs text-[#888] leading-relaxed">
               <span className="text-[#e0e0e0] font-bold">Dalio Big Cycle Stage 5.</span> Commit to the AI &amp; Robotics Race supply chain for the full structural period. Both materials AND growth compound over 20+ years. This is your CORE position — don&apos;t time it.
             </div>
@@ -509,17 +477,35 @@ export default function HomePage() {
           <div className="p-3 rounded-lg bg-[#111] border border-[#ef444430]">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[10px] font-bold text-[#ef4444] bg-[#ef444420] px-2 py-0.5 rounded">LAYER 2 — TACTICAL</span>
-              <span className="text-[10px] text-[#555]">3-9 months</span>
             </div>
+            <div className="text-[10px] text-[#555] mb-2">3-9 months</div>
             <div className="text-xs text-[#888] leading-relaxed">
               <span className="text-[#e0e0e0] font-bold">Current regime tilts.</span> Within the structural thesis, use the regime tracker to shift weight between growth and materials. Stagflation now = materials tilt. Goldilocks later = growth tilt. Multiple rotations over 20 years.
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-[#111] border border-[#22c55e30]">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[10px] font-bold text-[#22c55e] bg-[#22c55e20] px-2 py-0.5 rounded">LAYER 3 — LIQUIDITY</span>
+            </div>
+            <div className="text-[10px] text-[#555] mb-2">
+              {liquidity ? (
+                <>
+                  Net liquidity <span style={{ color: liquidity.trend === "expanding" ? "#22c55e" : liquidity.trend === "contracting" ? "#ef4444" : "#888" }}>
+                    {liquidity.trend}
+                  </span>
+                  {liquidity.changes.threeMonth !== null && <> · {liquidity.changes.threeMonth > 0 ? "+" : ""}{liquidity.changes.threeMonth}% 3m</>}
+                </>
+              ) : "weeks-months"}
+            </div>
+            <div className="text-xs text-[#888] leading-relaxed">
+              <span className="text-[#e0e0e0] font-bold">Fed balance sheet − TGA − RRP.</span> Rising liquidity = tailwind for BOTH growth and materials, but growth is far more leveraged (long-duration earnings). Falling liquidity = headwind, growth gets hit first. <Link href="/#liquidity" className="text-[#22c55e] hover:underline">See tracker →</Link>
             </div>
           </div>
         </div>
 
         <div className="p-3 rounded bg-[#111] border border-[#222] mb-4">
           <p className="text-[10px] text-[#888] leading-relaxed">
-            <span className="text-[#e0e0e0] font-bold">How to think about it:</span> Stage 5 will go through multiple regime cycles over 20-40 years (stagflation, goldilocks, reflation, deflation — each lasting 3-9 months). Historical example: in WWI era (1914-1945), stocks boomed in the 1920s, crashed in 1929, stagnated in the 1930s, then BOTH materials and stocks rose in WWII. Within our Stage 5, expect 5-10 similar rotations. Your structural position stays constant. Your tactical tilts change with the regime.
+            <span className="text-[#e0e0e0] font-bold">Reading the signals:</span> when all three align (Stage 5 + favorable regime + expanding liquidity), add aggressively. When they conflict — like now, with stagflation <span className="text-[#ef4444]">against</span> growth but liquidity <span className="text-[#22c55e]">for</span> it — growth is discounted and quietly supported: a time to <span className="text-[#e0e0e0] font-bold">start building</span>, not go all-in. Liquidity usually wins over 6-12 months, but it can reverse fast.
           </p>
         </div>
 

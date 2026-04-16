@@ -5,6 +5,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import SubscribeForm from "@/components/SubscribeForm";
 import SectionChat from "@/components/SectionChat";
+import MarketContext from "@/components/MarketContext";
 import { apiUrl } from "@/lib/api";
 
 const REGIME_COLORS: Record<string, string> = {
@@ -18,24 +19,19 @@ type TimingETF = {
   price: number; rsi: number; vsMa200: number; drawdown: number;
   high52w: number; low52w: number; ret1y: number; score: number; signal: string;
 };
-
 export default function HomePage() {
   const [us, setUs] = useState<RegimeData | null>(null);
   const [eu, setEu] = useState<RegimeData | null>(null);
   const [cn, setCn] = useState<RegimeData | null>(null);
-  const [duration, setDuration] = useState<{ avg: number; min: number; max: number } | null>(null);
   const [timing, setTiming] = useState<TimingETF[]>([]);
 
   useEffect(() => {
     fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUs(d); }).catch(() => {});
     fetch(apiUrl("/api/eu/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setEu(d); }).catch(() => {});
     fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setCn(d); }).catch(() => {});
-    fetch(apiUrl("/api/transition")).then((r) => r.json()).then((d) => { if (d.durationStats) setDuration(d.durationStats); }).catch(() => {});
     fetch("/api/terafab-timing").then((r) => r.json()).then((d) => { if (d.etfs) setTiming(d.etfs); }).catch(() => {});
   }, []);
 
-  const regime = us?.regime || null;
-  const regimeColor = regime ? REGIME_COLORS[regime] || "#888" : "#888";
   const usEtfs = timing.filter((t) => !t.isUcits);
   const growthETFs = usEtfs.filter((e) => ["AI Chips", "AI & Autonomous", "Autonomous Tech", "Robotics"].includes(e.layer));
   const materialsETFs = usEtfs.filter((e) => ["Copper & Wiring", "Lithium & Batteries", "Rare Earths", "Energy & Power"].includes(e.layer));
@@ -72,45 +68,7 @@ export default function HomePage() {
 
       <div className="border-t border-[#181818]" />
 
-      {/* ═══════════════════════════════
-          CURRENT REGIME STRIP
-      ═══════════════════════════════ */}
-      {regime && (
-        <section className="px-4 py-6 max-w-5xl mx-auto">
-          <div className="p-3 rounded-lg border flex flex-wrap items-center gap-3" style={{ borderColor: regimeColor + "30", backgroundColor: regimeColor + "06" }}>
-            <span className="text-[10px] uppercase tracking-wider text-[#555]">Current regime</span>
-            <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>{regime}</span>
-            {duration && <span className="text-[10px] text-[#555]">avg {duration.avg} months</span>}
-
-            {us && eu && cn && (
-              <div className="flex gap-1.5 ml-auto">
-                {[
-                  { label: "US", r: us.regime },
-                  { label: "EU", r: eu.regime },
-                  { label: "CN", r: cn.regime },
-                ].map((x) => {
-                  const c = REGIME_COLORS[x.r] || "#555";
-                  return (
-                    <div key={x.label} className="px-2 py-1 rounded text-[10px]" style={{ backgroundColor: c + "15", border: `1px solid ${c}40` }}>
-                      <span className="text-[#555]">{x.label}</span>{" "}
-                      <span className="font-bold" style={{ color: c }}>{x.r}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          {regime === "Stagflation" && (
-            <p className="text-xs text-[#888] mt-2 leading-relaxed">
-              Growth ETFs (AI, robotics) are <span className="text-[#e0e0e0] font-bold">discounted right now</span> — the macro is handing you a regime-driven discount on the AI & Robotics Race thesis.
-            </p>
-          )}
-          {regime === "Goldilocks" && <p className="text-xs text-[#888] mt-2">Best regime for AI/robotics ETFs. Spread across the full supply chain.</p>}
-          {regime === "Reflation" && <p className="text-xs text-[#888] mt-2">Lifts the entire supply chain — equal-weight growth and materials.</p>}
-          {regime === "Deflation" && <p className="text-xs text-[#888] mt-2">Everything on sale. Best time to build positions at deep discounts.</p>}
-        </section>
-      )}
+      <MarketContext />
 
       <div className="border-t border-[#181818]" />
 
