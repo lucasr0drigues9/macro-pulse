@@ -3485,57 +3485,166 @@ No markdown fences. Only the JSON object."""
         return {"error": str(e)}
 
 
-@app.post("/api/cron/weekly")
-async def cron_weekly(request: Request):
-    """Every Tuesday 8am UTC — send weekly newsletter."""
+@app.post("/api/cron/daily-update")
+async def cron_daily_update(request: Request):
+    """Unified daily subscriber email. Runs once per day, weekdays 9pm UTC.
+
+    Decision tree:
+      1. Compute headlines picks (0-3 via Claude)
+      2. Compute change score vs baseline
+      3. Branch:
+         a) score ≥ 50 AND 48h cooldown met → "change" mode (headlines also attached if any)
+         b) headlines picked but no portfolio change → "headlines" mode
+         c) nothing + 10+ days silent → "quiet" mode (safety net)
+         d) nothing + recent send → skip, no email
+      4. If sending: update baseline + last_fire
+    """
     if not _check_cron_auth(request):
         return {"error": "Unauthorized"}, 401
 
-    from macro_kelly import get_current_regime, REGIME_ETFS
+    from datetime import datetime as _dt
+    from macro_kelly import get_current_regime, REGIME_ETFS, get_etf_price
     import emails
 
-    regime, fred_regime, lag_warning = get_current_regime()
+    # Skip weekends — markets closed, minimal relevant news
+    if _dt.now().weekday() >= 5:
+        return {"ok": True, "skipped": "weekend"}
+
+    # ── Current state ──
+    regime, fred_regime, _ = get_current_regime()
     months = _count_consecutive_months(regime)
+
+    eu_regime = ""
+    cn_regime = ""
+    try:
+        eu_resp = get_eu_allocation()
+        eu_regime = eu_resp.get("regime", "") if isinstance(eu_resp, dict) else ""
+    except Exception:
+        pass
+    try:
+        cn_resp = get_china_allocation()
+        cn_regime = cn_resp.get("regime", "") if isinstance(cn_resp, dict) else ""
+    except Exception:
+        pass
+
+    liquidity = emails.fetch_liquidity()
 
     picks = [{"ticker": e["ticker"], "name": e["name"], "weight": round(e["conviction"] * 20)}
              for e in REGIME_ETFS.get(regime, [])]
 
-    # Load triggers and calendar from existing endpoints
+    watch_tickers = list(set([p["ticker"] for p in picks] + emails.WATCH_TICKERS))
+    current_prices: dict[str, float] = {}
+    for tkr in watch_tickers:
+        try:
+            px = get_etf_price(tkr)
+            if px:
+                current_prices[tkr] = float(px)
+        except Exception:
+            pass
+
     triggers_resp = get_triggers_endpoint()
     triggers = triggers_resp.get("triggers", []) if isinstance(triggers_resp, dict) else []
+    trigger_status = {t.get("name", ""): t.get("status", "stable") for t in triggers if t.get("name")}
 
-    calendar_resp = get_calendar()
-    calendar_events = calendar_resp.get("events", []) if isinstance(calendar_resp, dict) else []
+    current_state = {
+        "us_regime": regime,
+        "eu_regime": eu_regime,
+        "cn_regime": cn_regime,
+        "liquidity_trend": liquidity["trend"] if liquidity else None,
+        "liquidity_3m": liquidity["threeM"] if liquidity else None,
+        "prices": current_prices,
+        "triggers": trigger_status,
+    }
 
+    # ── Load change-monitor baseline ──
+    state_path = os.path.join(MACRO, ".macro_cache", "change_state.json")
+    state = emails.load_change_state(state_path)
+    baseline = state.get("baseline", {})
+    now_iso = _dt.now().isoformat()
+
+    # Bootstrap first run: seed baseline and exit
+    if not baseline:
+        state = {"baseline": current_state, "last_fire": now_iso, "last_fire_reason": "bootstrap"}
+        emails.save_change_state(state_path, state)
+
+    # ── Headlines pipeline ──
+    raw_headlines = emails.fetch_headlines(hours_window=24)
+    headlines = emails.classify_headlines(raw_headlines, regime, liquidity) if raw_headlines else []
+
+    # ── Change detection ──
+    score, changes = emails.detect_changes(baseline, current_state) if baseline else (0, [])
+    fire_change, change_reason = emails.should_fire(state, score, now_iso) if baseline else (False, "bootstrap")
+
+    # ── Decide mode ──
+    mode = None
+    if fire_change and change_reason == "change":
+        mode = "change"
+    elif headlines:
+        mode = "headlines"
+    elif fire_change and change_reason == "safety_net":
+        mode = "quiet"
+    else:
+        # Silent — nothing to say today
+        return {"ok": True, "fired": False, "reason": change_reason,
+                "score": score, "headlines": 0,
+                "days_since_last": _days_since(state.get("last_fire"), now_iso)}
+
+    # ── Build context ──
     synthesis = _load_synthesis()
-    bull = synthesis.get("bull_case", {}).get("trigger", "Geopolitical de-escalation") if synthesis else "Geopolitical de-escalation"
-    bear = synthesis.get("bear_case", {}).get("trigger", "Conflict escalation") if synthesis else "Conflict escalation"
 
-    geo_regime = ""
+    decision_scenario = None
     if synthesis:
-        # Get geo regime from geopolitical cache
-        try:
-            import json
-            geo_path = os.path.join(MACRO, ".macro_cache", "geopolitical.json")
-            if os.path.exists(geo_path):
-                with open(geo_path) as f:
-                    geo_regime = json.load(f).get("overall_regime_bias", fred_regime)
-        except Exception:
-            geo_regime = fred_regime
+        cal_scen = synthesis.get("calendar_scenarios", {})
+        if isinstance(cal_scen, dict) and cal_scen:
+            for key in ["cpi", "fomc", "filings"]:
+                if key in cal_scen:
+                    s = cal_scen[key]
+                    decision_scenario = {
+                        "event": {"cpi": "CPI print this week", "fomc": "FOMC meeting this week",
+                                  "filings": "13F filings this week"}.get(key, key.upper()),
+                        "what_to_watch": s.get("what_to_watch", ""),
+                        "scenarios": {"high": s.get("high", ""), "inline": s.get("inline", ""),
+                                      "low": s.get("low", "")},
+                    }
+                    break
 
-    sent = emails.send_weekly_pulse(
-        regime=regime,
-        months=months,
-        fred_regime=fred_regime,
-        geo_regime=geo_regime or fred_regime,
-        picks=picks,
-        triggers=triggers,
-        calendar=calendar_events,
-        bull_trigger=bull,
-        bear_trigger=bear,
+    # ── Send ──
+    sent, subject = emails.send_daily_update(
+        regime=regime, months=months, liquidity=liquidity,
+        picks=picks, triggers=triggers,
+        mode=mode,
+        changes=changes if mode == "change" else None,
+        change_score=score,
+        headlines=headlines,
+        synthesis=synthesis,
+        decision_scenario=decision_scenario,
     )
 
-    return {"ok": True, "regime": regime, "emailsSent": sent}
+    # ── Persist baseline/last_fire only when we acted on the change signal ──
+    if mode in ("change", "quiet"):
+        fire_reason_str = (
+            f"score {score}: " + "; ".join(c["what"] for c in changes[:3])
+            if mode == "change"
+            else f"safety_net ({_days_since(state.get('last_fire'), now_iso)}d silent)"
+        )
+        new_state = {"baseline": current_state, "last_fire": now_iso,
+                     "last_fire_reason": fire_reason_str}
+        emails.save_change_state(state_path, new_state)
+
+    return {"ok": True, "fired": True, "mode": mode, "subject": subject,
+            "emailsSent": sent, "score": score,
+            "changes": [c["what"] for c in changes[:3]] if mode == "change" else [],
+            "headlineCount": len(headlines)}
+
+
+def _days_since(iso_str: str | None, now_iso: str) -> float | None:
+    from datetime import datetime as _dt
+    if not iso_str:
+        return None
+    try:
+        return round((_dt.fromisoformat(now_iso) - _dt.fromisoformat(iso_str)).total_seconds() / 86400, 1)
+    except Exception:
+        return None
 
 
 def _get_conviction(ticker: str, static_conviction: float, dyn_convictions: dict | None) -> float:
