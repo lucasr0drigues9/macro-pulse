@@ -608,16 +608,27 @@ Each trigger should be a real metric with a specific threshold."""
 
 def get_triggers(geo_data, quadrant, oil_price=None, hormuz_count=None, cpi=None):
     """Separate API call just for regime triggers."""
-    if not ANTHROPIC_KEY:
-        return []
-
     cache_file = f"{CACHE_DIR}/regime_triggers.json"
     from datetime import datetime, timedelta
+
+    # Always prefer fresh cache
     if os.path.exists(cache_file):
         age = datetime.now() - datetime.fromtimestamp(os.path.getmtime(cache_file))
         if age < timedelta(hours=24):
             with open(cache_file) as f:
                 return json.load(f).get("regime_triggers", [])
+
+    # If we don't have live data for the key signals, don't regenerate —
+    # Claude will hallucinate placeholder values like "Unknown - likely elevated".
+    # Prefer a stale cache over bad fresh data.
+    if oil_price is None or hormuz_count is None:
+        if os.path.exists(cache_file):
+            with open(cache_file) as f:
+                return json.load(f).get("regime_triggers", [])
+        return []
+
+    if not ANTHROPIC_KEY:
+        return []
 
     events_text = ""
     for e in geo_data.get("events", [])[:4]:
