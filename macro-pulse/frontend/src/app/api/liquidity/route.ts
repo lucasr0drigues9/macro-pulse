@@ -72,7 +72,7 @@ export async function GET() {
     const latestRrp = rrp[rrp.length - 1];
 
     // Compute changes
-    function changeVsN(series: DataPoint[], weeksAgo: number): number | null {
+    const changeVsN = (series: DataPoint[], weeksAgo: number): number | null => {
       if (series.length < weeksAgo + 1) return null;
       const past = series[series.length - 1 - weeksAgo].value;
       const current = series[series.length - 1].value;
