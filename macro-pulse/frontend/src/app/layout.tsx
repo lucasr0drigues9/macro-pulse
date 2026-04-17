@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ModeProvider } from "@/lib/mode";
+import { SignalProvider } from "@/lib/SignalProvider";
 
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
@@ -53,7 +54,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-mono antialiased">
-        <ModeProvider>{children}</ModeProvider>
+        <SignalProvider><ModeProvider>{children}</ModeProvider></SignalProvider>
       </body>
     </html>
   );

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { apiUrl } from "@/lib/api";
+import { useSignals, type SignalState } from "@/lib/SignalProvider";
 
 const REGIME_COLORS: Record<string, string> = {
   Stagflation: "#ef4444",
@@ -10,65 +9,10 @@ const REGIME_COLORS: Record<string, string> = {
   Deflation: "#3b82f6",
 };
 
-type RegimeData = { regime: string; periodStart?: string };
-type LiquidityData = {
-  latest: { date: string; netLiquidity: number; fedBalanceSheet: number; tga: number; rrp: number };
-  changes: { oneMonth: number | null; threeMonth: number | null; twelveMonth: number | null };
-  trend: "expanding" | "contracting" | "flat";
-  peak: { date: string; value: number };
-  trough: { date: string; value: number };
-  pctFromPeak: number;
-  sparkline: { date: string; value: number }[];
-};
-type YieldData = {
-  latest: { date: string; tenYear: number; curve: number };
-  changes: { oneMonthBps: number | null; threeMonthBps: number | null; twelveMonthBps: number | null; curveThreeMonthBps: number | null };
-  trend: "rising" | "falling" | "flat";
-  curveRegime: "steep" | "normal" | "flat" | "inverted";
-  sparkline: { date: string; value: number }[];
-};
-type OilData = {
-  latest: { date: string; brent: number; wti: number | null };
-  changes: { oneMonth: number | null; threeMonth: number | null; twelveMonth: number | null };
-  trend: "rising" | "falling" | "flat";
-  sparkline: { date: string; value: number }[];
-};
-type InternalSignal = {
-  name: string;
-  value: number;
-  change1m: number | null;
-  change3m: number | null;
-  trend: "rising" | "falling" | "flat";
-  signal: "risk-on" | "risk-off" | "neutral";
-  alignment: "agrees" | "disagrees" | "neutral";
-};
-type InternalsData = {
-  regime: string;
-  regimeType: "risk-on" | "risk-off";
-  internals: InternalSignal[];
-  confirmationScore: number;
-  contradictionScore: number;
-  total: number;
-};
+type InternalSignal = SignalState["internals"] extends { internals: (infer T)[] } | null ? T : never;
 
 export default function MarketContext() {
-  const [us, setUs] = useState<RegimeData | null>(null);
-  const [eu, setEu] = useState<RegimeData | null>(null);
-  const [cn, setCn] = useState<RegimeData | null>(null);
-  const [liquidity, setLiquidity] = useState<LiquidityData | null>(null);
-  const [yields, setYields] = useState<YieldData | null>(null);
-  const [oil, setOil] = useState<OilData | null>(null);
-  const [internals, setInternals] = useState<InternalsData | null>(null);
-
-  useEffect(() => {
-    fetch(apiUrl("/api/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setUs(d); }).catch(() => {});
-    fetch(apiUrl("/api/eu/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setEu(d); }).catch(() => {});
-    fetch(apiUrl("/api/china/allocation")).then((r) => r.json()).then((d) => { if (!d.error) setCn(d); }).catch(() => {});
-    fetch("/api/liquidity").then((r) => r.json()).then((d) => { if (!d.error) setLiquidity(d); }).catch(() => {});
-    fetch("/api/yields").then((r) => r.json()).then((d) => { if (!d.error) setYields(d); }).catch(() => {});
-    fetch(apiUrl("/api/oil")).then((r) => r.json()).then((d) => { if (!d.error) setOil(d); }).catch(() => {});
-    fetch(apiUrl("/api/internals")).then((r) => r.json()).then((d) => { if (!d.error) setInternals(d); }).catch(() => {});
-  }, []);
+  const { us, eu, cn, liquidity, yields, oil, internals } = useSignals();
 
   const regime = us?.regime || null;
   const regimeColor = regime ? REGIME_COLORS[regime] || "#888" : "#888";
@@ -116,123 +60,97 @@ export default function MarketContext() {
   return (
     <section id="market-context" className="px-4 py-6 max-w-5xl mx-auto scroll-mt-20">
       <div className="p-3 rounded-lg border border-[#222] bg-[#111]">
-        {/* Stacked layout: liquidity / bonds / regime each on own row */}
-        <div className="space-y-3">
-          {/* Liquidity column */}
+        {/* Compact signal rows — each is one line with sparkline, expandable for detail */}
+        <div className="divide-y divide-[#1a1a1a]">
+          {/* Liquidity */}
           {liquidity && (
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="text-[10px] uppercase tracking-wider text-[#555]">Fed liquidity</span>
-                <span className="text-xs font-bold text-[#e0e0e0]">${(liquidity.latest.netLiquidity / 1000).toFixed(2)}T</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded capitalize" style={{ color: trendColor, backgroundColor: trendColor + "20" }}>
-                  {liquidity.trend}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[10px]">
-                <span style={{ color: (oneM ?? 0) >= 0 ? "#22c55e" : "#ef4444" }}>
-                  1M {oneM !== null ? `${oneM >= 0 ? "+" : ""}${oneM}%` : "—"}
-                </span>
-                <span style={{ color: (threeM ?? 0) >= 0 ? "#22c55e" : "#ef4444" }}>
-                  3M {threeM !== null ? `${threeM >= 0 ? "+" : ""}${threeM}%` : "—"}
-                </span>
-                <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="flex-1 min-w-[30px] h-6" preserveAspectRatio="none">
-                  <line x1="0" y1={liqSpark.startY} x2={sparkW} y2={liqSpark.startY} stroke="#555" strokeWidth="1" strokeDasharray="3,3" />
-                  <polyline points={liqSpark.points} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-[9px] text-[#444]">12m</span>
-              </div>
+            <div className="flex items-center gap-2 py-2 flex-wrap text-[10px]">
+              <span className="uppercase tracking-wider text-[#555] w-20 flex-shrink-0">Liquidity</span>
+              <span className="text-xs font-bold text-[#e0e0e0]">${(liquidity.latest.netLiquidity / 1000).toFixed(2)}T</span>
+              <span className="font-bold px-1.5 py-0.5 rounded capitalize" style={{ color: trendColor, backgroundColor: trendColor + "20" }}>
+                {liquidity.trend}
+              </span>
+              <span style={{ color: (threeM ?? 0) >= 0 ? "#22c55e" : "#ef4444" }}>
+                {threeM !== null ? `${threeM >= 0 ? "+" : ""}${threeM}%` : "—"} 3m
+              </span>
+              <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="flex-1 min-w-[40px] h-5" preserveAspectRatio="none">
+                <line x1="0" y1={liqSpark.startY} x2={sparkW} y2={liqSpark.startY} stroke="#555" strokeWidth="1" strokeDasharray="3,3" />
+                <polyline points={liqSpark.points} fill="none" stroke={trendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="text-[9px] text-[#444]">12m</span>
             </div>
           )}
 
-          {/* Bond yields column */}
+          {/* 10Y yield */}
           {yields && (
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="text-[10px] uppercase tracking-wider text-[#555]">10Y yield</span>
-                <span className="text-xs font-bold text-[#e0e0e0]">{yields.latest.tenYear.toFixed(2)}%</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded capitalize" style={{ color: yieldTrendColor, backgroundColor: yieldTrendColor + "20" }}>
-                  {yields.trend}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[10px]">
-                <span
-                  title={yields.changes.threeMonthBps !== null
-                    ? `Basis points: 1 bps = 0.01%. The 10Y yield moved ${yields.changes.threeMonthBps >= 0 ? "up" : "down"} ${Math.abs(yields.changes.threeMonthBps) / 100}% (${yields.changes.threeMonthBps >= 0 ? "+" : ""}${yields.changes.threeMonthBps} bps) over 3 months.`
-                    : ""}
-                  style={{ color: (yields.changes.threeMonthBps ?? 0) >= 0 ? "#ef4444" : "#22c55e", cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
-                >
-                  3M {yields.changes.threeMonthBps !== null ? `${yields.changes.threeMonthBps >= 0 ? "+" : ""}${yields.changes.threeMonthBps}bps` : "—"}
-                </span>
-                <span
-                  title="2s10s curve = 10Y Treasury yield minus 2Y Treasury yield. Positive = normal. Negative/inverted = classic recession signal, usually 6-18 months ahead of a downturn."
-                  style={{ color: curveColor, cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
-                >
-                  Curve {yields.latest.curve >= 0 ? "+" : ""}{yields.latest.curve.toFixed(2)}
-                </span>
-                <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="flex-1 min-w-[30px] h-6" preserveAspectRatio="none">
-                  <line x1="0" y1={yieldSpark.startY} x2={sparkW} y2={yieldSpark.startY} stroke="#555" strokeWidth="1" strokeDasharray="3,3" />
-                  <polyline points={yieldSpark.points} fill="none" stroke={yieldTrendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-[9px] text-[#444]">3m</span>
-              </div>
+            <div className="flex items-center gap-2 py-2 flex-wrap text-[10px]">
+              <span className="uppercase tracking-wider text-[#555] w-20 flex-shrink-0">10Y yield</span>
+              <span className="text-xs font-bold text-[#e0e0e0]">{yields.latest.tenYear.toFixed(2)}%</span>
+              <span className="font-bold px-1.5 py-0.5 rounded capitalize" style={{ color: yieldTrendColor, backgroundColor: yieldTrendColor + "20" }}>
+                {yields.trend}
+              </span>
+              <span
+                title={`1 bps = 0.01%. Yield moved ${(yields.changes.threeMonthBps ?? 0) >= 0 ? "up" : "down"} ${Math.abs(yields.changes.threeMonthBps ?? 0)}bps over 3 months.`}
+                style={{ color: (yields.changes.threeMonthBps ?? 0) >= 0 ? "#ef4444" : "#22c55e", cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
+              >
+                {yields.changes.threeMonthBps !== null ? `${yields.changes.threeMonthBps >= 0 ? "+" : ""}${yields.changes.threeMonthBps}bps` : "—"}
+              </span>
+              <span
+                title="2s10s: 10Y yield minus 2Y yield. Inverted = recession signal (6-18mo)."
+                style={{ color: curveColor, cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
+              >
+                2s10s {yields.latest.curve >= 0 ? "+" : ""}{yields.latest.curve.toFixed(2)}
+              </span>
+              <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="flex-1 min-w-[40px] h-5" preserveAspectRatio="none">
+                <line x1="0" y1={yieldSpark.startY} x2={sparkW} y2={yieldSpark.startY} stroke="#555" strokeWidth="1" strokeDasharray="3,3" />
+                <polyline points={yieldSpark.points} fill="none" stroke={yieldTrendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="text-[9px] text-[#444]">3m</span>
             </div>
           )}
 
-          {/* Oil column */}
+          {/* Oil */}
           {oil && (
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span
-                  className="text-[10px] uppercase tracking-wider text-[#555]"
-                  style={{ cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
-                  title="Brent crude oil — the global benchmark (Europe/Norway standard). Oil is a leading inflation indicator: a $10/bbl move adds ~0.3-0.5% to headline CPI over 2-3 months. Every oil shock (1973, 1979, 2008, 2022) produced a Stagflation regime."
-                >Oil (Brent)</span>
-                <span className="text-xs font-bold text-[#e0e0e0]">${oil.latest.brent.toFixed(2)}</span>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded capitalize" style={{ color: oilTrendColor, backgroundColor: oilTrendColor + "20" }}>
-                  {oil.trend}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 text-[10px]">
-                <span style={{ color: (oil.changes.oneMonth ?? 0) >= 0 ? "#ef4444" : "#22c55e" }}>
-                  1M {oil.changes.oneMonth !== null ? `${oil.changes.oneMonth >= 0 ? "+" : ""}${oil.changes.oneMonth}%` : "—"}
-                </span>
-                <span style={{ color: (oil.changes.threeMonth ?? 0) >= 0 ? "#ef4444" : "#22c55e" }}>
-                  3M {oil.changes.threeMonth !== null ? `${oil.changes.threeMonth >= 0 ? "+" : ""}${oil.changes.threeMonth}%` : "—"}
-                </span>
-                <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="flex-1 min-w-[30px] h-6" preserveAspectRatio="none">
-                  <line x1="0" y1={oilSpark.startY} x2={sparkW} y2={oilSpark.startY} stroke="#555" strokeWidth="1" strokeDasharray="3,3" />
-                  <polyline points={oilSpark.points} fill="none" stroke={oilTrendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span className="text-[9px] text-[#444]">3m</span>
-              </div>
+            <div className="flex items-center gap-2 py-2 flex-wrap text-[10px]">
+              <span
+                className="uppercase tracking-wider text-[#555] w-20 flex-shrink-0"
+                title="Brent crude — leading inflation indicator. $10/bbl ≈ +0.4% CPI over 2-3 months."
+                style={{ cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
+              >Oil (Brent)</span>
+              <span className="text-xs font-bold text-[#e0e0e0]">${oil.latest.brent.toFixed(2)}</span>
+              <span className="font-bold px-1.5 py-0.5 rounded capitalize" style={{ color: oilTrendColor, backgroundColor: oilTrendColor + "20" }}>
+                {oil.trend}
+              </span>
+              <span style={{ color: (oil.changes.threeMonth ?? 0) >= 0 ? "#ef4444" : "#22c55e" }}>
+                {oil.changes.threeMonth !== null ? `${oil.changes.threeMonth >= 0 ? "+" : ""}${oil.changes.threeMonth}%` : "—"} 3m
+              </span>
+              <svg viewBox={`0 0 ${sparkW} ${sparkH}`} className="flex-1 min-w-[40px] h-5" preserveAspectRatio="none">
+                <line x1="0" y1={oilSpark.startY} x2={sparkW} y2={oilSpark.startY} stroke="#555" strokeWidth="1" strokeDasharray="3,3" />
+                <polyline points={oilSpark.points} fill="none" stroke={oilTrendColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="text-[9px] text-[#444]">3m</span>
             </div>
           )}
 
-          {/* Regime column */}
+          {/* Regime */}
           {regime && (
-            <div>
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                <span className="text-[10px] uppercase tracking-wider text-[#555]">US regime</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>
-                  {regime}
-                </span>
-              </div>
-              {eu && cn && (
-                <div className="flex items-center gap-1.5">
-                  {[
-                    { label: "EU", r: eu.regime },
-                    { label: "CN", r: cn.regime },
-                  ].map((x) => {
-                    const c = REGIME_COLORS[x.r] || "#555";
-                    return (
-                      <span key={x.label} className="text-[10px] px-1.5 py-0.5 rounded" style={{ backgroundColor: c + "15", border: `1px solid ${c}30` }}>
-                        <span className="text-[#555]">{x.label}</span>{" "}
-                        <span className="font-bold" style={{ color: c }}>{x.r}</span>
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
+            <div className="flex items-center gap-2 py-2 flex-wrap text-[10px]">
+              <span className="uppercase tracking-wider text-[#555] w-20 flex-shrink-0">Regime</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: regimeColor, backgroundColor: regimeColor + "20" }}>
+                US {regime}
+              </span>
+              {eu && cn && [
+                { label: "EU", r: eu.regime },
+                { label: "CN", r: cn.regime },
+              ].map((x) => {
+                const c = REGIME_COLORS[x.r] || "#555";
+                return (
+                  <span key={x.label} className="px-1.5 py-0.5 rounded" style={{ backgroundColor: c + "15", border: `1px solid ${c}30` }}>
+                    <span className="text-[#555]">{x.label}</span>{" "}
+                    <span className="font-bold" style={{ color: c }}>{x.r}</span>
+                  </span>
+                );
+              })}
             </div>
           )}
         </div>
@@ -242,7 +160,7 @@ export default function MarketContext() {
           const confirm = internals.confirmationScore;
           const contradict = internals.contradictionScore;
           const scoreColor =
-            confirm >= 3 ? "#22c55e" : contradict >= 3 ? "#ef4444" : "#eab308";
+            confirm >= 3 ? "#22c55e" : contradict >= 3 ? "#ef4444" : "#888";
           const summary =
             confirm === internals.total
               ? `All ${internals.total} internals confirm ${regime}`
@@ -285,239 +203,158 @@ export default function MarketContext() {
           );
         })()}
 
-        {/* Two-horizon synthesis: Now (fast signals) + Coming (slow signals with magnitude weighting) */}
-        {(liquidity || yields || oil || internals) && (() => {
-          // ── FAST SIGNALS: yields + internals (what markets are pricing today) ──
-          const yieldTailwind = yields?.trend === "falling";
-          const yieldHeadwind = yields?.trend === "rising";
-          const curveWarning = yields?.curveRegime === "inverted";
-          const riskOnInternals = internals?.internals.filter((i) => i.signal === "risk-on").length ?? 0;
-          const riskOffInternals = internals?.internals.filter((i) => i.signal === "risk-off").length ?? 0;
+        {/* (synthesis verdict removed — positioning strategy covers the same ground) */}
 
-          let nowTail = 0, nowHead = 0;
-          if (yieldTailwind) nowTail++;
-          if (yieldHeadwind) nowHead++;
-          if (riskOnInternals >= 3) nowTail++;
-          if (riskOffInternals >= 3) nowHead++;
-          if (curveWarning) nowHead++;
-
-          let nowTone: "bullish" | "bearish" | "mixed" | "consolidation";
-          let nowText: string;
-          if (nowTail === 0 && nowHead === 0) {
-            nowTone = "consolidation";
-            nowText = "All fast signals flat. Markets in consolidation, no conviction either way.";
-          } else if (nowTail >= 2 && nowHead === 0) {
-            nowTone = "bullish";
-            nowText = "Yields and internals agree: markets pricing risk-on today.";
-          } else if (nowHead >= 2 && nowTail === 0) {
-            nowTone = "bearish";
-            nowText = "Yields and internals agree: markets pricing risk-off today.";
-          } else if (nowTail > nowHead) {
-            nowTone = "mixed";
-            nowText = "Slight risk-on bias today but not decisive.";
-          } else if (nowHead > nowTail) {
-            nowTone = "mixed";
-            nowText = "Slight risk-off bias today but not decisive.";
-          } else {
-            nowTone = "mixed";
-            nowText = "Fast signals mixed. No clear read from today's market action.";
-          }
-
-          // ── SLOW SIGNALS: oil + liquidity (what's coming in 2-3 months, magnitude-weighted) ──
-          // Rules of thumb:
-          //   Oil: $10/bbl ≈ 0.4% CPI. At $80 baseline, 1% oil ≈ 0.032% CPI over 2-3mo. Each 1% CPI ≈ -10% forward stock pressure.
-          //   Liquidity: 1% net liquidity ≈ +3% forward stock support (rough, based on historical QE epochs)
+        {/* Positioning strategy — dynamic rotation phases based on current signals */}
+        {(liquidity || oil || yields || internals) && (() => {
+          const oilBrent = oil?.latest.brent ?? null;
           const oil3m = oil?.changes.threeMonth ?? null;
           const liq3m = liquidity?.changes.threeMonth ?? null;
+          const yTrend = yields?.trend ?? "flat";
+          const riskOnInternals = internals?.internals.filter((i) => i.signal === "risk-on").length ?? 0;
+          // Determine which phase we're in
+          type Phase = { id: string; label: string; color: string; allocation: string; description: string; active: boolean };
 
-          const oilCpiPct = oil3m !== null ? Math.round(oil3m * 0.032 * 10) / 10 : null;      // % CPI coming
-          const oilForwardStockPct = oilCpiPct !== null ? Math.round(-oilCpiPct * 10) : null;  // stock pressure
-          const liqForwardStockPct = liq3m !== null ? Math.round(liq3m * 3) : null;            // stock support
-          const netForward =
-            oilForwardStockPct !== null && liqForwardStockPct !== null
-              ? oilForwardStockPct + liqForwardStockPct
-              : null;
+          const oilFalling = oil3m !== null && oil3m < -5;
+          const oilBelow85 = oilBrent !== null && oilBrent < 85;
+          const nowBullish = yTrend === "falling" && riskOnInternals >= 2;
+          const comingBullish = oilFalling && (liq3m ?? 0) > 1;
 
-          let comingTone: "bullish" | "bearish" | "mixed" | "consolidation";
-          let comingHeadline: string;
-          if (netForward === null) {
-            comingTone = "consolidation";
-            comingHeadline = "Forward read unavailable";
-          } else if (netForward >= 10) {
-            comingTone = "bullish";
-            comingHeadline = `Net tailwind: ~+${netForward}% forward`;
-          } else if (netForward <= -10) {
-            comingTone = "bearish";
-            comingHeadline = `Net headwind: ~${netForward}% forward`;
-          } else if (netForward > 0) {
-            comingTone = "mixed";
-            comingHeadline = `Mild tailwind: ~+${netForward}% forward`;
-          } else {
-            comingTone = "mixed";
-            comingHeadline = `Mild headwind: ~${netForward}% forward`;
-          }
+          const phases: Phase[] = [
+            {
+              id: "gold-anchor",
+              label: "Gold anchor",
+              color: "#eab308",
+              allocation: "60-70% gold (GLD) · 30-40% growth (SMH, BOTZ)",
+              description: "Gold wins in both scenarios: oil stays high → inflation hedge; oil falls → real yields eventually drop → gold rallies. Meanwhile, growth is discounted 30-40% from peak — buy the structural thesis at these prices. Skip other materials — they already priced in the stagflation premium.",
+              active: !oilBelow85 && !nowBullish && !comingBullish,
+            },
+            {
+              id: "rotation",
+              label: "Rotate toward growth",
+              color: "#3b82f6",
+              allocation: "40% gold · 60% growth",
+              description: "Oil is falling, but inflation takes 2-3 more months to follow in CPI data. Gold keeps working while you wait — the Fed hasn't cut yet. Start shifting weight toward growth because the market is forward-looking and will price in the disinflation before CPI confirms it.",
+              active: (oilBelow85 || oilFalling) && !nowBullish,
+            },
+            {
+              id: "growth-tilt",
+              label: "Growth tilt",
+              color: "#22c55e",
+              allocation: "25% gold · 75% growth",
+              description: "CPI is now printing lower and the market has confirmed it: yields falling, internals risk-on. This is 2-3 months after oil dropped — the lag has played out. Growth multiples are expanding. Keep gold as a hedge but growth is now the primary position.",
+              active: nowBullish && !comingBullish,
+            },
+            {
+              id: "full-conviction",
+              label: "Full conviction growth",
+              color: "#22c55e",
+              allocation: "15% gold · 85% growth",
+              description: "All layers aligned: CPI confirmed disinflation, Fed cutting, liquidity expanding, internals risk-on, regime shifting to Goldilocks/Reflation. This is the high-conviction growth window the framework was designed to catch.",
+              active: nowBullish && comingBullish,
+            },
+          ];
 
-          // ── ALIGNMENT ──
-          function toneRank(t: string) { return t === "bullish" ? 1 : t === "bearish" ? -1 : 0; }
-          const alignmentScore = toneRank(nowTone) * toneRank(comingTone);
-
-          let alignmentHeadline: string;
-          let alignmentBody: string;
-          let alignmentTone: "bullish" | "bearish" | "mixed" | "consolidation" = "mixed";
-          if (nowTone === "consolidation" && comingTone === "consolidation") {
-            alignmentHeadline = "All quiet";
-            alignmentBody = "Nothing is moving. Rare. Use this window to plan, not trade.";
-            alignmentTone = "consolidation";
-          } else if (alignmentScore > 0) {
-            alignmentHeadline = "Now and coming agree";
-            alignmentBody = nowTone === "bullish"
-              ? "Today's market + the slow forces both point to growth. High-conviction setup."
-              : "Today's market + the slow forces both point to defensives. High-conviction setup.";
-            alignmentTone = nowTone;
-          } else if (alignmentScore < 0) {
-            alignmentHeadline = "Now and coming disagree";
-            alignmentBody = nowTone === "bullish"
-              ? "Markets are risk-on today but slow forces say a storm is coming in 2-3 months. Use the strength to reduce, don't chase."
-              : "Markets are risk-off today but slow forces say relief is coming in 2-3 months. Use the weakness to buy, don't panic.";
-            alignmentTone = "mixed";
-          } else if (nowTone === "consolidation") {
-            alignmentHeadline = "Quiet now, storm brewing";
-            alignmentBody = comingTone === "bearish"
-              ? "Markets haven't caught up to the slow forces. Position for what's coming before it arrives."
-              : "Markets haven't caught up to the slow tailwind. Accumulate while things are quiet.";
-            alignmentTone = comingTone;
-          } else {
-            alignmentHeadline = "Loud now, quiet ahead";
-            alignmentBody = "Today is moving but slow forces are balanced. Today's read is the dominant signal.";
-            alignmentTone = nowTone;
-          }
-
-          const toneColor = (t: string) =>
-            t === "bullish" ? "#22c55e" : t === "bearish" ? "#ef4444" : t === "mixed" ? "#eab308" : "#888";
-
-          const nowColor = toneColor(nowTone);
-          const comingColor = toneColor(comingTone);
-          const alignColor = toneColor(alignmentTone);
+          const activePhase = phases.find((p) => p.active) ?? phases[0];
 
           return (
-            <div className="mt-3 pt-3 border-t border-[#1a1a1a]">
-              {/* Unified synthesis block — punchline first, detail collapsed */}
-              <div className="p-3 rounded" style={{ backgroundColor: alignColor + "08", border: `1px solid ${alignColor}30` }}>
-                {/* Punchline */}
+            <div className="mt-4 pt-4 border-t border-[#1a1a1a]">
+              {/* Positioning strategy — always open, prominent */}
+              <div className="mb-3">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[11px] uppercase tracking-wider font-bold" style={{ color: alignColor }}>{alignmentHeadline}</span>
+                  <span className="text-xs uppercase tracking-wider text-[#555]">Positioning strategy</span>
+                  <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: activePhase.color, backgroundColor: activePhase.color + "20" }}>
+                    {activePhase.label}
+                  </span>
                 </div>
-                <p className="text-[12px] text-[#d0d0d0] leading-relaxed mb-2">{alignmentBody}</p>
-
-                {/* Now + Coming compact summary line */}
-                <div className="flex items-center gap-4 flex-wrap text-[10px] pt-2 border-t border-[#1a1a1a]">
-                  <div>
-                    <span className="text-[#555] uppercase tracking-wider">Now:</span>{" "}
-                    <span style={{ color: nowColor }}>{nowText.split(".")[0]}</span>
-                  </div>
-                  <div>
-                    <span className="text-[#555] uppercase tracking-wider">Coming 2-3mo:</span>{" "}
-                    <span style={{ color: comingColor }}>{comingHeadline}</span>
-                  </div>
-                </div>
-
-                {/* Details toggle */}
-                {(oilCpiPct !== null || liqForwardStockPct !== null) && (
-                  <details className="mt-2 group">
-                    <summary className="text-[10px] text-[#555] cursor-pointer hover:text-[#888] flex items-center gap-1">
-                      <span className="text-[#555] group-open:rotate-90 transition-transform inline-block w-2">›</span>
-                      <span>How the net forward was computed</span>
-                    </summary>
-                    <div className="mt-2 pl-4 text-[10px] text-[#888] space-y-1 leading-relaxed">
-                      {oilCpiPct !== null && (
-                        <div>
-                          <span className="text-[#e0e0e0] font-bold">Oil:</span> Brent {oil3m! >= 0 ? "+" : ""}{oil3m}% 3m → ~<span style={{ color: oilCpiPct > 0 ? "#ef4444" : "#22c55e" }}>{oilCpiPct > 0 ? "+" : ""}{oilCpiPct}% CPI coming</span> → ~<span style={{ color: oilForwardStockPct! > 0 ? "#22c55e" : "#ef4444" }}>{oilForwardStockPct! > 0 ? "+" : ""}{oilForwardStockPct}% stock pressure</span>
-                        </div>
-                      )}
-                      {liqForwardStockPct !== null && (
-                        <div>
-                          <span className="text-[#e0e0e0] font-bold">Liquidity:</span> Fed {liq3m! >= 0 ? "+" : ""}{liq3m}% 3m → ~<span style={{ color: liqForwardStockPct > 0 ? "#22c55e" : "#ef4444" }}>{liqForwardStockPct > 0 ? "+" : ""}{liqForwardStockPct}% stock support</span>
-                        </div>
-                      )}
-                      {netForward !== null && (
-                        <div className="pt-1 border-t border-[#222]">
-                          <span className="text-[#e0e0e0] font-bold">Net:</span> <span className="font-bold" style={{ color: comingColor }}>{netForward > 0 ? "+" : ""}{netForward}% forward</span> (2-3 months)
-                        </div>
-                      )}
-                      <p className="text-[9px] text-[#555] pt-1 italic">
-                        Rules of thumb: $10/bbl oil ≈ +0.4% CPI. Each 1% CPI ≈ -10% growth stock pressure. Each 1% liquidity ≈ +3% stock support.
-                      </p>
-                    </div>
-                  </details>
-                )}
+                <p className="text-sm font-bold text-[#e0e0e0]">{activePhase.allocation}</p>
+                <p className="text-[11px] text-[#888] leading-relaxed mt-1">{activePhase.description}</p>
               </div>
-            </div>
+
+              {/* Timeline — all phases visible */}
+              <div className="space-y-0">
+                {phases.map((p, i) => {
+                  const isActive = p.id === activePhase.id;
+                  const isPast = phases.indexOf(activePhase) > i;
+                  return (
+                    <div key={p.id} className="flex gap-3" style={{ opacity: isActive ? 1 : isPast ? 0.4 : 0.6 }}>
+                      <div className="flex flex-col items-center w-3 flex-shrink-0">
+                        <div className="w-2.5 h-2.5 rounded-full mt-1" style={{ backgroundColor: isActive ? p.color : isPast ? "#333" : "#222", border: isActive ? `2px solid ${p.color}` : "1px solid #333" }} />
+                        {i < phases.length - 1 && <div className="flex-1 w-px" style={{ backgroundColor: isPast ? "#333" : "#1a1a1a" }} />}
+                      </div>
+                      <div className="pb-4">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[11px] font-bold" style={{ color: isActive ? p.color : "#555" }}>{p.label}</span>
+                          <span className="text-[11px] text-[#888]">{p.allocation}</span>
+                          {isActive && <span className="text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold" style={{ color: p.color, backgroundColor: p.color + "20" }}>You are here</span>}
+                        </div>
+                        <p className="text-[10px] text-[#555] leading-relaxed mt-1">{p.description}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+                  {/* Rotation logic visual */}
+                  <div className="pt-3 mt-2 border-t border-[#1a1a1a]">
+                    <p className="text-[10px] text-[#555] uppercase tracking-wider mb-2">How the rotation works</p>
+                    <table className="w-full text-[10px] border-collapse">
+                      <thead>
+                        <tr className="border-b border-[#222]">
+                          <th className="text-left text-[#555] font-normal py-1 pr-2">Phase</th>
+                          <th className="text-left text-[#eab308] font-normal py-1 pr-2">Gold</th>
+                          <th className="text-left text-[#3b82f6] font-normal py-1 pr-2">Growth</th>
+                          <th className="text-left text-[#888] font-normal py-1">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr className="border-b border-[#1a1a1a]">
+                          <td className="py-1.5 pr-2 text-[#888]">1. Now</td>
+                          <td className="py-1.5 pr-2 text-[#888]">Steady</td>
+                          <td className="py-1.5 pr-2 text-[#888]">Discounted</td>
+                          <td className="py-1.5 text-[#888]">Hold gold, start buying growth</td>
+                        </tr>
+                        <tr className="border-b border-[#1a1a1a]">
+                          <td className="py-1.5 pr-2 text-[#888]">2. Oil falls</td>
+                          <td className="py-1.5 pr-2 text-[#22c55e]">Rallying</td>
+                          <td className="py-1.5 pr-2 text-[#888]">Recovering</td>
+                          <td className="py-1.5 text-[#e0e0e0] font-bold">Sell gold into strength, add growth</td>
+                        </tr>
+                        <tr className="border-b border-[#1a1a1a]">
+                          <td className="py-1.5 pr-2 text-[#888]">3. CPI confirms</td>
+                          <td className="py-1.5 pr-2 text-[#22c55e]">Peak</td>
+                          <td className="py-1.5 pr-2 text-[#22c55e]">Accelerating</td>
+                          <td className="py-1.5 text-[#e0e0e0] font-bold">Sell more gold, growth now dominant</td>
+                        </tr>
+                        <tr>
+                          <td className="py-1.5 pr-2 text-[#888]">4. Fed cuts</td>
+                          <td className="py-1.5 pr-2 text-[#eab308]">Stalling</td>
+                          <td className="py-1.5 pr-2 text-[#22c55e]">Full rally</td>
+                          <td className="py-1.5 text-[#888]">15% gold hedge, 85% growth</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <p className="text-[10px] text-[#888] mt-2 leading-relaxed">
+                      Gold rallies <span className="text-[#e0e0e0]">before</span> the Fed cuts — markets price in disinflation 2-3 months ahead. By the time the Fed actually acts, gold has already moved 15-25%. The strategy is to <span className="text-[#e0e0e0]">sell gold into its rally</span> and use the proceeds to buy growth while it&apos;s still discounted. Waiting for Phase 4 to sell gold means missing the best prices on both sides.
+                    </p>
+                  </div>
+                  <p className="text-[9px] text-[#555] italic leading-relaxed pt-2 border-t border-[#1a1a1a] mt-2">
+                    This is a systematic framework output, not personalised financial advice. Phases advance automatically as signals change. Past performance does not guarantee future results. Always consult a qualified financial advisor before making investment decisions.
+                  </p>
+                </div>
+              </div>
           );
         })()}
 
-        {/* Single expandable: learn more */}
+        {/* Compact glossary */}
         <details className="group mt-2 border-t border-[#1a1a1a]">
           <summary className="text-[10px] text-[#555] cursor-pointer hover:text-[#888] py-2 flex items-center gap-2">
             <span className="text-[#555] group-open:rotate-90 transition-transform inline-block w-2">›</span>
-            <span>What this means &amp; how it works</span>
+            <span>Signal glossary</span>
           </summary>
-          <div className="pb-2 pl-4 space-y-2 text-[10px] text-[#888] leading-relaxed">
-            {regime === "Stagflation" && <p><span className="text-[#e0e0e0] font-bold">Stagflation</span> suppresses growth (AI, robotics) while inflating materials. Growth ETFs are discounted — the thesis hasn&apos;t changed, only the headwind.</p>}
-            {regime === "Goldilocks" && <p><span className="text-[#e0e0e0] font-bold">Goldilocks</span> is the best regime for AI &amp; Robotics — low inflation + growth benefits tech directly.</p>}
-            {regime === "Reflation" && <p><span className="text-[#e0e0e0] font-bold">Reflation</span> lifts the entire supply chain — both growth and materials benefit.</p>}
-            {regime === "Deflation" && <p><span className="text-[#e0e0e0] font-bold">Deflation</span> puts everything on sale. Best time to build the full position at deep discounts.</p>}
-            {liquidity && (
-              <p>
-                <span className="text-[#e0e0e0] font-bold">Liquidity</span> ({`Net = Fed BS − TGA − RRP`}) helps both growth and materials, but growth is ~2-3x more sensitive.
-                {liquidity.trend === "expanding" && <span className="text-[#22c55e]"> Expanding now = tailwind for growth, mild support for materials.</span>}
-                {liquidity.trend === "contracting" && <span className="text-[#ef4444]"> Contracting now = growth gets hit harder, materials hold up better.</span>}
-                {liquidity.trend === "flat" && <span className="text-[#eab308]"> Flat = regime and commodity fundamentals dominate.</span>}
-              </p>
-            )}
-            {oil && (
-              <p>
-                <span className="text-[#e0e0e0] font-bold">Oil (Brent)</span> is upstream of inflation. A $10/bbl move adds ~0.3-0.5% to CPI over 2-3 months — which then pushes yields and drives regime shifts.
-                {oil.trend === "rising" && <span className="text-[#ef4444]"> Rising now = inflationary pressure building, stagflation risk.</span>}
-                {oil.trend === "falling" && <span className="text-[#22c55e]"> Falling now = disinflation tailwind, supportive of growth rerating.</span>}
-                {oil.trend === "flat" && <span className="text-[#eab308]"> Flat = inflation neutral from oil side; other drivers (services, wages) take over.</span>}
-              </p>
-            )}
-            {yields && (
-              <p>
-                <span className="text-[#e0e0e0] font-bold">10Y yield</span> is the discount rate for stock valuations. Higher yields compress growth multiples (long-duration cash flows) more than materials (short-duration).
-                {yields.trend === "rising" && <span className="text-[#ef4444]"> Rising yields = headwind for growth.</span>}
-                {yields.trend === "falling" && <span className="text-[#22c55e]"> Falling yields = tailwind for growth (multiple expansion).</span>}
-                {" "}The <span className="text-[#e0e0e0] font-bold">2s10s curve</span> ({yields.latest.curve >= 0 ? "+" : ""}{yields.latest.curve.toFixed(2)}) shows growth expectations:
-                {yields.curveRegime === "inverted" && <span className="text-[#ef4444]"> inverted = classic recession signal (6-18 months out).</span>}
-                {yields.curveRegime === "flat" && <span className="text-[#eab308]"> flat = late-cycle, growth slowing.</span>}
-                {yields.curveRegime === "normal" && <span className="text-[#22c55e]"> normal = healthy growth expectations.</span>}
-                {yields.curveRegime === "steep" && <span className="text-[#3b82f6]"> steep = strong growth or inflation expectations.</span>}
-              </p>
-            )}
-            {internals && internals.total > 0 && (
-              <div>
-                <p className="mb-1">
-                  <span className="text-[#e0e0e0] font-bold">Market internals</span> are cross-asset ratios that reveal risk appetite before the data does (Druckenmiller&apos;s lens). Each one is either agreeing with the stated regime (green), contradicting it (red), or neutral (grey):
-                </p>
-                <ul className="space-y-0.5 mt-1">
-                  {internals.internals.map((s) => {
-                    const color = s.alignment === "agrees" ? "#22c55e" : s.alignment === "disagrees" ? "#ef4444" : "#555";
-                    const chg = s.change3m !== null ? `${s.change3m >= 0 ? "+" : ""}${s.change3m}% 3m` : "—";
-                    return (
-                      <li key={s.name}>
-                        <span style={{ color }}>●</span> <span className="text-[#e0e0e0]">{s.name}</span>: {s.trend} · {chg} → <span style={{ color }}>{s.signal}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-                <p className="mt-2">
-                  <span className="text-[#e0e0e0] font-bold">Copper/Gold</span> captures industrial demand vs safe-haven (rising = growth). <span className="text-[#e0e0e0] font-bold">HYG/LQD</span> is the credit spread (rising = risk appetite intact). <span className="text-[#e0e0e0] font-bold">IWM/SPY</span> shows if small caps are participating (they break first in downturns). <span className="text-[#e0e0e0] font-bold">UUP</span> is the dollar (strong dollar = risk-off, drains global liquidity).
-                </p>
-              </div>
-            )}
-            {regime && liquidity && (
-              <p><span className="text-[#e0e0e0] font-bold">Combined:</span> when regime, liquidity, yields, and internals all agree, conviction is high. When they conflict (like stagflation + expanding liquidity + internals in transition), growth is discounted and quietly supported — a time to start building, not go all-in. Watch the 2s10s (leads regime 6-18mo) and internals (lead data by weeks).</p>
-            )}
+          <div className="pb-2 pl-4 text-[10px] text-[#888] leading-relaxed space-y-1">
+            <div><span className="text-[#e0e0e0]">Liquidity</span> = Fed BS − TGA − RRP. Affects stocks with ~2-3 month lag. Growth 2-3x more sensitive than materials.</div>
+            <div><span className="text-[#e0e0e0]">Oil</span> → CPI with 2-3 month lag. $10/bbl ≈ +0.4% CPI.</div>
+            <div><span className="text-[#e0e0e0]">10Y yield</span> = discount rate for stocks. Rising = growth compressed. 2s10s inverted = recession in 6-18mo.</div>
+            <div><span className="text-[#e0e0e0]">Internals</span>: Copper/Gold (industry vs safe-haven), HYG/LQD (credit risk appetite), IWM/SPY (small caps lead), UUP (dollar strength = risk-off).</div>
           </div>
         </details>
       </div>

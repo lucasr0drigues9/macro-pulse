@@ -5,7 +5,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import SectionChat from "@/components/SectionChat";
 import SubscribeForm from "@/components/SubscribeForm";
-import MarketContext from "@/components/MarketContext";
+import SignalStrip from "@/components/SignalStrip";
 import { apiUrl } from "@/lib/api";
 
 const REGIME_COLORS: Record<string, string> = {
@@ -410,7 +410,7 @@ export default function HomePage() {
         />
       </section>
 
-      <MarketContext />
+      <SignalStrip />
 
       <div className="border-t border-[#181818]" />
 
