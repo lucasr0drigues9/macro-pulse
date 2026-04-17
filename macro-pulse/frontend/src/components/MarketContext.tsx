@@ -41,7 +41,7 @@ export default function MarketContext() {
   const yieldSpark = yields ? sparkPath(yields.sparkline.map((p) => p.value)) : { points: "", startY: 0 };
   const oilSpark = oil ? sparkPath(oil.sparkline.map((p) => p.value)) : { points: "", startY: 0 };
 
-  const oneM = liquidity?.changes.oneMonth ?? null;
+
   const threeM = liquidity?.changes.threeMonth ?? null;
 
   const yieldTrendColor = yields

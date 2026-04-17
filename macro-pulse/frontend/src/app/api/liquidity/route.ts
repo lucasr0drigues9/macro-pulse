@@ -22,13 +22,7 @@ async function fetchFredCsv(seriesId: string, startDate: string): Promise<DataPo
     .filter((p) => !isNaN(p.value));
 }
 
-// Align two series by date (returns only dates present in both)
-function alignSeries(a: DataPoint[], b: DataPoint[]): { date: string; a: number; b: number }[] {
-  const bMap = new Map(b.map((p) => [p.date, p.value]));
-  return a
-    .filter((p) => bMap.has(p.date))
-    .map((p) => ({ date: p.date, a: p.value, b: bMap.get(p.date)! }));
-}
+
 
 // For weekly series (WALCL), find the nearest date on or before target
 function findNearestBefore(series: DataPoint[], target: string): number | null {
