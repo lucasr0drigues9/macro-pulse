@@ -1748,6 +1748,72 @@ def get_performance():
     }
 
 
+@app.get("/api/oil")
+def get_oil():
+    """Brent + WTI spot prices from yfinance (more current than FRED DCOILBRENTEU, which can lag by days).
+
+    Returns current level, 1M/3M/12M % changes, trend, and a 3-month sparkline.
+    """
+    import yfinance as _yf
+
+    try:
+        brent_hist = _yf.Ticker("BZ=F").history(period="6mo")
+        wti_hist = _yf.Ticker("CL=F").history(period="6mo")
+    except Exception as e:
+        return {"error": f"yfinance fetch failed: {e}"}
+
+    if len(brent_hist) == 0:
+        return {"error": "No Brent data"}
+
+    brent_closes = brent_hist["Close"].tolist()
+    brent_dates = [d.strftime("%Y-%m-%d") for d in brent_hist.index]
+    latest_brent = brent_closes[-1]
+    latest_date = brent_dates[-1]
+    latest_wti = wti_hist["Close"].iloc[-1] if len(wti_hist) > 0 else None
+
+    def _pct(series: list[float], days: int) -> float | None:
+        if len(series) < days + 1:
+            return None
+        past = series[-(days + 1)]
+        if past == 0:
+            return None
+        return round((series[-1] - past) / past * 100, 1)
+
+    change_1m = _pct(brent_closes, 21)
+    change_3m = _pct(brent_closes, 63)
+    change_12m = _pct(brent_closes, 252)
+
+    trend = "flat"
+    if change_3m is not None:
+        if change_3m > 5:
+            trend = "rising"
+        elif change_3m < -5:
+            trend = "falling"
+
+    # 3-month sparkline — every 3rd trading day
+    spark = brent_closes[-63:]
+    spark_dates = brent_dates[-63:]
+    sparkline = [
+        {"date": spark_dates[i], "value": round(v, 2)}
+        for i, v in enumerate(spark) if i % 3 == 0
+    ]
+
+    return {
+        "latest": {
+            "date": latest_date,
+            "brent": round(latest_brent, 2),
+            "wti": round(latest_wti, 2) if latest_wti is not None else None,
+        },
+        "changes": {
+            "oneMonth": change_1m,
+            "threeMonth": change_3m,
+            "twelveMonth": change_12m,
+        },
+        "trend": trend,
+        "sparkline": sparkline,
+    }
+
+
 @app.get("/api/internals")
 def get_internals():
     """Macro Internals — Druckenmiller-style cross-asset confirmation signals.
