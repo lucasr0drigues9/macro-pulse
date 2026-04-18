@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const LAYERS = [
   { ticker: "AIQ",  ucits: "WTAI.L",  layer: "AI & Autonomous",     color: "#c084fc" },
   { ticker: "SMH",  ucits: "SEMI.L",  layer: "AI Chips",            color: "#3b82f6" },

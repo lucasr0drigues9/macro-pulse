@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // Net Liquidity = Fed Balance Sheet - Treasury General Account - Reverse Repo
 // All in millions of USD (from FRED)
 

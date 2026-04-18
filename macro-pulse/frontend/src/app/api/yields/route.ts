@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 // 10Y Treasury yield (DGS10) + 2s10s curve (T10Y2Y) from FRED.
 
 type DataPoint = { date: string; value: number };
