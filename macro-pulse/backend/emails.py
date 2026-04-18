@@ -1203,17 +1203,39 @@ def _render_and_send(subject: str, header_block: str, narrative: str,
         if scenarios.get("low"): decision_html += f'<p style="margin:4px 0;font-size:12px;color:#22c55e;">↓ {scenarios["low"]}</p>'
         decision_html += "</div>"
 
-    # Appendix
+    # Appendix — allocation rows + cash to fill to 100%
+    total_pct = sum(int(p.get("weight", 0) or 0) for p in picks)
     picks_rows = "".join(
         f'<tr><td style="padding:3px 8px;color:#888;font-size:12px;">{p["ticker"]}</td>'
         f'<td style="padding:3px 8px;color:#555;font-size:12px;">{p["name"]}</td>'
         f'<td style="padding:3px 8px;text-align:right;color:#555;font-size:12px;">{p.get("weight", "")}%</td></tr>'
         for p in picks
     )
+    if total_pct < 100:
+        cash_pct = 100 - total_pct
+        picks_rows += (
+            f'<tr style="border-top:1px solid #222;">'
+            f'<td style="padding:3px 8px;color:#888;font-size:12px;">CASH</td>'
+            f'<td style="padding:3px 8px;color:#555;font-size:12px;">Cash / money market</td>'
+            f'<td style="padding:3px 8px;text-align:right;color:#555;font-size:12px;">{cash_pct}%</td></tr>'
+        )
     triggers_html = ""
     for t in triggers[:4]:
-        status_color = {"crisis": "#ef4444", "watch": "#eab308", "stable": "#22c55e"}.get(t.get("status", "stable"), "#888")
-        triggers_html += f'<p style="font-size:11px;color:#888;margin:3px 0;"><span style="color:{status_color};">●</span> {t["name"]}: {t["current"]}</p>'
+        status = t.get("status", "stable")
+        status_color = {"crisis": "#ef4444", "watch": "#eab308", "stable": "#22c55e"}.get(status, "#888")
+        status_label = {"crisis": "TRIGGERED", "watch": "WATCH", "stable": "NOT MET"}.get(status, "—")
+        threshold = t.get("threshold", "")
+        threshold_html = f'<div style="font-size:10px;color:#555;margin:1px 0 0 14px;">Threshold: {threshold}</div>' if threshold else ""
+        triggers_html += (
+            f'<div style="margin:6px 0;">'
+            f'<p style="font-size:11px;color:#888;margin:0;">'
+            f'<span style="color:{status_color};">●</span> '
+            f'<b style="color:#e0e0e0;">{t["name"]}</b>: {t["current"]} '
+            f'<span style="color:{status_color};font-size:9px;font-weight:bold;">· {status_label}</span>'
+            f'</p>'
+            f'{threshold_html}'
+            f'</div>'
+        )
 
     # Headlines section (only if populated)
     headlines_html = ""
@@ -1366,8 +1388,21 @@ def send_weekly_pulse(regime: str, months: int, fred_regime: str, geo_regime: st
     )
     triggers_html = ""
     for t in triggers[:4]:
-        status_color = {"crisis": "#ef4444", "watch": "#eab308", "stable": "#22c55e"}.get(t.get("status", "stable"), "#888")
-        triggers_html += f'<p style="font-size:11px;color:#888;margin:3px 0;"><span style="color:{status_color};">●</span> {t["name"]}: {t["current"]}</p>'
+        status = t.get("status", "stable")
+        status_color = {"crisis": "#ef4444", "watch": "#eab308", "stable": "#22c55e"}.get(status, "#888")
+        status_label = {"crisis": "TRIGGERED", "watch": "WATCH", "stable": "NOT MET"}.get(status, "—")
+        threshold = t.get("threshold", "")
+        threshold_html = f'<div style="font-size:10px;color:#555;margin:1px 0 0 14px;">Threshold: {threshold}</div>' if threshold else ""
+        triggers_html += (
+            f'<div style="margin:6px 0;">'
+            f'<p style="font-size:11px;color:#888;margin:0;">'
+            f'<span style="color:{status_color};">●</span> '
+            f'<b style="color:#e0e0e0;">{t["name"]}</b>: {t["current"]} '
+            f'<span style="color:{status_color};font-size:9px;font-weight:bold;">· {status_label}</span>'
+            f'</p>'
+            f'{threshold_html}'
+            f'</div>'
+        )
 
     lag_note = ""
     if fred_regime != geo_regime and geo_regime:

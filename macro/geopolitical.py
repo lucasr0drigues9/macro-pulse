@@ -256,22 +256,22 @@ Respond ONLY with valid JSON, no markdown:
   "regime_start_date": "YYYY-MM-DD — the start date of the LAST period in the FRED regime history that matches the current regime. Use the exact start date from the history. Do NOT merge separate periods — if there was a different regime in between, use the start of the most recent matching period, not an earlier one.",
   "calendar_scenarios": {
     "cpi": {
-      "what_to_watch": "one sentence on what matters most in this CPI print given current situation",
-      "high": "if CPI comes in high — specific action to take",
-      "low": "if CPI comes in low — specific action to take",
-      "inline": "if CPI is as expected — what it means"
+      "what_to_watch": "one sentence in PLAIN ENGLISH on what matters most in this CPI print — avoid jargon like 'hawkish pivot' or 'demand destruction'; say what the number would mean for regular readers",
+      "high": "if CPI comes in high — plain-English action (e.g., 'Fed keeps hiking rates, expect growth stocks to fall, gold and energy stocks should hold up')",
+      "low": "if CPI comes in low — plain-English action (e.g., 'Fed has room to cut rates, growth stocks likely rally, sell some gold and buy tech')",
+      "inline": "if CPI is as expected — plain-English meaning (e.g., 'Fed stays on hold, markets continue current trend')"
     },
     "fomc": {
-      "what_to_watch": "one sentence on what matters most at this Fed meeting",
-      "hold": "if Fed holds — specific action",
-      "hike": "if Fed hikes — specific action",
-      "cut": "if Fed cuts — specific action",
-      "emergency_cut": "if emergency cut — specific action"
+      "what_to_watch": "one sentence in PLAIN ENGLISH on what matters most at this Fed meeting — no jargon",
+      "hold": "if Fed holds — plain-English action",
+      "hike": "if Fed hikes — plain-English action",
+      "cut": "if Fed cuts — plain-English action",
+      "emergency_cut": "if emergency cut — plain-English action"
     },
     "filings": {
-      "what_to_watch": "what sector rotation to look for in 13F filings given current regime",
-      "bullish_signal": "what filing pattern would confirm the macro thesis",
-      "bearish_signal": "what filing pattern would contradict it"
+      "what_to_watch": "what sector rotation to look for in 13F filings — plain English, no jargon",
+      "bullish_signal": "what filing pattern would confirm the macro thesis — plain English",
+      "bearish_signal": "what filing pattern would contradict it — plain English"
     }
   },
   "regime_interpretation": "2-3 sentences: what the US+Europe+China regime combination means for capital flows, which specific ETFs benefit, and one ETF to watch as leading indicator for next regime change. Use real tickers only.",
@@ -452,6 +452,13 @@ Given all of this, provide your investment synthesis and portfolio guidance.
 Include specific calendar_scenarios for the upcoming CPI, FOMC and 13F filings
 based on the CURRENT geopolitical and macro context — not generic advice.
 Be specific. Name tickers. Acknowledge what you don't know.
+
+IMPORTANT — Write all calendar_scenarios in PLAIN ENGLISH for regular readers,
+not trader jargon. Avoid phrases like: "Fed hawkish pivot", "demand destruction",
+"FOMC clarity", "reduce cyclical exposure", "duration risk". Instead say things
+like "Fed keeps rates high", "economy slowing", "next Fed meeting",
+"sell energy stocks", "buy long-term Treasuries". Explain the implication
+clearly so someone who isn't a professional trader can understand what to do.
 
 Additionally, given these current regime signals:
 US: {quadrant} — current regime
