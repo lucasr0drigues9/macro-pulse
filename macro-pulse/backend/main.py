@@ -3529,10 +3529,6 @@ async def cron_daily_update(request: Request):
     from macro_kelly import get_current_regime, REGIME_ETFS, get_etf_price
     import emails
 
-    # Skip weekends — markets closed, minimal relevant news
-    if _dt.now().weekday() >= 5:
-        return {"ok": True, "skipped": "weekend"}
-
     # ── Current state ──
     regime, fred_regime, _ = get_current_regime()
     months = _count_consecutive_months(regime)
