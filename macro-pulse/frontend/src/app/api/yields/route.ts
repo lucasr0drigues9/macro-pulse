@@ -37,7 +37,7 @@ export async function GET() {
 
     // Absolute deltas (bps) — for yields, percentage changes can be misleading
     // because a 1% yield moving to 2% is "100% up" but only 100 bps
-    function bpsDelta(series: DataPoint[], daysAgo: number): number | null {
+    const bpsDelta = (series: DataPoint[], daysAgo: number): number | null => {
       if (series.length < daysAgo + 1) return null;
       const past = series[series.length - 1 - daysAgo].value;
       const current = series[series.length - 1].value;
