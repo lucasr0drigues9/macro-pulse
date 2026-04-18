@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd macro-pulse/frontend && npm install && npm run build",
-  "outputDirectory": "macro-pulse/frontend/.next",
-  "framework": "nextjs",
-  "installCommand": "cd macro-pulse/frontend && npm install"
-}
