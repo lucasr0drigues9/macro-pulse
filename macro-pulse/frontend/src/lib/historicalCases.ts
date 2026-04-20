@@ -148,22 +148,26 @@ export const HISTORICAL_CASES: HistoricalCase[] = [
   },
 ];
 
-/** Match cases against the current signal state. Returns up to 3 most relevant. */
+export type ScoredCase = {
+  case: HistoricalCase;
+  score: number;
+  strength: "strong" | "partial" | "contrast";
+};
+
+/** Match cases against the current signal state. Returns ALL cases sorted by relevance,
+ * tagged as strong (3+ matches), partial (1-2 matches), or contrast (0 matches). */
 export function matchCases(signals: {
   fedStance?: string | null;
   phase?: string | null;
   oilTrend?: string | null;
-}): HistoricalCase[] {
-  const scored = HISTORICAL_CASES.map((c) => {
+}): ScoredCase[] {
+  return HISTORICAL_CASES.map((c) => {
     let score = 0;
     if (signals.fedStance && c.signals.fedStance === signals.fedStance) score += 3;
     if (signals.phase && c.signals.phase === signals.phase) score += 2;
     if (signals.oilTrend && c.signals.oilTrend === signals.oilTrend) score += 2;
-    return { case: c, score };
-  });
-  return scored
-    .filter((s) => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
-    .map((s) => s.case);
+    const strength: "strong" | "partial" | "contrast" =
+      score >= 5 ? "strong" : score > 0 ? "partial" : "contrast";
+    return { case: c, score, strength };
+  }).sort((a, b) => b.score - a.score);
 }

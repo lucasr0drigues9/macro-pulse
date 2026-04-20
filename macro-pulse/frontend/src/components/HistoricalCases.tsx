@@ -3,6 +3,12 @@
 import { useSignals } from "@/lib/SignalProvider";
 import { matchCases } from "@/lib/historicalCases";
 
+const STRENGTH_META = {
+  strong: { label: "Strong parallel", color: "#22c55e" },
+  partial: { label: "Related scenario", color: "#eab308" },
+  contrast: { label: "Counter-example", color: "#888" },
+} as const;
+
 export default function HistoricalCases() {
   const { fedStance, oil } = useSignals();
 
@@ -12,13 +18,13 @@ export default function HistoricalCases() {
   const phase = oilFalling || oilBelow85 ? "rotation" : "gold-anchor";
   const oilTrend = oil?.trend ?? null;
 
-  const cases = matchCases({
+  const scoredCases = matchCases({
     fedStance: fedStance?.stance ?? null,
     phase,
     oilTrend,
   });
 
-  if (cases.length === 0) return null;
+  if (scoredCases.length === 0) return null;
 
   return (
     <section className="px-4 py-6 max-w-5xl mx-auto">
@@ -32,44 +38,53 @@ export default function HistoricalCases() {
         </p>
 
         <div className="divide-y divide-[#1a1a1a] border-t border-[#1a1a1a]">
-          {cases.map((c) => (
-            <details key={c.id} className="group">
-              <summary className="flex items-baseline gap-2 flex-wrap cursor-pointer hover:bg-[#0a0a0a] py-3 px-1 -mx-1">
-                <span className="text-[#555] group-open:rotate-90 transition-transform inline-block w-2 text-[10px]">›</span>
-                <span className="text-[10px] text-[#555] uppercase tracking-wider">{c.date}</span>
-                <h3 className="text-[13px] font-bold text-[#e0e0e0]">{c.title}</h3>
-              </summary>
+          {scoredCases.map(({ case: c, strength }) => {
+            const meta = STRENGTH_META[strength];
+            return (
+              <details key={c.id} className="group">
+                <summary className="flex items-baseline gap-2 flex-wrap cursor-pointer hover:bg-[#0a0a0a] py-3 px-1 -mx-1">
+                  <span className="text-[#555] group-open:rotate-90 transition-transform inline-block w-2 text-[10px]">›</span>
+                  <span
+                    className="text-[9px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded"
+                    style={{ color: meta.color, backgroundColor: meta.color + "15" }}
+                  >
+                    {meta.label}
+                  </span>
+                  <span className="text-[10px] text-[#555] uppercase tracking-wider">{c.date}</span>
+                  <h3 className="text-[13px] font-bold text-[#e0e0e0]">{c.title}</h3>
+                </summary>
 
-              <div className="pb-4 pl-4 border-l-2 border-[#333] ml-1">
-                <p className="text-[11px] text-[#888] leading-relaxed mb-2">
-                  <span className="text-[#555] uppercase tracking-wider text-[10px]">Then: </span>
-                  {c.context}
-                </p>
+                <div className="pb-4 pl-4 border-l-2 border-[#333] ml-1">
+                  <p className="text-[11px] text-[#888] leading-relaxed mb-2">
+                    <span className="text-[#555] uppercase tracking-wider text-[10px]">Then: </span>
+                    {c.context}
+                  </p>
 
-                <p className="text-[11px] text-[#d0d0d0] leading-relaxed mb-2">
-                  <span className="text-[#555] uppercase tracking-wider text-[10px]">What happened: </span>
-                  {c.outcome}
-                </p>
+                  <p className="text-[11px] text-[#d0d0d0] leading-relaxed mb-2">
+                    <span className="text-[#555] uppercase tracking-wider text-[10px]">What happened: </span>
+                    {c.outcome}
+                  </p>
 
-                {c.returns.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 mb-2">
-                    {c.returns.map((r, i) => (
-                      <div key={i} className="text-[10px] text-[#888] bg-[#0a0a0a] border border-[#1a1a1a] rounded px-2 py-1">
-                        <div className="text-[9px] text-[#555]">{r.asset}</div>
-                        <div className="font-bold text-[#e0e0e0]">{r.move}</div>
-                        <div className="text-[9px] text-[#555]">{r.period}</div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                  {c.returns.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-1 mb-2">
+                      {c.returns.map((r, i) => (
+                        <div key={i} className="text-[10px] text-[#888] bg-[#0a0a0a] border border-[#1a1a1a] rounded px-2 py-1">
+                          <div className="text-[9px] text-[#555]">{r.asset}</div>
+                          <div className="font-bold text-[#e0e0e0]">{r.move}</div>
+                          <div className="text-[9px] text-[#555]">{r.period}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-                <p className="text-[11px] text-[#22c55e] leading-relaxed italic">
-                  <span className="text-[#555] uppercase tracking-wider text-[10px] not-italic">Parallel: </span>
-                  {c.parallel}
-                </p>
-              </div>
-            </details>
-          ))}
+                  <p className="text-[11px] leading-relaxed italic" style={{ color: meta.color }}>
+                    <span className="text-[#555] uppercase tracking-wider text-[10px] not-italic">Parallel: </span>
+                    {c.parallel}
+                  </p>
+                </div>
+              </details>
+            );
+          })}
         </div>
 
         <p className="text-[9px] text-[#555] italic leading-relaxed pt-4 border-t border-[#1a1a1a] mt-4">

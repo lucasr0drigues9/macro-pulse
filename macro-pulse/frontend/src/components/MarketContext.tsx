@@ -286,18 +286,20 @@ export default function MarketContext() {
 
           return (
             <div className="mt-4 pt-4 border-t border-[#1a1a1a]">
-              {/* Positioning strategy — always open, prominent */}
-              <div className="mb-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs uppercase tracking-wider text-[#555]">Positioning strategy</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: activePhase.color, backgroundColor: activePhase.color + "20" }}>
-                    {activePhase.label}
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-[#e0e0e0]">{activePhase.allocation}</p>
-                <p className="text-[11px] text-[#888] leading-relaxed mt-1">{activePhase.description}</p>
-              </div>
+              <details className="group">
+                <summary className="cursor-pointer hover:bg-[#0a0a0a] -mx-1 px-1 py-2 rounded list-none [&::-webkit-details-marker]:hidden">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <span className="text-[#555] group-open:rotate-90 transition-transform inline-block w-2 text-xs">›</span>
+                    <span className="text-xs uppercase tracking-wider text-[#555]">Positioning strategy</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ color: activePhase.color, backgroundColor: activePhase.color + "20" }}>
+                      {activePhase.label}
+                    </span>
+                  </div>
+                  <p className="text-sm font-bold text-[#e0e0e0] ml-4">{activePhase.allocation}</p>
+                  <p className="text-[11px] text-[#888] leading-relaxed mt-1 ml-4">{activePhase.description}</p>
+                </summary>
 
+                <div className="mt-4 ml-4">
               {/* Timeline — all phases visible */}
               <div className="space-y-0">
                 {phases.map((p, i) => {
@@ -368,6 +370,8 @@ export default function MarketContext() {
                   </p>
                 </div>
               </div>
+              </details>
+            </div>
           );
         })()}
 
