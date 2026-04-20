@@ -37,6 +37,16 @@ type InternalsData = {
   regime: string; regimeType: "risk-on" | "risk-off";
   internals: InternalSignal[]; confirmationScore: number; contradictionScore: number; total: number;
 };
+type FedStanceData = {
+  stance: "hawkish" | "dovish" | "paralyzed" | "transitioning";
+  confidence: "high" | "medium" | "low";
+  reason: string;
+  components: {
+    policyRate: { latest: number; past: number; deltaPct: number; trend: "hike" | "cut" | "hold" };
+    liquidity: { trend: "expanding" | "contracting" | "flat"; deltaPct: number };
+    yields: { latest: number; deltaBps: number; trend: "rising" | "falling" | "flat" };
+  };
+};
 
 export type SignalState = {
   us: RegimeData | null;
@@ -46,11 +56,12 @@ export type SignalState = {
   yields: YieldData | null;
   oil: OilData | null;
   internals: InternalsData | null;
+  fedStance: FedStanceData | null;
   loaded: boolean;
 };
 
 const SignalContext = createContext<SignalState>({
-  us: null, eu: null, cn: null, liquidity: null, yields: null, oil: null, internals: null, loaded: false,
+  us: null, eu: null, cn: null, liquidity: null, yields: null, oil: null, internals: null, fedStance: null, loaded: false,
 });
 
 export function useSignals() {
@@ -59,7 +70,7 @@ export function useSignals() {
 
 export function SignalProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<SignalState>({
-    us: null, eu: null, cn: null, liquidity: null, yields: null, oil: null, internals: null, loaded: false,
+    us: null, eu: null, cn: null, liquidity: null, yields: null, oil: null, internals: null, fedStance: null, loaded: false,
   });
 
   useEffect(() => {
@@ -74,6 +85,7 @@ export function SignalProvider({ children }: { children: ReactNode }) {
         fetch("/api/yields").then((r) => r.json()),
         fetch(apiUrl("/api/oil")).then((r) => r.json()),
         fetch(apiUrl("/api/internals")).then((r) => r.json()),
+        fetch("/api/fed-stance").then((r) => r.json()),
       ]);
 
       if (!mounted) return;
@@ -87,6 +99,7 @@ export function SignalProvider({ children }: { children: ReactNode }) {
       setState({
         us: val(0), eu: val(1), cn: val(2),
         liquidity: val(3), yields: val(4), oil: val(5), internals: val(6),
+        fedStance: val(7),
         loaded: true,
       });
     }

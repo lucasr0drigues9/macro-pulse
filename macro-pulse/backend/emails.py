@@ -610,6 +610,63 @@ def compute_positioning_phase(oil: dict | None, liquidity: dict | None,
     return {"id": phase_id, **PHASES[phase_id]}
 
 
+def fetch_fed_stance(liquidity: dict | None, yields_summary: dict | None) -> dict | None:
+    """Classify Fed stance from policy rate trajectory + liquidity + yields.
+
+    Tepper principle: the Fed is the dominant signal. Returns:
+      { stance: "hawkish"|"dovish"|"paralyzed"|"transitioning", confidence, reason }
+    """
+    import urllib.request as _ur
+    try:
+        # Fed funds target upper bound (DFEDTARU) — daily
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFEDTARU&cosd=2024-01-01"
+        with _ur.urlopen(url, timeout=10) as r:
+            lines = r.read().decode().strip().split("\n")[1:]
+        rates = []
+        for ln in lines:
+            _, v = ln.split(",")
+            try:
+                rates.append(float(v))
+            except ValueError:
+                pass
+        if len(rates) < 30:
+            return None
+
+        latest_rate = rates[-1]
+        past_rate = rates[max(0, len(rates) - 180)]  # ~6 months ago
+        rate_delta = latest_rate - past_rate
+        policy_trend = "hike" if rate_delta > 0.1 else "cut" if rate_delta < -0.1 else "hold"
+
+        liq_trend = liquidity.get("trend") if liquidity else "flat"
+        yield_trend = yields_summary.get("trend") if yields_summary else "flat"
+
+        hawk = sum([policy_trend == "hike", liq_trend == "contracting", yield_trend == "rising"])
+        dove = sum([policy_trend == "cut", liq_trend == "expanding", yield_trend == "falling"])
+
+        if hawk >= 2 and dove == 0:
+            stance = "hawkish"
+            confidence = "high" if hawk == 3 else "medium"
+            reason = f"Rates {'rising' if policy_trend == 'hike' else 'held high'}, liquidity {liq_trend}, yields {yield_trend}. Growth stocks face headwind."
+        elif dove >= 2 and hawk == 0:
+            stance = "dovish"
+            confidence = "high" if dove == 3 else "medium"
+            reason = f"Rates {'falling' if policy_trend == 'cut' else 'held low'}, liquidity {liq_trend}, yields {yield_trend}. Growth stocks get tailwind."
+        elif policy_trend == "hold" and liq_trend == "flat" and yield_trend == "flat":
+            stance = "paralyzed"
+            confidence = "high"
+            reason = "Fed on hold, liquidity flat, yields flat. Markets in consolidation — waiting for a catalyst."
+        else:
+            stance = "transitioning"
+            confidence = "low"
+            dominant = "hawkish" if hawk > dove else "dovish" if dove > hawk else "mixed"
+            reason = f"Mixed signals ({hawk} hawkish, {dove} dovish). Leaning {dominant}."
+
+        return {"stance": stance, "confidence": confidence, "reason": reason}
+    except Exception as e:
+        logger.warning(f"[fed_stance] fetch failed: {e}")
+        return None
+
+
 def fetch_yields_summary() -> dict | None:
     """Lightweight 10Y yield trend from FRED DGS10 — just enough for phase detection."""
     import urllib.request as _ur
@@ -1122,7 +1179,8 @@ def send_daily_update(regime: str, months: int, liquidity: dict | None,
                       headlines: list[dict] | None = None,
                       synthesis: dict | None = None,
                       decision_scenario: dict | None = None,
-                      phase: dict | None = None) -> tuple[int, str]:
+                      phase: dict | None = None,
+                      fed_stance: dict | None = None) -> tuple[int, str]:
     """Unified daily email. Combines change alerts, headlines digest, and safety-net framing.
 
     mode: "change" | "headlines" | "quiet"
@@ -1190,6 +1248,7 @@ def send_daily_update(regime: str, months: int, liquidity: dict | None,
         headlines=headlines,
         mode=mode,
         phase=phase,
+        fed_stance=fed_stance,
     ), subject
 
 
@@ -1260,10 +1319,28 @@ def _render_and_send(subject: str, header_block: str, narrative: str,
                      decision_scenario: dict | None, synthesis: dict,
                      headlines: list[dict] | None = None,
                      mode: str = "change",
-                     phase: dict | None = None) -> int:
+                     phase: dict | None = None,
+                     fed_stance: dict | None = None) -> int:
     """Shared renderer for all daily emails. Mode-aware layout + optional headlines section."""
     headlines = headlines or []
     regime_color = REGIME_COLORS.get(regime, "#888")
+
+    # Fed stance block — Tepper principle, top of email
+    fed_stance_html = ""
+    if fed_stance:
+        stance_color = {
+            "hawkish": "#ef4444", "dovish": "#22c55e",
+            "paralyzed": "#eab308", "transitioning": "#3b82f6",
+        }.get(fed_stance.get("stance", ""), "#888")
+        fed_stance_html = f"""
+        <div style="margin:0 0 16px;padding:12px 14px;background:{stance_color}10;border:1px solid {stance_color}40;border-radius:8px;">
+            <div style="margin:0 0 4px;">
+                <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#555;">Fed stance</span>
+                <span style="display:inline-block;margin-left:6px;font-size:13px;font-weight:bold;padding:2px 10px;border-radius:10px;background:{stance_color}20;color:{stance_color};text-transform:capitalize;">{fed_stance.get('stance', '—')}</span>
+                <span style="margin-left:6px;font-size:9px;text-transform:uppercase;letter-spacing:0.1em;color:#555;">{fed_stance.get('confidence', '')} confidence</span>
+            </div>
+            <p style="margin:4px 0 0;font-size:11px;color:#888;line-height:1.5;">{fed_stance.get('reason', '')}</p>
+        </div>"""
 
     # Positioning phase block — shows current phase + allocation rationale
     phase_html = ""
@@ -1376,6 +1453,8 @@ def _render_and_send(subject: str, header_block: str, narrative: str,
         {stories}"""
 
     body = f"""
+    {fed_stance_html}
+
     {header_block}
     {signal_strip}
 

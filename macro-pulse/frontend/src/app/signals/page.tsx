@@ -1,5 +1,6 @@
 import Nav from "@/components/Nav";
 import MarketContext from "@/components/MarketContext";
+import HistoricalCases from "@/components/HistoricalCases";
 import SubscribeForm from "@/components/SubscribeForm";
 
 export default function SignalsPage() {
@@ -15,6 +16,8 @@ export default function SignalsPage() {
       </section>
 
       <MarketContext />
+
+      <HistoricalCases />
 
       <section className="px-4 py-8 max-w-3xl mx-auto text-center">
         <SubscribeForm

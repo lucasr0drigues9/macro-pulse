@@ -12,7 +12,7 @@ const REGIME_COLORS: Record<string, string> = {
 type InternalSignal = SignalState["internals"] extends { internals: (infer T)[] } | null ? T : never;
 
 export default function MarketContext() {
-  const { us, eu, cn, liquidity, yields, oil, internals } = useSignals();
+  const { us, eu, cn, liquidity, yields, oil, internals, fedStance } = useSignals();
 
   const regime = us?.regime || null;
   const regimeColor = regime ? REGIME_COLORS[regime] || "#888" : "#888";
@@ -60,6 +60,33 @@ export default function MarketContext() {
   return (
     <section id="market-context" className="px-4 py-6 max-w-5xl mx-auto scroll-mt-20">
       <div className="p-3 rounded-lg border border-[#222] bg-[#111]">
+        {/* Fed stance — top-level signal (Tepper principle: "Don't fight the Fed") */}
+        {fedStance && (() => {
+          const stanceColor =
+            fedStance.stance === "hawkish" ? "#ef4444"
+            : fedStance.stance === "dovish" ? "#22c55e"
+            : fedStance.stance === "paralyzed" ? "#eab308"
+            : "#3b82f6";
+          return (
+            <div className="mb-3 p-3 rounded-lg" style={{ backgroundColor: stanceColor + "10", border: `1px solid ${stanceColor}40` }}>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span
+                  className="text-[10px] uppercase tracking-wider text-[#555]"
+                  title="Fed stance combines policy rate direction, liquidity trend, and 10Y yield direction. Tepper principle: the Fed is the dominant signal. Don't fight it."
+                  style={{ cursor: "help", textDecoration: "underline dotted", textUnderlineOffset: "2px", textDecorationColor: "#333" }}
+                >
+                  Fed stance
+                </span>
+                <span className="text-sm font-bold px-2 py-0.5 rounded capitalize" style={{ color: stanceColor, backgroundColor: stanceColor + "20" }}>
+                  {fedStance.stance}
+                </span>
+                <span className="text-[9px] text-[#555] uppercase tracking-wider">{fedStance.confidence} confidence</span>
+              </div>
+              <p className="text-[11px] text-[#888] leading-relaxed">{fedStance.reason}</p>
+            </div>
+          );
+        })()}
+
         {/* Compact signal rows — each is one line with sparkline, expandable for detail */}
         <div className="divide-y divide-[#1a1a1a]">
           {/* Liquidity */}

@@ -3570,6 +3570,13 @@ async def cron_daily_update(request: Request):
     except Exception:
         pass
 
+    # Fed stance (Tepper principle: the dominant signal)
+    fed_stance = None
+    try:
+        fed_stance = emails.fetch_fed_stance(liquidity, yields_data)
+    except Exception:
+        pass
+
     # Compute positioning phase and use it for the email allocation
     phase = emails.compute_positioning_phase(oil_data, liquidity, yields_data, internals_data)
     picks = [dict(p) for p in phase["picks"]]  # copy so we don't mutate the PHASES constant
@@ -3686,6 +3693,7 @@ async def cron_daily_update(request: Request):
         synthesis=synthesis,
         decision_scenario=decision_scenario,
         phase=phase,
+        fed_stance=fed_stance,
     )
 
     # ── Persist state on any actual send (change / quiet / headlines) ──
