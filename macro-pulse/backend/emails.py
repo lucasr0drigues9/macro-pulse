@@ -530,6 +530,112 @@ def send_geo_override(event: str, geo_regime: str, fred_regime: str, explanation
     return sent
 
 
+# ════════════════════════════════════════════════════════════════════
+# POSITIONING PHASE — gold → growth rotation (mirrors frontend logic)
+# ════════════════════════════════════════════════════════════════════
+
+PHASES = {
+    "gold-anchor": {
+        "label": "Gold anchor",
+        "color": "#eab308",
+        "description": "Gold wins in both scenarios (oil up or down). Growth is discounted — start buying the thesis. Skip other materials — they already priced in stagflation.",
+        "picks": [
+            {"ticker": "GLD", "name": "Gold", "weight": 65},
+            {"ticker": "SMH", "name": "AI Chips (semiconductors)", "weight": 20},
+            {"ticker": "BOTZ", "name": "Robotics & AI", "weight": 15},
+        ],
+    },
+    "rotation": {
+        "label": "Rotate toward growth",
+        "color": "#3b82f6",
+        "description": "Oil is falling but inflation takes 2-3 more months to follow in CPI. Gold keeps working while you wait. Start shifting weight toward growth — market is forward-looking.",
+        "picks": [
+            {"ticker": "GLD", "name": "Gold", "weight": 40},
+            {"ticker": "SMH", "name": "AI Chips (semiconductors)", "weight": 35},
+            {"ticker": "BOTZ", "name": "Robotics & AI", "weight": 25},
+        ],
+    },
+    "growth-tilt": {
+        "label": "Growth tilt",
+        "color": "#22c55e",
+        "description": "CPI is now printing lower and the market has confirmed it: yields falling, internals risk-on. Growth multiples expanding. Keep gold as a hedge but growth is now the primary position.",
+        "picks": [
+            {"ticker": "GLD", "name": "Gold", "weight": 25},
+            {"ticker": "SMH", "name": "AI Chips (semiconductors)", "weight": 40},
+            {"ticker": "BOTZ", "name": "Robotics & AI", "weight": 35},
+        ],
+    },
+    "full-conviction": {
+        "label": "Full conviction growth",
+        "color": "#22c55e",
+        "description": "All layers aligned: CPI disinflation, Fed cutting, liquidity expanding, internals risk-on. This is the high-conviction growth window.",
+        "picks": [
+            {"ticker": "GLD", "name": "Gold", "weight": 15},
+            {"ticker": "SMH", "name": "AI Chips (semiconductors)", "weight": 45},
+            {"ticker": "BOTZ", "name": "Robotics & AI", "weight": 40},
+        ],
+    },
+}
+
+
+def compute_positioning_phase(oil: dict | None, liquidity: dict | None,
+                              yields: dict | None, internals: dict | None) -> dict:
+    """Mirror of frontend MarketContext positioning phase logic.
+
+    Returns the active phase dict (with label, description, picks).
+    """
+    oil_brent = oil.get("latest", {}).get("brent") if oil else None
+    oil_3m = oil.get("changes", {}).get("threeMonth") if oil else None
+    liq_3m = liquidity.get("changes", {}).get("threeMonth") if liquidity else None
+    y_trend = yields.get("trend", "flat") if yields else "flat"
+    risk_on_internals = sum(
+        1 for i in (internals or {}).get("internals", [])
+        if i.get("signal") == "risk-on"
+    )
+
+    oil_falling = oil_3m is not None and oil_3m < -5
+    oil_below_85 = oil_brent is not None and oil_brent < 85
+    now_bullish = y_trend == "falling" and risk_on_internals >= 2
+    coming_bullish = oil_falling and (liq_3m or 0) > 1
+
+    if now_bullish and coming_bullish:
+        phase_id = "full-conviction"
+    elif now_bullish:
+        phase_id = "growth-tilt"
+    elif oil_below_85 or oil_falling:
+        phase_id = "rotation"
+    else:
+        phase_id = "gold-anchor"
+
+    return {"id": phase_id, **PHASES[phase_id]}
+
+
+def fetch_yields_summary() -> dict | None:
+    """Lightweight 10Y yield trend from FRED DGS10 — just enough for phase detection."""
+    import urllib.request as _ur
+    try:
+        url = "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10&cosd=2025-01-01"
+        with _ur.urlopen(url, timeout=10) as r:
+            lines = r.read().decode().strip().split("\n")[1:]
+        vals = []
+        for ln in lines:
+            _, v = ln.split(",")
+            try:
+                vals.append(float(v))
+            except ValueError:
+                pass
+        if len(vals) < 64:
+            return None
+        current = vals[-1]
+        past_3m = vals[-64]
+        delta_bps = round((current - past_3m) * 100)
+        trend = "rising" if delta_bps > 20 else "falling" if delta_bps < -20 else "flat"
+        return {"trend": trend, "latest": {"tenYear": current}, "changes": {"threeMonthBps": delta_bps}}
+    except Exception as e:
+        logger.warning(f"[yields] fetch failed: {e}")
+        return None
+
+
 def fetch_liquidity() -> dict | None:
     """Fetch Fed net liquidity (WALCL - TGA - RRP*1000) from FRED CSV endpoints.
     Returns { net: $B, trend, changes: {oneM, threeM}, pctFromPeak } or None on failure."""
@@ -1015,7 +1121,8 @@ def send_daily_update(regime: str, months: int, liquidity: dict | None,
                       changes: list[dict] | None = None, change_score: int = 0,
                       headlines: list[dict] | None = None,
                       synthesis: dict | None = None,
-                      decision_scenario: dict | None = None) -> tuple[int, str]:
+                      decision_scenario: dict | None = None,
+                      phase: dict | None = None) -> tuple[int, str]:
     """Unified daily email. Combines change alerts, headlines digest, and safety-net framing.
 
     mode: "change" | "headlines" | "quiet"
@@ -1082,6 +1189,7 @@ def send_daily_update(regime: str, months: int, liquidity: dict | None,
         synthesis=synthesis,
         headlines=headlines,
         mode=mode,
+        phase=phase,
     ), subject
 
 
@@ -1151,10 +1259,23 @@ def _render_and_send(subject: str, header_block: str, narrative: str,
                      picks: list[dict], triggers: list[dict],
                      decision_scenario: dict | None, synthesis: dict,
                      headlines: list[dict] | None = None,
-                     mode: str = "change") -> int:
+                     mode: str = "change",
+                     phase: dict | None = None) -> int:
     """Shared renderer for all daily emails. Mode-aware layout + optional headlines section."""
     headlines = headlines or []
     regime_color = REGIME_COLORS.get(regime, "#888")
+
+    # Positioning phase block — shows current phase + allocation rationale
+    phase_html = ""
+    if phase:
+        phase_html = f"""
+        <div style="margin:0 0 20px;padding:14px;background:{phase['color']}10;border:1px solid {phase['color']}40;border-radius:8px;">
+            <div style="display:flex;align-items:center;gap:8px;margin:0 0 6px;">
+                <span style="font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:#555;">Positioning phase</span>
+                <span style="font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;background:{phase['color']}20;color:{phase['color']};">{phase['label']}</span>
+            </div>
+            <p style="margin:4px 0 0;font-size:11px;color:#888;line-height:1.5;">{phase.get('description', '')}</p>
+        </div>"""
 
     # Signal strip (liquidity left, regime right to match site)
     liq_html = ""
@@ -1257,6 +1378,8 @@ def _render_and_send(subject: str, header_block: str, narrative: str,
     body = f"""
     {header_block}
     {signal_strip}
+
+    {phase_html}
 
     {lede_html}
 

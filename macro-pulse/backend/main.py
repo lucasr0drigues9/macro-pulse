@@ -3548,8 +3548,31 @@ async def cron_daily_update(request: Request):
 
     liquidity = emails.fetch_liquidity()
 
-    picks = [{"ticker": e["ticker"], "name": e["name"], "weight": round(e["conviction"] * 20)}
-             for e in REGIME_ETFS.get(regime, [])]
+    # Fetch yields, oil, internals for positioning phase detection (call functions directly, no HTTP)
+    oil_data = None
+    internals_data = None
+    yields_data = None
+    try:
+        oil_resp = get_oil()
+        if isinstance(oil_resp, dict) and not oil_resp.get("error"):
+            oil_data = oil_resp
+    except Exception:
+        pass
+    try:
+        internals_resp = get_internals()
+        if isinstance(internals_resp, dict) and not internals_resp.get("error"):
+            internals_data = internals_resp
+    except Exception:
+        pass
+    # Yields from FRED (same series as frontend /api/yields)
+    try:
+        yields_data = emails.fetch_yields_summary()
+    except Exception:
+        pass
+
+    # Compute positioning phase and use it for the email allocation
+    phase = emails.compute_positioning_phase(oil_data, liquidity, yields_data, internals_data)
+    picks = [dict(p) for p in phase["picks"]]  # copy so we don't mutate the PHASES constant
 
     watch_tickers = list(set([p["ticker"] for p in picks] + emails.WATCH_TICKERS))
     current_prices: dict[str, float] = {}
@@ -3594,18 +3617,43 @@ async def cron_daily_update(request: Request):
     score, changes = emails.detect_changes(baseline, current_state) if baseline else (0, [])
     fire_change, change_reason = emails.should_fire(state, score, now_iso) if baseline else (False, "bootstrap")
 
+    # ── Cooldown + dedup gate for headlines mode ──
+    # Prevent the same headlines from firing multiple times (Claude picks similar stories
+    # across runs). Compute a content hash and skip if it matches the last sent hash
+    # OR if we're inside a 20-hour cooldown.
+    import hashlib as _hashlib
+    headline_hash = ""
+    if headlines:
+        headline_hash = _hashlib.sha1(
+            "|".join(h.get("title", "") for h in headlines).encode()
+        ).hexdigest()[:12]
+
+    last_hash = state.get("last_headline_hash", "")
+    last_sent_iso = state.get("last_fire", "")
+    hours_since_last = _days_since(last_sent_iso, now_iso)
+    hours_since_last = hours_since_last * 24 if hours_since_last is not None else float("inf")
+
+    HEADLINES_COOLDOWN_HOURS = 20
+    headlines_recent_dup = headline_hash and headline_hash == last_hash
+    headlines_in_cooldown = hours_since_last < HEADLINES_COOLDOWN_HOURS
+
     # ── Decide mode ──
     mode = None
     if fire_change and change_reason == "change":
         mode = "change"
-    elif headlines:
+    elif headlines and not headlines_recent_dup and not headlines_in_cooldown:
         mode = "headlines"
     elif fire_change and change_reason == "safety_net":
         mode = "quiet"
     else:
         # Silent — nothing to say today
-        return {"ok": True, "fired": False, "reason": change_reason,
-                "score": score, "headlines": 0,
+        silence_reason = (
+            "headline_dup" if headlines_recent_dup else
+            "headline_cooldown" if headlines_in_cooldown else
+            change_reason
+        )
+        return {"ok": True, "fired": False, "reason": silence_reason,
+                "score": score, "headlines": len(headlines),
                 "days_since_last": _days_since(state.get("last_fire"), now_iso)}
 
     # ── Build context ──
@@ -3637,17 +3685,25 @@ async def cron_daily_update(request: Request):
         headlines=headlines,
         synthesis=synthesis,
         decision_scenario=decision_scenario,
+        phase=phase,
     )
 
-    # ── Persist baseline/last_fire only when we acted on the change signal ──
-    if mode in ("change", "quiet"):
+    # ── Persist state on any actual send (change / quiet / headlines) ──
+    if mode:
         fire_reason_str = (
             f"score {score}: " + "; ".join(c["what"] for c in changes[:3])
             if mode == "change"
+            else f"headlines: {headlines[0]['title'][:60]}" if mode == "headlines"
             else f"safety_net ({_days_since(state.get('last_fire'), now_iso)}d silent)"
         )
-        new_state = {"baseline": current_state, "last_fire": now_iso,
-                     "last_fire_reason": fire_reason_str}
+        # Only update baseline on change/quiet — headlines don't reflect portfolio-moving events
+        new_baseline = current_state if mode in ("change", "quiet") else state.get("baseline", current_state)
+        new_state = {
+            "baseline": new_baseline,
+            "last_fire": now_iso,
+            "last_fire_reason": fire_reason_str,
+            "last_headline_hash": headline_hash if mode == "headlines" else state.get("last_headline_hash", ""),
+        }
         emails.save_change_state(state_path, new_state)
 
     return {"ok": True, "fired": True, "mode": mode, "subject": subject,
